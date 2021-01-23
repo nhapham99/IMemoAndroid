@@ -73,9 +73,6 @@ class HomeViewModel extends ViewModel {
         tagsRepository.deleteTags(Utils.token, id);
     }
 
-    protected void createTags(String name, String color, Boolean isDefault) {
-        tagsRepository.createTags(Utils.token, name, color, isDefault);
-    }
 
     protected void getPreviewLink(String url) {
         previewLinkRepository.getPreViewLink(url);

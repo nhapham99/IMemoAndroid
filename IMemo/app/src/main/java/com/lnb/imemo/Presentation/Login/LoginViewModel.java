@@ -65,17 +65,18 @@ class LoginViewModel extends ViewModel {
         authObserver = new Observer<ResponseRepo>() {
             @Override
             public void onChanged(ResponseRepo response) {
-                if (response.getKey().equals(Constant.LOGIN_GOOGLE_KEY)) {
+                String key = response.getKey();
+                if (key.equals(Constant.LOGIN_GOOGLE_KEY)) {
                     Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
                     mUser.setToken(pair.second);
                     loginLiveData.setValue(pair.first);
-                } else if (response.getKey().equals(Constant.LOGIN_KEY)) {
+                } else if (key.equals(Constant.LOGIN_KEY)) {
                     Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
                     mUser.setToken(pair.second);
                     loginLiveData.setValue(pair.first);
-                } else if (response.getKey().equals(Constant.FORGOT_PASSWORD_KEY)) {
+                } else if (key.equals(Constant.FORGOT_PASSWORD_KEY)) {
                     forgotPasswordLiveData.setValue((Utils.State) response.getData());
-                } else if (response.getKey().equals(Constant.REGISTER_KEY)) {
+                } else if (key.equals(Constant.REGISTER_KEY)) {
                     registerLiveData.setValue((Utils.RegisterState) response.getData());
                 }
             }

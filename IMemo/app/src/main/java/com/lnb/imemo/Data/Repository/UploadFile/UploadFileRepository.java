@@ -2,6 +2,7 @@ package com.lnb.imemo.Data.Repository.UploadFile;
 
 import android.net.Uri;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.LiveDataReactiveStreams;
@@ -11,6 +12,8 @@ import androidx.lifecycle.Observer;
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.APIUploadClient;
 import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Utils.Constant;
+import com.lnb.imemo.Utils.Utils;
 
 import java.io.File;
 import java.io.InputStream;
@@ -41,8 +44,16 @@ public class UploadFileRepository {
                 .onErrorReturn(new Function<Throwable, JsonObject>() {
                     @Override
                     public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                        Log.d(TAG, "apply: " + throwable.getMessage());
-                        return new JsonObject();
+                        JsonObject jsonObject = new JsonObject();
+                        String message = throwable.getMessage();Log.d(TAG, "apply: " + message);
+                        if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                            jsonObject.addProperty(Constant.STATUS_CODE, 409);
+                        } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                            jsonObject.addProperty(Constant.STATUS_CODE, -1);
+                        } else {
+                            jsonObject.addProperty(Constant.STATUS_CODE, -2);
+                        }
+                        return jsonObject;
                     }
                 })
                 .subscribeOn(Schedulers.io())
@@ -51,9 +62,19 @@ public class UploadFileRepository {
         uploadFileLiveData.addSource(source, new Observer<JsonObject>() {
             @Override
             public void onChanged(JsonObject jsonObject) {
-                ResponseRepo<JsonObject> responseRepo = new ResponseRepo<>();
+                ResponseRepo<Pair<Utils.State, JsonObject>> responseRepo = new ResponseRepo<>();
                 Log.d(TAG, "onChanged: " + jsonObject.toString());
-                responseRepo.setData(jsonObject);
+                if (jsonObject.get(Constant.UPLOADED).getAsBoolean() == true) {
+                    responseRepo.setData(new Pair<>(Utils.State.SUCCESS, jsonObject));
+                } else {
+                    int statusCode = jsonObject.get(Constant.STATUS_CODE).getAsInt();
+                    if (statusCode == -1) {
+                       responseRepo.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                    } else {
+                        responseRepo.setData(new Pair<>(Utils.State.FAILURE, null));
+                    }
+                }
+                responseRepo.setKey(Constant.UPLOAD_FILE_KEY);
                 uploadFileLiveData.setValue(responseRepo);
                 uploadFileLiveData.removeSource(source);
             }

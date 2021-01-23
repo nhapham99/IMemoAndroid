@@ -17,6 +17,7 @@ public class Constant {
     public static String CREATE_DIARY_KEY = "create_diary";
     public static String UPDATE_DIARY_KEY = "update_diary";
     public static String GET_PREVIEW_LINK_KEY = "get_preview_link";
+    public static String UPLOAD_FILE_KEY = "upload_file";
 
 
     public static String ID = "id";
@@ -34,4 +35,5 @@ public class Constant {
     public static String NAME = "name";
     public static String COLOR_HEX = "color";
     public static String IS_DEFAULT = "isDefault";
+    public static String UPLOADED = "uploaded";
 }

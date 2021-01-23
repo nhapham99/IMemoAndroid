@@ -16,7 +16,7 @@
         android:usesCleartextTraffic="true">
         <activity android:name=".Presentation.Home.HomeActivity"></activity>
         <activity android:name=".Presentation.Login.LoginActivity" />
-        <activity android:name=".Presentation.TestUploadActivity">
+        <activity android:name=".Presentation.UploadActivity.UploadActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

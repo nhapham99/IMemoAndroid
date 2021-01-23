@@ -364,6 +364,7 @@ public class FileUtils {
             }
             // MediaProvider
             else if (isMediaDocument(uri)) {
+                Log.d(TAG, "getLocalPath: media");
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
