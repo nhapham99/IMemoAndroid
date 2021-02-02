@@ -60,6 +60,7 @@ public class AuthRepository {
                 String token = jsonObject.getAsJsonObject(Constant.RESULT)
                         .get(Constant.TOKEN)
                         .toString();
+                Log.d(TAG, "getTokenFromGoogleToken: " + token);
                 response.setData(new Pair<>(Utils.State.SUCCESS, token));
             } else if (statusCode == -1) {
                 response.setData(new Pair<>(Utils.State.NO_INTERNET, ""));
@@ -150,6 +151,7 @@ public class AuthRepository {
                 String token = jsonObject.getAsJsonObject(Constant.RESULT)
                         .get(Constant.TOKEN)
                         .toString();
+                Log.d(TAG, "login: " + token);
                 response.setData(new Pair<>(Utils.State.SUCCESS, token));
             } else if (statusCode == -1) {
                 response.setData(new Pair<>(Utils.State.NO_INTERNET, ""));

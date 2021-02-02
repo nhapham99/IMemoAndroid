@@ -11,8 +11,11 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
 import com.lnb.imemo.Data.Repository.UploadFile.UploadFileRepository;
+import com.lnb.imemo.Model.Diary;
+import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.FileUtils;
@@ -20,6 +23,7 @@ import com.lnb.imemo.Utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -30,16 +34,20 @@ public class UploadViewModel extends ViewModel {
     private Context context;
     private UploadFileRepository uploadFileRepository;
     private TagsRepository tagsRepository;
+    private DiaryRepository diaryRepository;
     private Observer<ResponseRepo> uploadObservable;
     private Observer<ResponseRepo> tagsObservable;
+    private Observer<ResponseRepo> diaryObservable;
     private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
 
     public UploadViewModel(Context context) {
         this.context = context;
         uploadFileRepository = new UploadFileRepository();
         tagsRepository = new TagsRepository();
+        diaryRepository = new DiaryRepository();
         subscribeUploadObservable();
         subscribeTagAction();
+        subscribeDiaryObservable();
     }
 
     protected void uploadFile(Uri uri) {
@@ -55,6 +63,10 @@ public class UploadViewModel extends ViewModel {
 
     protected void createTags(String name, String color, Boolean isDefault) {
         tagsRepository.createTags(Utils.token, name, color, isDefault);
+    }
+
+    protected void createDiary(Diary diary) {
+        diaryRepository.createDiary(Utils.token, diary);
     }
 
     private void subscribeUploadObservable() {
@@ -105,6 +117,17 @@ public class UploadViewModel extends ViewModel {
         tagsRepository.observableTagLiveData().observeForever(tagsObservable);
     }
 
+    private void subscribeDiaryObservable() {
+        diaryObservable = new Observer<ResponseRepo>() {
+            @Override
+            public void onChanged(ResponseRepo responseRepo) {
+                JsonObject responseJsonObject = (JsonObject) responseRepo.getData();
+                Log.d(TAG, "onChanged: " + responseJsonObject.toString());
+            }
+        };
+        diaryRepository.observableDiaryRepo().observeForever(diaryObservable);
+    }
+
     public MediatorLiveData<ResponseRepo> getViewModelObservable() {
         return viewModelLiveData;
     }
@@ -113,6 +136,8 @@ public class UploadViewModel extends ViewModel {
     protected void onCleared() {
         super.onCleared();
         uploadFileRepository.observableUploadFile().removeObserver(uploadObservable);
+        tagsRepository.observableTagLiveData().removeObserver(tagsObservable);
+        diaryRepository.observableDiaryRepo().removeObserver(diaryObservable);
     }
 
 }

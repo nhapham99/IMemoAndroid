@@ -24,4 +24,12 @@ public class ResponseRepo<T> {
     public void setData(@NonNull  T data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "ResponseRepo{" +
+                "data=" + data +
+                ", key='" + key + '\'' +
+                '}';
+    }
 }

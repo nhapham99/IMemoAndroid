@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">IMemo</string>
+    <string name="email">email</string>
+    <string name="password">mật khẩu</string>
+    <string name="login">Đăng nhập</string>
+    <string name="login_with_google">Đăng nhập với Google</string>
+    <string name="input_email_error">Email không hợp lệ</string>
+    <string name="input_email_empty_error">Bạn cần điều đầy đủ email</string>
+    <string name="input_password_empty_error">Bạn cần điền đầy đủ mật khẩu</string>
+    <string name="input_username_empty_error">Bạn cần điền đầy đủ tên đăng nhập</string>
+    <string name="input_username">Nhập tên đăng nhập</string>
+    <string name="privacy_policy">Tôi đồng ý với các điều khoản &amp; điều kiện</string>
+    <string name="have_account">Bạn đã có tài khoản?</string>
+    <string name="register">Đăng ký</string>
+    <string name="register_password_error">Mật khẩu phải trên 8 ký tự</string>
 </resources>

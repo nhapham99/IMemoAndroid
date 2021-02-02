@@ -10,6 +10,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -76,6 +77,8 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                if (key == Constant.UPLOAD_FILE_KEY) {
                    Utils.State state = (Utils.State) responseRepo.getData();
                    Log.d(TAG, "onChanged: " + state.name());
+               } else if (key == Constant.CREATE_DIARY_KEY) {
+                   Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
                }
            }
        });

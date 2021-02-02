@@ -10,6 +10,7 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface AuthApi {
+
     @POST("auth/get-token")
     Flowable<JsonObject> getTokenFromGoogleToken(@Body JsonObject body);
 
