@@ -9,7 +9,7 @@ import androidx.lifecycle.MediatorLiveData;
 
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.APIClient;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 
@@ -61,7 +61,9 @@ public class AuthRepository {
                         .get(Constant.TOKEN)
                         .toString();
                 Log.d(TAG, "getTokenFromGoogleToken: " + token);
-                response.setData(new Pair<>(Utils.State.SUCCESS, token));
+                String tokenSub = "Bearer " + token.substring(1, token.length() - 1);
+                Log.d(TAG, "getTokenFromGoogleToken: " + tokenSub);
+                response.setData(new Pair<>(Utils.State.SUCCESS, tokenSub));
             } else if (statusCode == -1) {
                 response.setData(new Pair<>(Utils.State.NO_INTERNET, ""));
             } else {

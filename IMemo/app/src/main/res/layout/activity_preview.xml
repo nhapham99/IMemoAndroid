@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Presentation.PickTag.PickTagsActivity"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/length_10dp">
+
+        <ImageButton
+            android:layout_width="@dimen/length_35dp"
+            android:layout_height="@dimen/length_35dp"
+            android:id="@+id/add_link_back"
+            android:src="@drawable/ic_back"
+            android:background="@drawable/round_button"
+            android:backgroundTint="#F0F2F5"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/length_10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lưu trữ Link"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/roboto_bold"
+            android:textSize="20sp"
+            android:textColor="@color/black"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_1dp"
+        android:background="#E4E6EB"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"/>
+
+    <EditText
+        android:id="@+id/link_url"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/shape_corner"
+        android:backgroundTint="#F0F2F5"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:gravity="top"
+        android:paddingLeft="@dimen/length_10dp"
+        android:paddingTop="@dimen/length_10dp"
+        android:maxLines="2"
+        android:imeOptions="actionSearch"
+        android:inputType="text"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_weight="1"
+        android:id="@+id/add_link_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/length_20dp"/>
+
+    <Button
+        android:id="@+id/add_link_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thêm link"
+        android:fontFamily="@font/roboto_bold"
+        android:textAllCaps="false"
+        style="@style/TextAppearance.MaterialComponents.Button"
+        android:textSize="16sp"
+        android:paddingTop="@dimen/length_5dp"
+        android:paddingBottom="@dimen/length_5dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginBottom="@dimen/length_20dp"
+        android:enabled="false"
+        android:textColor="@color/white"/>
+
+</LinearLayout>

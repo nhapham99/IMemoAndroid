@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Presentation.UploadActivity.UploadActivity"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/length_10dp">
+
+        <ImageButton
+            android:layout_width="@dimen/length_35dp"
+            android:layout_height="@dimen/length_35dp"
+            android:id="@+id/create_memo_escape"
+            android:src="@drawable/ic_escape"
+            android:background="@drawable/round_button"
+            android:backgroundTint="#F0F2F5"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/length_10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_memo_label"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/roboto_bold"
+            android:textSize="20sp"
+            android:textColor="@color/black"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_1dp"
+        android:background="#E4E6EB"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"/>
+
+
+    <LinearLayout
+        android:id="@+id/create_memo_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/shape_corner"
+        android:backgroundTint="#F0F2F5"
+        android:paddingTop="@dimen/length_10dp"
+        android:paddingBottom="@dimen/length_10dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_time_picker"
+            android:layout_marginLeft="@dimen/length_20dp"/>
+
+        <TextView
+            android:id="@+id/date_textView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/roboto_regular"
+            android:textSize="15sp"
+            android:hint="Chọn thời gian"
+            android:layout_marginLeft="@dimen/length_20dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/shape_corner"
+        android:backgroundTint="#F0F2F5"
+        android:paddingTop="@dimen/length_10dp"
+        android:paddingBottom="@dimen/length_10dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:gravity="center_vertical">
+
+
+        <EditText
+            android:id="@+id/create_memo_title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="Đặt tên memo"
+            android:fontFamily="@font/roboto_regular"
+            android:textSize="15sp"
+            android:layout_marginLeft="@dimen/length_20dp"
+            android:layout_marginRight="@dimen/length_20dp"
+            android:background="@android:color/transparent"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/shape_corner"
+        android:backgroundTint="#F0F2F5"
+        android:paddingTop="@dimen/length_10dp"
+        android:paddingBottom="@dimen/length_10dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:gravity="center_vertical">
+
+
+        <EditText
+            android:id="@+id/create_memo_content"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Thêm nội dung memo..."
+            android:gravity="top"
+            android:fontFamily="@font/roboto_regular"
+            android:textSize="15sp"
+            android:layout_marginLeft="@dimen/length_20dp"
+            android:layout_marginRight="@dimen/length_20dp"
+            android:background="@android:color/transparent"/>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/upload_memo_item_tag_list"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_20dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:orientation="horizontal"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_30dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/upload_memo_file"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/length_10dp"
+            android:paddingRight="@dimen/length_10dp">
+
+            <ImageView
+                android:layout_width="@dimen/length_25dp"
+                android:layout_height="@dimen/length_25dp"
+                android:src="@drawable/ic_up_image" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Tệp"
+                android:textColor="#666666" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/upload_memo_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/length_10dp"
+            android:paddingRight="@dimen/length_10dp">
+
+            <ImageView
+                android:layout_width="@dimen/length_25dp"
+                android:layout_height="@dimen/length_25dp"
+                android:src="@drawable/up_tag_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Tag"
+                android:textColor="#666666" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/upload_memo_link"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/length_10dp"
+            android:paddingRight="@dimen/length_10dp">
+
+            <ImageView
+                android:layout_width="@dimen/length_25dp"
+                android:layout_height="@dimen/length_25dp"
+                android:src="@drawable/up_link_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Link"
+                android:textColor="#666666" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/create_memo_resource_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/create_memo_button"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_65dp"
+        style="@style/TextAppearance.MaterialComponents.Button"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:text="Tạo memo"
+        android:textAllCaps="false"
+        android:fontFamily="@font/roboto_bold"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:enabled="false"/>
+
+</LinearLayout>

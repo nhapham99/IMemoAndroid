@@ -5,6 +5,17 @@
     <dimen name="length_1dp">1dp</dimen>
     <dimen name="length_10dp">10dp</dimen>
     <dimen name="length_5dp">5dp</dimen>
+    <dimen name="length_50dp">50dp</dimen>
+    <dimen name="length_25dp">25dp</dimen>
+    <dimen name="length_200dp">200dp</dimen>
+    <dimen name="length_250dp">250dp</dimen>
+    <dimen name="length_300dp">300dp</dimen>
+    <dimen name="length_30dp">30dp</dimen>
+    <dimen name="length_35dp">35dp</dimen>
+    <dimen name="length_8dp">8dp</dimen>
+    <dimen name="length_85dp">85dp</dimen>
+    <dimen name="length_90dp">90dp</dimen>
+    <dimen name="length_65dp">65dp</dimen>
 
     <dimen name="text_12sp">12sp</dimen>
     <dimen name="text_16sp">16sp</dimen>

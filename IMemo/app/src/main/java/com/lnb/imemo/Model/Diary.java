@@ -1,5 +1,6 @@
 package com.lnb.imemo.Model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Diary{
@@ -12,9 +13,9 @@ public class Diary{
     private String createdAt;
     private String updatedAt;
     private List<Resource> resources;
-    private Tags tag;
+    private ArrayList<Tags> tags;
     private List<Link> links;
-    private String tagId;
+    private List<String> tagIds;
 
     public Diary() {
     }
@@ -28,7 +29,7 @@ public class Diary{
                  String createdAt,
                  String updatedAt,
                  List<Resource> resources,
-                 Tags tag, List<Link> links) {
+                 ArrayList<Tags> tags, List<Link> links) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -38,7 +39,7 @@ public class Diary{
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.resources = resources;
-        this.tag = tag;
+        this.tags = tags;
         this.links = links;
     }
 
@@ -114,12 +115,12 @@ public class Diary{
         this.resources = resources;
     }
 
-    public Tags getTag() {
-        return tag;
+    public ArrayList<Tags> getTags() {
+        return tags;
     }
 
-    public void setTag(Tags tag) {
-        this.tag = tag;
+    public void setTags(ArrayList<Tags> tags) {
+        this.tags = tags;
     }
 
     public List<Link> getLinks() {
@@ -130,12 +131,12 @@ public class Diary{
         this.links = links;
     }
 
-    public String getTagId() {
-        return tagId;
+    public List<String> getTagIds() {
+        return tagIds;
     }
 
-    public void setTagId(String tagId) {
-        this.tagId = tagId;
+    public void setTagIds(ArrayList<String> tagIds) {
+        this.tagIds = tagIds;
     }
 
     @Override
@@ -150,9 +151,9 @@ public class Diary{
                 ", createdAt='" + createdAt + '\'' +
                 ", updatedAt='" + updatedAt + '\'' +
                 ", resources=" + resources +
-                ", tag=" + tag +
+                ", tag=" + tags +
                 ", links=" + links +
-                ", tagId='" + tagId + '\'' +
+                ", tagId='" + tagIds + '\'' +
                 '}';
     }
 }

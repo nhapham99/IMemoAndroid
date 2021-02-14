@@ -13,8 +13,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IMemo"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Presentation.Register.RegisterActivity"></activity>
-        <activity android:name=".Presentation.Home.HomeActivity" />
+        <activity android:name=".Presentation.PreviewLink.PreviewActivity"></activity>
+        <activity android:name=".Presentation.PickTag.PickTagsActivity" />
+        <activity android:name=".Presentation.Register.RegisterActivity" />
+        <activity android:name=".Presentation.NavigationActivity.NavigationActivity" />
         <activity android:name=".Presentation.UploadActivity.UploadActivity" />
         <activity android:name=".Presentation.Login.LoginActivity">
             <intent-filter>

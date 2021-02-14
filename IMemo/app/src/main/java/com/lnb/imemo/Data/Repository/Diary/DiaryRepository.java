@@ -15,10 +15,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.lnb.imemo.Data.APIClient;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
-import com.lnb.imemo.Data.Entity.Root;
-import com.lnb.imemo.Data.Entity.ResultDiaries;
-import com.lnb.imemo.Data.Entity.ResultDiary;
+import com.lnb.imemo.Model.ResponseRepo;
+import com.lnb.imemo.Model.Root;
+import com.lnb.imemo.Model.ResultDiaries;
+import com.lnb.imemo.Model.ResultDiary;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
@@ -141,12 +141,12 @@ public class DiaryRepository {
     }
 
     public void deleteDiary(@NonNull String token, @NonNull String id) {
-        LiveData<Root<String>> source = LiveDataReactiveStreams.fromPublisher(
+        LiveData<Root<JsonObject>> source = LiveDataReactiveStreams.fromPublisher(
                 diaryAPI.deleteDiary(token, id)
                         .onErrorReturn(throwable -> {
                             Log.d(TAG, "apply: " + throwable.getMessage());
                             String message = throwable.getMessage();
-                            Root<String> diaryRoot = new Root<>();
+                            Root<JsonObject> diaryRoot = new Root<>();
                             if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
                                 diaryRoot.setStatusCode(409);
                             } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
@@ -158,10 +158,11 @@ public class DiaryRepository {
                         })
                         .subscribeOn(Schedulers.io())
         );
-        diaryRepoLiveData.addSource(source, new Observer<Root<String>>() {
+        diaryRepoLiveData.addSource(source, new Observer<Root<JsonObject>>() {
             @Override
-            public void onChanged(Root<String> root) {
+            public void onChanged(Root<JsonObject> root) {
                 ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                Log.d(TAG, "onChanged: " + root.toString());
                 if (root.getStatusCode() == 0) {
                     response.setData(Utils.State.SUCCESS);
                 } else if (root.getStatusCode() == -1) {

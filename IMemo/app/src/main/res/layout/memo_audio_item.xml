@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background= "#596573"
+    android:layout_marginTop="@dimen/length_5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/length_5dp"
+        android:paddingTop="@dimen/length_5dp">
+        <TextView
+            android:id="@+id/memo_audio_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loding..."
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:fontFamily="@font/roboto_regular"
+            android:gravity="center"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/length_5dp"
+        android:layout_marginRight="@dimen/length_5dp"
+        android:paddingBottom="@dimen/length_5dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/memo_audio_play_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_play" />
+
+            <ProgressBar
+                android:id="@+id/memo_audio_progressBar"
+                android:layout_width="@dimen/length_25dp"
+                android:layout_height="@dimen/length_25dp"
+                android:visibility="invisible"
+                android:progressTint="@color/grey_light"/>
+        </RelativeLayout>
+
+
+
+
+
+        <TextView
+            android:id="@+id/memo_audio_currentTime"
+            android:layout_weight="0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:layout_marginLeft="@dimen/length_5dp"
+            android:textColor="@color/grey_light"
+            android:layout_gravity="center_vertical"/>
+
+        <SeekBar
+            android:layout_weight="1"
+            android:id="@+id/memo_audio_seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"/>
+
+        <TextView
+            android:id="@+id/memo_audio_totalTime"
+            android:layout_weight="0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="@color/grey_light"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="@dimen/length_5dp"/>
+
+    </LinearLayout>
+</LinearLayout>

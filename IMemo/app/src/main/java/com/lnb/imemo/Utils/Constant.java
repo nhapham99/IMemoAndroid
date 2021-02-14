@@ -36,4 +36,15 @@ public class Constant {
     public static String COLOR_HEX = "color";
     public static String IS_DEFAULT = "isDefault";
     public static String UPLOADED = "uploaded";
+
+
+    public static int pageSize = 10;
+    public static int imageAndVideoTabPosition = 0;
+    public static int audioTabPosition = 1;
+    public static int linkTabPosition = 2;
+
+
+    public static String imageType = "image";
+    public static String audioType = "audio";
+    public static String videoType = "video";
 }

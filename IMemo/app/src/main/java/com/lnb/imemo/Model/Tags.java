@@ -1,6 +1,9 @@
 package com.lnb.imemo.Model;
 
-public class Tags  {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Tags implements Parcelable {
     private String id;
     private String name;
     private String color;
@@ -19,6 +22,43 @@ public class Tags  {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
+    protected Tags(Parcel in) {
+        id = in.readString();
+        name = in.readString();
+        color = in.readString();
+        byte tmpIsisDefault = in.readByte();
+        isisDefault = tmpIsisDefault == 0 ? null : tmpIsisDefault == 1;
+        createdAt = in.readString();
+        updatedAt = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(name);
+        dest.writeString(color);
+        dest.writeByte((byte) (isisDefault == null ? 0 : isisDefault ? 1 : 2));
+        dest.writeString(createdAt);
+        dest.writeString(updatedAt);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Tags> CREATOR = new Creator<Tags>() {
+        @Override
+        public Tags createFromParcel(Parcel in) {
+            return new Tags(in);
+        }
+
+        @Override
+        public Tags[] newArray(int size) {
+            return new Tags[size];
+        }
+    };
 
     public String getId() {
         return id;

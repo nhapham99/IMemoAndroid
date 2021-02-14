@@ -1,6 +1,5 @@
 package com.lnb.imemo.Presentation.Login;
 
-import android.content.Context;
 import android.util.Log;
 import android.util.Pair;
 
@@ -10,15 +9,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.lnb.imemo.Data.APIClient;
-import com.lnb.imemo.Data.Repository.Auth.AuthApi;
 import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
-
-import retrofit2.Retrofit;
 
 class LoginViewModel extends ViewModel {
     private static final String TAG = "LoginViewModel";

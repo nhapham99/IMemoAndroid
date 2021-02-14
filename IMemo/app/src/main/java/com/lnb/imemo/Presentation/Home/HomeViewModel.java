@@ -1,11 +1,5 @@
 package com.lnb.imemo.Presentation.Home;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.FileUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.util.Pair;
 
@@ -18,21 +12,17 @@ import androidx.lifecycle.ViewModel;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.PreviewLink.PreviewLinkRepository;
 import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
-import com.lnb.imemo.Data.Repository.UploadFile.UploadFileRepository;
+import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Tags;
-import com.lnb.imemo.R;
+import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-class HomeViewModel extends ViewModel {
+public class HomeViewModel extends ViewModel {
     private static final String TAG = "HomeViewModel";
     private TagsRepository tagsRepository;
     private DiaryRepository diaryRepository;
@@ -41,20 +31,21 @@ class HomeViewModel extends ViewModel {
     private MediatorLiveData<Tags> tagLiveData = new MediatorLiveData<>();
     private MediatorLiveData<Utils.State> updateTagLiveData = new MediatorLiveData<>();
     private MediatorLiveData<Utils.State> deleteTagLiveData = new MediatorLiveData<>();
-    private MediatorLiveData<Utils.State> createTagLiveData = new MediatorLiveData<>();
+    private MediatorLiveData<Utils.State> getAllMemoLiveData = new MediatorLiveData<>();
+    private MediatorLiveData<Utils.State> deleteDiaryLiveData = new MediatorLiveData<>();
     private Observer<ResponseRepo> tagsObservable;
     private Observer<ResponseRepo> diaryObservable;
-    private Observer<ResponseRepo> previewLinkObservable;
-    private Context mContext;
 
-    public HomeViewModel(Context mContext) {
-        this.mContext = mContext;
+    protected User mUser;
+    protected static List<Diary> listDiary = new ArrayList<>();
+
+    public HomeViewModel() {
         tagsRepository = new TagsRepository();
         diaryRepository = new DiaryRepository();
         previewLinkRepository = new PreviewLinkRepository();
+        mUser = User.getUser();
         subscribeTagAction();
         subscribeDiary();
-        subscribePreviewLink();
     }
 
     protected void getAllTags() {
@@ -64,15 +55,6 @@ class HomeViewModel extends ViewModel {
     protected void getTagById(String id) {
         tagsRepository.getTagById(Utils.token, id);
     }
-
-    protected void updateTags(String id, String name, String colorHex, Boolean isDefault) {
-        tagsRepository.updateTags(Utils.token, id, name, colorHex, isDefault);
-    }
-
-    protected void deleteTags(String id) {
-        tagsRepository.deleteTags(Utils.token, id);
-    }
-
 
     protected void getPreviewLink(String url) {
         previewLinkRepository.getPreViewLink(url);
@@ -85,11 +67,16 @@ class HomeViewModel extends ViewModel {
                               @Nullable String fromDate,
                               @Nullable String toDate,
                               @Nullable String lastId) {
-        diaryRepository.getDiaries(Utils.token, query, tags, page, pageSize, fromDate, toDate, lastId);
+        Log.d(TAG, "getDiaries: " + mUser.getToken());
+        diaryRepository.getDiaries(mUser.getToken(), query, tags, page, pageSize, fromDate, toDate, lastId);
     }
 
     protected void createDiary(Diary diary) {
         diaryRepository.createDiary(Utils.token, diary);
+    }
+
+    public void deleteDiary(int diaryPosition) {
+        diaryRepository.deleteDiary(mUser.getToken(), listDiary.get(diaryPosition).getId());
     }
 
 
@@ -123,21 +110,21 @@ class HomeViewModel extends ViewModel {
         diaryObservable = new Observer<ResponseRepo>() {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
-                Log.d(TAG, "onChanged: " + responseRepo.getData());
+                String key = responseRepo.getKey();
+                if (key.equals(Constant.GET_DIARIES_KEY)) {
+                    Log.d(TAG, "onChanged: " + responseRepo.getData());
+                    Pair<Utils.State, List<Diary>> response = (Pair<Utils.State, List<Diary>>) responseRepo.getData();
+                    listDiary = response.second;
+                    getAllMemoLiveData.setValue(response.first);
+                } else if (key.equals(Constant.DELETE_DIARY_KEY)) {
+                    deleteDiaryLiveData.setValue((Utils.State) responseRepo.getData());
+                }
             }
         };
         diaryRepository.observableDiaryRepo().observeForever(diaryObservable);
     }
 
-    private void subscribePreviewLink() {
-        previewLinkObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
-            }
-        };
-        previewLinkRepository.observablePreviewLink().observeForever(previewLinkObservable);
-    }
+
 
     public MediatorLiveData<ArrayList<Tags>> observableAllTags() {
         return allTagsLiveData;
@@ -147,15 +134,17 @@ class HomeViewModel extends ViewModel {
         return tagLiveData;
     }
 
-    public MediatorLiveData<Utils.State> observableUpdateTags() { return updateTagLiveData; }
+    public MediatorLiveData<Utils.State> observableGetAllDiary() {
+        return getAllMemoLiveData;
+    }
 
-    public MediatorLiveData<Utils.State> observableDeleteTags() { return deleteTagLiveData; }
+    public MediatorLiveData<Utils.State> observableDeleteDiary() { return deleteDiaryLiveData; }
 
     @Override
     protected void onCleared() {
         super.onCleared();
         tagsRepository.observableTagLiveData().removeObserver(tagsObservable);
         diaryRepository.observableDiaryRepo().removeObserver(diaryObservable);
-        previewLinkRepository.observablePreviewLink().removeObserver(previewLinkObservable);
+
     }
 }

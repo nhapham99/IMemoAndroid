@@ -4,13 +4,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -19,9 +22,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
+import com.lnb.imemo.Presentation.NavigationActivity.NavigationActivity;
 import com.lnb.imemo.Presentation.Register.RegisterActivity;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Utils;
+
+import eightbitlab.com.blurview.BlurView;
+import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -36,8 +43,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Button signInWithGoogle_button;
     private TextView forgot_password_button;
     private TextView register_button;
-
-
+    private BlurView blurView;
 
     // var
     private LoginViewModel viewModel;
@@ -92,6 +98,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         forgot_password_button.setOnClickListener(this);
         register_button = findViewById(R.id.register_textview);
         register_button.setOnClickListener(this);
+        blurView = findViewById(R.id.blurView);
+        blurView.setVisibility(View.INVISIBLE);
 
         // register viewmodel
         viewModel = new LoginViewModel();
@@ -107,6 +115,26 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        //blurScreen();
+    }
+
+    private void blurScreen() {
+        blurView.setVisibility(View.VISIBLE);
+        float radius = 0.5f;
+
+        View decorView = getWindow().getDecorView();
+        ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+        Drawable windowBackground = decorView.getBackground();
+
+        blurView.setupWith(rootView)
+                .setFrameClearDrawable(windowBackground)
+                .setBlurAlgorithm(new RenderScriptBlur(this))
+                .setBlurRadius(radius)
+                .setBlurAutoUpdate(true);
+    }
+
+    private void clearScreen() {
+        blurView.setVisibility(View.INVISIBLE);
     }
 
     private void subscribeLoginObservable() {
@@ -116,12 +144,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 switch (state) {
                     case SUCCESS:
                         Log.d(TAG, "onChanged login: success");
+                        Intent intent  = new Intent(LoginActivity.this, NavigationActivity.class);
+                        startActivity(intent);
+                        finish();
+                        clearScreen();
                         break;
                     case FAILURE:
                         Log.d(TAG, "onChanged login: failure");
+                        Toast.makeText(LoginActivity.this, "Tài khoản hoặc mật khẩu không chính xác", Toast.LENGTH_SHORT).show();
+                        clearScreen();
                         break;
                     case NO_INTERNET:
                         Log.d(TAG, "onChanged login: no_internet");
+                        Toast.makeText(LoginActivity.this, "Không có kết nối mạng. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                        clearScreen();
                         break;
                 }
             }
@@ -181,6 +217,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             allowSignIn = false;
         }
         if (allowSignIn) {
+            blurScreen();
             viewModel.signIn(email, password);
         }
 
@@ -207,6 +244,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         try {
             // if login success
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            blurScreen();
             viewModel.signInWithGoogle(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.

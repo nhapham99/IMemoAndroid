@@ -1,9 +1,9 @@
 package com.lnb.imemo.Data.Repository.Diary;
 
 import com.google.gson.JsonObject;
-import com.lnb.imemo.Data.Entity.Root;
-import com.lnb.imemo.Data.Entity.ResultDiaries;
-import com.lnb.imemo.Data.Entity.ResultDiary;
+import com.lnb.imemo.Model.Root;
+import com.lnb.imemo.Model.ResultDiaries;
+import com.lnb.imemo.Model.ResultDiary;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public interface DiaryAPI {
     Flowable<JsonObject> createDiary(@Header("Authorization") String token, @Body JsonObject body);
 
     @DELETE("diaries/{id}")
-    Flowable<Root<String>> deleteDiary(@Header("Authorization") String token, @Path("id") String id);
+    Flowable<Root<JsonObject>> deleteDiary(@Header("Authorization") String token, @Path("id") String id);
 
 
 }

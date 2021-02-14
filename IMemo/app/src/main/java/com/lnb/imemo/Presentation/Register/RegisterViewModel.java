@@ -7,7 +7,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
 import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;

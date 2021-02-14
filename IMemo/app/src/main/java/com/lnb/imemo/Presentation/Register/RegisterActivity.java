@@ -4,15 +4,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -22,9 +24,12 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.TextInputLayout;
-import com.lnb.imemo.Presentation.Login.LoginActivity;
+import com.lnb.imemo.Presentation.NavigationActivity.NavigationActivity;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Utils;
+
+import eightbitlab.com.blurview.BlurView;
+import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "RegisterActivity";
@@ -39,6 +44,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private Button register_with_google_button;
     private TextView login_text;
     private ImageView errorIcon;
+    private BlurView blurView;
 
     //var
     private RegisterViewModel viewModel;
@@ -135,6 +141,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         login_text.setOnClickListener(this);
         errorIcon = findViewById(R.id.error_icon);
         errorIcon.setVisibility(View.INVISIBLE);
+        blurView = findViewById(R.id.blurView);
+        blurView.setVisibility(View.INVISIBLE);
 
 
         // register viewmodel
@@ -151,6 +159,25 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         // subscribe observable
         subscribeLoginObservable();
         subscribeRegisterObservable();
+    }
+
+    private void blurScreen() {
+        blurView.setVisibility(View.VISIBLE);
+        float radius = 0.5f;
+
+        View decorView = getWindow().getDecorView();
+        ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
+        Drawable windowBackground = decorView.getBackground();
+
+        blurView.setupWith(rootView)
+                .setFrameClearDrawable(windowBackground)
+                .setBlurAlgorithm(new RenderScriptBlur(this))
+                .setBlurRadius(radius)
+                .setBlurAutoUpdate(true);
+    }
+
+    private void clearScreen() {
+        blurView.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -172,6 +199,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 break;
         }
     }
+
+
     private void register() {
         String email = email_text.getEditText().getText().toString();
         String username = username_text.getEditText().getText().toString();
@@ -202,6 +231,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         }
 
         if (allowRegister) {
+            blurScreen();
             viewModel.register(username, email, password);
         }
     }
@@ -213,12 +243,23 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 switch (state) {
                     case SUCCESS:
                         Log.d(TAG, "onChanged login: success");
+                        clearScreen();
+                        Intent intent = new Intent(getApplicationContext(), NavigationActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
                         break;
                     case FAILURE:
                         Log.d(TAG, "onChanged login: failure");
+                        Toast.makeText(RegisterActivity.this,
+                                getResources().getText(R.string.login_failure_with_google),
+                                Toast.LENGTH_SHORT).show();
                         break;
                     case NO_INTERNET:
                         Log.d(TAG, "onChanged login: no_internet");
+                        Toast.makeText(RegisterActivity.this,
+                                getResources().getText(R.string.no_internet_failure),
+                                Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -231,16 +272,32 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             public void onChanged(Utils.RegisterState state) {
                 switch (state) {
                     case SUCCESS:
+                        clearScreen();
                         Log.d(TAG, "register: success");
+                        Toast.makeText(RegisterActivity.this,
+                                getResources().getText(R.string.register_success),
+                                Toast.LENGTH_SHORT).show();
                         break;
                     case FAILURE:
+                        clearScreen();
                         Log.d(TAG, "register failure");
+                        Toast.makeText(RegisterActivity.this,
+                                getResources().getText(R.string.register_failure),
+                                Toast.LENGTH_SHORT).show();
                         break;
                     case ALREADY_HAVE:
+                        clearScreen();
                         Log.d(TAG, "register already have");
+                        Toast.makeText(RegisterActivity.this,
+                                getResources().getText(R.string.register_already_have),
+                                Toast.LENGTH_SHORT).show();
                         break;
                     case NO_INTERNET:
+                        clearScreen();
                         Log.d(TAG, "register no internet");
+                        Toast.makeText(RegisterActivity.this,
+                                getResources().getText(R.string.no_internet_failure),
+                                Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -267,11 +324,17 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         try {
             // if login success
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            blurScreen();
             viewModel.signInWithGoogle(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+            if (e.getStatusCode() == 7) {
+                Toast.makeText(RegisterActivity.this,
+                        getResources().getText(R.string.no_internet_failure),
+                        Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

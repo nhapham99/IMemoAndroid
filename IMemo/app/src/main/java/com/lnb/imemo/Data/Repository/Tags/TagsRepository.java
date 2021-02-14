@@ -14,7 +14,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.lnb.imemo.Data.APIClient;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;

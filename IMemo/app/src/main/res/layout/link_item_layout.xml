@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/grey_background"
+    android:padding="@dimen/length_1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:layout_centerInParent="true"
+        android:padding="@dimen/length_5dp">
+
+
+        <ImageView
+            android:id="@+id/link_imageView"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/google_icon"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/link_title"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="malmstein/fenster"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_bold"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:maxLines="1"/>
+
+            <TextView
+                android:id="@+id/link_description"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="A library to display videos in a TextureView using a custom MediaPlayer controller - malmstein/fenster"
+                android:maxLines="2"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/roboto_regular"/>
+
+            <TextView
+                android:id="@+id/link_url"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="https://github.com/malmstein/fenster"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_regular"
+                android:textColor="@color/link_url_color"
+                android:maxLines="1"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

@@ -10,12 +10,12 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.google.gson.JsonObject;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Model.Resource;
+import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
 import com.lnb.imemo.Data.Repository.UploadFile.UploadFileRepository;
 import com.lnb.imemo.Model.Diary;
-import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.FileUtils;
@@ -23,7 +23,6 @@ import com.lnb.imemo.Utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -39,12 +38,14 @@ public class UploadViewModel extends ViewModel {
     private Observer<ResponseRepo> tagsObservable;
     private Observer<ResponseRepo> diaryObservable;
     private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
+    private final Diary uploadDiary;
 
     public UploadViewModel(Context context) {
         this.context = context;
         uploadFileRepository = new UploadFileRepository();
         tagsRepository = new TagsRepository();
         diaryRepository = new DiaryRepository();
+        uploadDiary = new Diary();
         subscribeUploadObservable();
         subscribeTagAction();
         subscribeDiaryObservable();
@@ -74,21 +75,27 @@ public class UploadViewModel extends ViewModel {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
                 String key = responseRepo.getKey();
-                ResponseRepo<Utils.State> responseToActivity = new ResponseRepo();
+                ResponseRepo<Pair<Utils.State, Object>> responseToActivity = new ResponseRepo();
                 // upload file
                 if (key.equals(Constant.UPLOAD_FILE_KEY)) {
                     Pair<Utils.State, JsonObject> responseRepoObject = (Pair<Utils.State, JsonObject>) responseRepo.getData();
                     Utils.State state = responseRepoObject.first;
+                    JsonObject responseJsonObject = responseRepoObject.second;
+
                     switch (state) {
                         case SUCCESS:
-                            JsonObject response = responseRepoObject.second;
-                            responseToActivity.setData(Utils.State.SUCCESS);
+                            JsonObject response = responseRepoObject.second.getAsJsonObject(Constant.RESULT);
+                            Resource resource = new Resource();
+                            resource.setType(response.get("mimetype").getAsString());
+                            resource.setName(response.get("key").getAsString());
+                            resource.setUrl(response.get("url").getAsString());
+                            responseToActivity.setData(new Pair<>(Utils.State.SUCCESS, resource));
                             break;
                         case FAILURE:
-                            responseToActivity.setData(Utils.State.FAILURE);
+                            responseToActivity.setData(new Pair<>(Utils.State.FAILURE, null));
                             break;
                         case NO_INTERNET:
-                            responseToActivity.setData(Utils.State.NO_INTERNET);
+                            responseToActivity.setData(new Pair<>(Utils.State.NO_INTERNET, null));
                             break;
                     }
                     responseToActivity.setKey(Constant.UPLOAD_FILE_KEY);
@@ -126,6 +133,10 @@ public class UploadViewModel extends ViewModel {
             }
         };
         diaryRepository.observableDiaryRepo().observeForever(diaryObservable);
+    }
+
+    public Diary getUploadDiary() {
+        return uploadDiary;
     }
 
     public MediatorLiveData<ResponseRepo> getViewModelObservable() {

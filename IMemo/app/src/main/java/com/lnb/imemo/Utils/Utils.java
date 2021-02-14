@@ -4,7 +4,8 @@ public class Utils {
     public static String GOOGLE_CLIENT_ID = "335058615265-gcce2lv24jgadcjv20oblhlav3s0caik.apps.googleusercontent.com";
     public static String baseUrls = "http://134.122.11.145:3000/";
     public static String baseUploadUrls = "http://134.122.11.145:8081/";
-    public static String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaWQiOjgsImlhdCI6MTYxMTg1NDk0MywiZXhwIjoxNjEyNDU5NzQzfQ.6dgKYQTr7kG_ZY8dAtvHZ-RUuC_rl6Wn1_vXRnBlQGE";
+    public static String token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaWQiOjgsImlhdCI6MTYxMjQ2Mjg0NSwiZXhwIjoxNjEzMDY3NjQ1fQ.xsEj9e6fbg-Xl_jdnEAZa70egzUJJrx_Hr3unC5wZSY";
+    public static String storeUrl = "https://memospace.fra1.digitaloceanspaces.com/";
     public enum State {
         SUCCESS,
         NO_INTERNET,

@@ -1,6 +1,5 @@
 package com.lnb.imemo.Data.Repository.UploadFile;
 
-import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 
@@ -11,19 +10,14 @@ import androidx.lifecycle.Observer;
 
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.APIUploadClient;
-import com.lnb.imemo.Data.Entity.ResponseRepo;
+import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
-
-import java.io.File;
-import java.io.InputStream;
 
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
 import retrofit2.Retrofit;
 
 public class UploadFileRepository {
