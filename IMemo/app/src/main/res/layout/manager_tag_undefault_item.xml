@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/black_stroke_layout"
+    android:paddingTop="@dimen/length_10dp"
+    android:paddingBottom="@dimen/length_10dp"
+    android:layout_marginBottom="@dimen/length_10dp">
+
+    <View
+        android:id="@+id/tag_color"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/circle_indicator_selected"
+        android:layout_marginLeft="@dimen/length_20dp"
+        android:layout_gravity="center_vertical"/>
+
+    <TextView
+        android:id="@+id/is_default_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mặc định"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/length_20dp"
+        android:background="@drawable/blue_stroke_layout"
+        android:paddingLeft="@dimen/length_10dp"
+        android:paddingRight="@dimen/length_10dp"
+        android:textColor="#2694FC"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:layout_weight="1"
+        android:id="@+id/tag_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tình yêu"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/length_20dp"
+        android:paddingLeft="@dimen/length_10dp"
+        android:paddingRight="@dimen/length_10dp"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:fontFamily="@font/roboto_medium"
+        android:layout_marginRight="@dimen/length_20dp"
+        android:singleLine="true"/>
+
+    <ImageButton
+        android:id="@+id/manager_tag_option"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_three_dot"
+        android:backgroundTint="@color/white"/>
+</LinearLayout>

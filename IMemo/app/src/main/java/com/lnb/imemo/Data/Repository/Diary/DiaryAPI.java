@@ -32,7 +32,7 @@ public interface DiaryAPI {
     Flowable<Root<ResultDiary>> getDiaryById(@Header("Authorization") String token, @Path("id") String id);
 
     @POST("diaries")
-    Flowable<JsonObject> createDiary(@Header("Authorization") String token, @Body JsonObject body);
+    Flowable<Root<JsonObject>> createDiary(@Header("Authorization") String token, @Body JsonObject body);
 
     @DELETE("diaries/{id}")
     Flowable<Root<JsonObject>> deleteDiary(@Header("Authorization") String token, @Path("id") String id);

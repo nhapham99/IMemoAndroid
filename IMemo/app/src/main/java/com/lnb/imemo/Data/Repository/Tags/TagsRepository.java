@@ -15,11 +15,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.lnb.imemo.Data.APIClient;
 import com.lnb.imemo.Model.ResponseRepo;
+import com.lnb.imemo.Model.ResultTags;
+import com.lnb.imemo.Model.Root;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
@@ -41,44 +44,48 @@ public class TagsRepository {
     }
 
     public void getAllTagAction(String token) {
-        LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
+        LiveData<Root<ResultTags>> source = LiveDataReactiveStreams.fromPublisher(
                 tagAPI.getAllTag(token)
-                        .onErrorReturn(new Function<Throwable, JsonObject>() {
+                        .onErrorReturn(new Function<Throwable, Root<ResultTags>>() {
                             @Override
-                            public JsonObject apply(@NonNull Throwable throwable) throws Exception {
+                            public Root<ResultTags> apply(@NonNull Throwable throwable) throws Exception {
                                 Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
-                                JsonObject jsonObject = new JsonObject();
+                                Root<ResultTags> root = new Root<>();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, 409);
+                                    root.setStatusCode(409);
                                 } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -1);
+                                    root.setStatusCode(-1);
                                 } else {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -2);
+                                    root.setStatusCode(-2);
                                 }
-                                return jsonObject;
+                                return root;
                             }
                         })
                         .subscribeOn(Schedulers.io())
         );
 
-        tagRepoLiveData.addSource(source, jsonObject -> {
-            int statusCode = jsonObject.get(Constant.STATUS_CODE).getAsInt();
-            ResponseRepo<Pair<Utils.State, ArrayList<Tags>>> response = new ResponseRepo<>();
-            if (statusCode == 0) {
-                JsonArray listTagJson = jsonObject.getAsJsonObject(Constant.RESULT).getAsJsonArray(Constant.TAGS);
-                ArrayList<Tags> listTags = gsonBuilder.fromJson(listTagJson.toString(), new TypeToken<ArrayList<Tags>>() {
-                }.getType());
-                response.setData(new Pair<>(Utils.State.SUCCESS, listTags));
-            } else if (statusCode == -1) {
-                response.setData(new Pair<>(Utils.State.NO_INTERNET, new ArrayList<>()));
-            } else {
-                response.setData(new Pair<>(Utils.State.FAILURE, new ArrayList<>()));
+        tagRepoLiveData.addSource(source, new Observer<Root<ResultTags>>() {
+            @Override
+            public void onChanged(Root<ResultTags> listRoot) {
+                Log.d(TAG, "onChanged: " + listRoot.toString());
+                int statusCode = listRoot.getStatusCode();
+                ResponseRepo<Pair<Utils.State, ArrayList<Tags>>> response = new ResponseRepo<>();
+                if (statusCode == 0) {
+                    ResultTags resultTags = (ResultTags) listRoot.getResult();
+                    ArrayList<Tags> listTags = (ArrayList<Tags>) resultTags.getTags();
+                    response.setData(new Pair<>(Utils.State.SUCCESS, listTags));
+                } else if (statusCode == -1) {
+                    response.setData(new Pair<>(Utils.State.NO_INTERNET, new ArrayList<>()));
+                } else {
+                    response.setData(new Pair<>(Utils.State.FAILURE, new ArrayList<>()));
+                }
+                response.setKey(Constant.GET_ALL_TAGS_KEY);
+                tagRepoLiveData.setValue(response);
+                tagRepoLiveData.removeSource(source);
             }
-            response.setKey(Constant.GET_ALL_TAGS_KEY);
-            tagRepoLiveData.setValue(response);
-            tagRepoLiveData.removeSource(source);
         });
+
     }
 
     public void getTagById(String token, String id) {
@@ -121,13 +128,13 @@ public class TagsRepository {
         });
     }
 
-    public void updateTags(String token, String id, String name, String colorHex, Boolean isDefault) {
+    public void updateTags(String token, Tags tag) {
         JsonObject body = new JsonObject();
-        body.addProperty(Constant.NAME, name);
-        body.addProperty(Constant.COLOR_HEX, colorHex);
-        body.addProperty(Constant.IS_DEFAULT, isDefault);
+        body.addProperty(Constant.NAME, tag.getName());
+        body.addProperty(Constant.COLOR_HEX, tag.getColor());
+        body.addProperty(Constant.IS_DEFAULT, tag.getIsDefault());
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
-                tagAPI.updateTag(token, id, body)
+                tagAPI.updateTag(token, tag.getId(), body)
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
@@ -199,30 +206,31 @@ public class TagsRepository {
         });
     }
 
-    public void createTags(String token, String name, String color, Boolean isDefault) {
+    public void createTags(String token, Tags tag) {
         JsonObject body = new JsonObject();
-        body.addProperty(Constant.NAME, name);
-        body.addProperty(Constant.COLOR_HEX, color);
-        body.addProperty(Constant.IS_DEFAULT, isDefault);
+        body.addProperty(Constant.NAME, tag.getName());
+        body.addProperty(Constant.COLOR_HEX, tag.getColor());
+        body.addProperty(Constant.IS_DEFAULT, tag.getIsDefault());
+        Log.d(TAG, "createTags: " + body.toString());
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
                 tagAPI.createTag(token, body)
-                .onErrorReturn(new Function<Throwable, JsonObject>() {
-                    @Override
-                    public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                        Log.d(TAG, "apply: " + throwable.getMessage());
-                        String message = throwable.getMessage();
-                        JsonObject jsonObject = new JsonObject();
-                        if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
-                            jsonObject.addProperty(Constant.STATUS_CODE, 409);
-                        } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
-                            jsonObject.addProperty(Constant.STATUS_CODE, -1);
-                        } else {
-                            jsonObject.addProperty(Constant.STATUS_CODE, -2);
-                        }
-                        return jsonObject;
-                    }
-                })
-                .subscribeOn(Schedulers.io())
+                        .onErrorReturn(new Function<Throwable, JsonObject>() {
+                            @Override
+                            public JsonObject apply(@NonNull Throwable throwable) throws Exception {
+                                Log.d(TAG, "apply: " + throwable.getMessage());
+                                String message = throwable.getMessage();
+                                JsonObject jsonObject = new JsonObject();
+                                if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                    jsonObject.addProperty(Constant.STATUS_CODE, 409);
+                                } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                    jsonObject.addProperty(Constant.STATUS_CODE, -1);
+                                } else {
+                                    jsonObject.addProperty(Constant.STATUS_CODE, -2);
+                                }
+                                return jsonObject;
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
         );
 
         tagRepoLiveData.addSource(source, new Observer<JsonObject>() {
@@ -236,9 +244,9 @@ public class TagsRepository {
                             .toString();
                     response.setData(new Pair<>(Utils.State.SUCCESS, tagId));
                 } else if (statusCode == -1) {
-                    response.setData(new Pair<>(Utils.State.NO_INTERNET, ""));
+                    response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
                 } else {
-                    response.setData(new Pair<>(Utils.State.FAILURE, ""));
+                    response.setData(new Pair<>(Utils.State.FAILURE, null));
                 }
                 response.setKey(Constant.CREATE_TAG_KEY);
                 tagRepoLiveData.setValue(response);

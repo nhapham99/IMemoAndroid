@@ -1,6 +1,11 @@
 package com.lnb.imemo.Data.Repository.Tags;
 
 import com.google.gson.JsonObject;
+import com.lnb.imemo.Model.ResultTags;
+import com.lnb.imemo.Model.Root;
+import com.lnb.imemo.Model.Tags;
+
+import java.util.List;
 
 import io.reactivex.Flowable;
 import retrofit2.http.Body;
@@ -13,7 +18,7 @@ import retrofit2.http.Path;
 
 public interface TagAPI {
     @GET("tags/get-all")
-    Flowable<JsonObject> getAllTag(@Header("Authorization") String token);
+    Flowable<Root<ResultTags>> getAllTag(@Header("Authorization") String token);
 
     @GET("tags/{id}")
     Flowable<JsonObject> getTagById(@Header("Authorization") String token, @Path("id") String id);

@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:text="@string/add_memo_label"
             android:layout_centerInParent="true"
-            android:fontFamily="@font/roboto_bold"
+            android:fontFamily="@font/roboto_medium"
             android:textSize="20sp"
             android:textColor="@color/black"/>
     </RelativeLayout>
@@ -131,7 +131,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/upload_memo_item_tag_list"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/length_20dp"
+        android:layout_height="@dimen/length_30dp"
         android:layout_marginLeft="@dimen/length_10dp"
         android:layout_marginRight="@dimen/length_10dp"
         android:layout_marginTop="@dimen/length_20dp"

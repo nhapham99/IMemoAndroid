@@ -1,9 +1,12 @@
 package com.lnb.imemo.Model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Diary{
+public class Diary implements Parcelable {
     private String id;
     private String title;
     private String content;
@@ -16,6 +19,9 @@ public class Diary{
     private ArrayList<Tags> tags;
     private List<Link> links;
     private List<String> tagIds;
+    private Boolean isUploading;
+
+
 
     public Diary() {
     }
@@ -41,6 +47,56 @@ public class Diary{
         this.resources = resources;
         this.tags = tags;
         this.links = links;
+    }
+
+    protected Diary(Parcel in) {
+        id = in.readString();
+        title = in.readString();
+        content = in.readString();
+        status = in.readString();
+        time = in.readString();
+        createdAt = in.readString();
+        updatedAt = in.readString();
+        resources = in.createTypedArrayList(Resource.CREATOR);
+        tags = in.createTypedArrayList(Tags.CREATOR);
+        links = in.createTypedArrayList(Link.CREATOR);
+        tagIds = in.createStringArrayList();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(title);
+        dest.writeString(content);
+        dest.writeString(status);
+        dest.writeString(time);
+        dest.writeString(createdAt);
+        dest.writeString(updatedAt);
+        dest.writeTypedList(resources);
+        dest.writeTypedList(tags);
+        dest.writeTypedList(links);
+        dest.writeStringList(tagIds);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Diary> CREATOR = new Creator<Diary>() {
+        @Override
+        public Diary createFromParcel(Parcel in) {
+            return new Diary(in);
+        }
+
+        @Override
+        public Diary[] newArray(int size) {
+            return new Diary[size];
+        }
+    };
+
+    public void createListLinks() {
+        links = new ArrayList<>();
     }
 
     public String getId() {
@@ -137,6 +193,14 @@ public class Diary{
 
     public void setTagIds(ArrayList<String> tagIds) {
         this.tagIds = tagIds;
+    }
+
+    public Boolean getUploading() {
+        return isUploading;
+    }
+
+    public void setUploading(Boolean uploading) {
+        isUploading = uploading;
     }
 
     @Override

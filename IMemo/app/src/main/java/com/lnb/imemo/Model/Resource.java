@@ -1,6 +1,9 @@
 package com.lnb.imemo.Model;
 
-public class Resource{
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Resource implements Parcelable {
     private String id;
     private String url;
     private String name;
@@ -19,6 +22,42 @@ public class Resource{
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
+    protected Resource(Parcel in) {
+        id = in.readString();
+        url = in.readString();
+        name = in.readString();
+        type = in.readString();
+        createdAt = in.readString();
+        updatedAt = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(url);
+        dest.writeString(name);
+        dest.writeString(type);
+        dest.writeString(createdAt);
+        dest.writeString(updatedAt);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Resource> CREATOR = new Creator<Resource>() {
+        @Override
+        public Resource createFromParcel(Parcel in) {
+            return new Resource(in);
+        }
+
+        @Override
+        public Resource[] newArray(int size) {
+            return new Resource[size];
+        }
+    };
 
     public String getId() {
         return id;

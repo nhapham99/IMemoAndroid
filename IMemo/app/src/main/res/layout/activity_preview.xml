@@ -51,11 +51,14 @@
         android:layout_marginRight="@dimen/length_10dp"
         android:layout_marginTop="@dimen/length_20dp"
         android:gravity="top"
+        android:hint="Nhập link..."
         android:paddingLeft="@dimen/length_10dp"
         android:paddingTop="@dimen/length_10dp"
         android:maxLines="2"
         android:imeOptions="actionSearch"
-        android:inputType="text"/>
+        android:inputType="text"
+        android:fontFamily="@font/roboto_regular"
+        android:textSize="@dimen/text_16sp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_weight="1"

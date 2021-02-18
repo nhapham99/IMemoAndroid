@@ -84,4 +84,5 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
 
+    implementation "com.github.skydoves:colorpickerview:2.2.2"
 }

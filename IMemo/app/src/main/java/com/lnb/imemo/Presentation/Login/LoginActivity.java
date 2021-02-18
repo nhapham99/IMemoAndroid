@@ -22,6 +22,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
+import com.lnb.imemo.Presentation.ForgotPassword.ForgotPasswordActivity;
 import com.lnb.imemo.Presentation.NavigationActivity.NavigationActivity;
 import com.lnb.imemo.Presentation.Register.RegisterActivity;
 import com.lnb.imemo.R;
@@ -183,6 +184,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         });
     }
 
+    private void goToForgotPasswordScreen() {
+        startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -197,6 +202,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 this.startActivity(intent);
                 break;
             case R.id.forgot_password_button:
+                goToForgotPasswordScreen();
                 break;
 
         }

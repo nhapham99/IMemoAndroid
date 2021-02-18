@@ -2,11 +2,16 @@ package com.lnb.imemo.Data.Repository.Auth;
 
 
 import com.google.gson.JsonObject;
+import com.lnb.imemo.Model.PersonProfile;
+import com.lnb.imemo.Model.Root;
 
 import org.json.JSONObject;
 
 import io.reactivex.Flowable;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 
 public interface AuthApi {
@@ -25,4 +30,10 @@ public interface AuthApi {
 
     @POST("auth/reset-password")
     Flowable<JsonObject> resetPassword(@Body JsonObject body);
+
+    @GET("auth/me")
+    Flowable<Root<PersonProfile>> getUserProfile(@Header("Authorization") String token);
+
+    @PATCH("auth/me/update")
+    Flowable<Root<JsonObject>> updateUserProfile(@Header("Authorization") String token, @Body JsonObject body);
 }

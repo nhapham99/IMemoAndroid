@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/home_toolBar"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:layout_marginBottom="@dimen/length_20dp"
+    android:elevation="4dp">
+
+    <TextView
+        android:id="@+id/home_create_new_memo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_90dp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginBottom="@dimen/length_10dp"
+        android:background="@drawable/memo_upload"
+        android:fontFamily="@font/roboto_regular"
+        android:paddingLeft="@dimen/length_10dp"
+        android:paddingTop="@dimen/length_10dp"
+        android:text="Tạo memo mới"
+        android:textColor="#666666" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_1dp"
+        android:background="#E4E6EB" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_30dp"
+        android:layout_marginTop="@dimen/length_5dp"
+        android:layout_marginBottom="@dimen/length_5dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/upload_memo_file"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/length_10dp"
+            android:paddingRight="@dimen/length_10dp">
+
+            <ImageView
+                android:layout_width="@dimen/length_25dp"
+                android:layout_height="@dimen/length_25dp"
+                android:src="@drawable/ic_up_image" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Tệp"
+                android:textColor="#666666" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/upload_memo_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/length_10dp"
+            android:paddingRight="@dimen/length_10dp">
+
+            <ImageView
+                android:layout_width="@dimen/length_25dp"
+                android:layout_height="@dimen/length_25dp"
+                android:src="@drawable/up_tag_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Tag"
+                android:textColor="#666666" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/upload_memo_link"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/length_10dp"
+            android:paddingRight="@dimen/length_10dp">
+
+            <ImageView
+                android:layout_width="@dimen/length_25dp"
+                android:layout_height="@dimen/length_25dp"
+                android:src="@drawable/up_link_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Link"
+                android:textColor="#666666" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

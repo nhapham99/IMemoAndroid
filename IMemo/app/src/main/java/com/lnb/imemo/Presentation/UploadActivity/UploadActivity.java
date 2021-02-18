@@ -6,9 +6,11 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,6 +25,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Presentation.PickTag.PickTagsActivity;
 import com.lnb.imemo.Presentation.PreviewLink.PreviewActivity;
@@ -33,6 +36,7 @@ import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.DateHelper;
 import com.lnb.imemo.Utils.Utils;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -114,20 +118,45 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
 
+
         // init var
         viewModel = new UploadViewModel(this);
         subscribeViewModelObservable();
         resourceAdapter = new UploadRecyclerViewAdapter();
         createMemoResourceRecyclerView.setAdapter(resourceAdapter);
         createMemoResourceRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false));
+
+        if (getIntent().getStringExtra(Constant.GET_FILE_CODE) != null) {
+            Uri uri = Uri.parse(getIntent().getStringExtra(Constant.GET_FILE_CODE));
+            viewModel.uploadFile(uri);
+        } else if (getIntent().getParcelableArrayListExtra(Constant.GET_TAGS_CODE) != null
+                && getIntent().getStringArrayListExtra("arrayTagIds") != null) {
+            tagsAdapter = new TagRecyclerViewAdapter(getIntent().getParcelableArrayListExtra(Constant.GET_TAGS_CODE));
+            createMemoTagsRecyclerView.setVisibility(View.VISIBLE);
+            createMemoTagsRecyclerView.setAdapter(tagsAdapter);
+            createMemoTagsRecyclerView.setLayoutManager(new LinearLayoutManager(UploadActivity.this, LinearLayoutManager.HORIZONTAL, false));
+            viewModel.getUploadDiary().setTagIds(getIntent().getStringArrayListExtra("arrayTagIds"));
+            subscribeRemoveTag();
+        } else if (getIntent().getParcelableExtra(Constant.GET_LINKS_CODE) != null) {
+            Link link = getIntent().getParcelableExtra(Constant.GET_LINKS_CODE);
+            Log.d(TAG, "init: " + link.toString());
+            if (viewModel.getUploadDiary().getLinks() == null) {
+                viewModel.getUploadDiary().createListLinks();
+            }
+            viewModel.getUploadDiary().getLinks().add(link);
+            resourceAdapter.addItem(link);
+        }
+
+
     }
 
     private void subscribeViewModelObservable() {
        viewModel.getViewModelObservable().observe(this, new Observer<ResponseRepo>() {
            @Override
            public void onChanged(ResponseRepo responseRepo) {
+               Log.d(TAG, "onChanged: " + responseRepo.toString());
                String key = responseRepo.getKey();
-               if (key == Constant.UPLOAD_FILE_KEY) {
+               if (key.equals(Constant.UPLOAD_FILE_KEY)) {
                    Pair<Utils.State, Object> response = (Pair<Utils.State, Object>) responseRepo.getData();
                    switch (response.first) {
                        case SUCCESS:
@@ -140,7 +169,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                            Toast.makeText(UploadActivity.this, "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
                            break;
                    }
-               } else if (key == Constant.CREATE_DIARY_KEY) {
+               } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                    Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
                }
            }
@@ -161,6 +190,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -187,7 +217,12 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         } else if (requestCode == GET_PREVIEW_LINK) {
             if (resultCode == RESULT_OK) {
                 Log.d(TAG, "onActivityResult: " + data.getParcelableExtra("previewLink").toString());
-                viewModel.getUploadDiary().getLinks().add(data.getParcelableExtra("previewLink"));
+                Link link = data.getParcelableExtra("previewLink");
+                if (viewModel.getUploadDiary().getLinks() == null) {
+                    viewModel.getUploadDiary().createListLinks();
+                }
+                viewModel.getUploadDiary().getLinks().add(link);
+                resourceAdapter.addItem(link);
             } else {
                 Log.d(TAG, "onActivityResult: failure");
             }
@@ -232,11 +267,15 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
 
     private void createMemo() {
         viewModel.getUploadDiary().setTitle(createMemoTitle.getText().toString());
-        viewModel.getUploadDiary().setContent(createMemoContent.getText().toString());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        viewModel.getUploadDiary().setTime(simpleDateFormat.format(diaryTime));
-        Log.d(TAG, "createMemo: " + viewModel.getUploadDiary().toString());
-        //viewModel.createDiary(viewModel.getUploadDiary());
+        if (createMemoContent.getText().length() != 0) {
+            viewModel.getUploadDiary().setContent(createMemoContent.getText().toString());
+        }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        viewModel.getUploadDiary().setTime(simpleDateFormat.format(diaryTime.getTime()));
+        Intent intent = new Intent();
+        intent.putExtra("create_memo", viewModel.getUploadDiary());
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
 
 

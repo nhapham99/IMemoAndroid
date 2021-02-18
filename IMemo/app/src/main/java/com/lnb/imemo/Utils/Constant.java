@@ -18,7 +18,9 @@ public class Constant {
     public static String UPDATE_DIARY_KEY = "update_diary";
     public static String GET_PREVIEW_LINK_KEY = "get_preview_link";
     public static String UPLOAD_FILE_KEY = "upload_file";
-
+    public static String GET_PERSON_PROFILE = "get_person_profile";
+    public static String UPDATE_PERSON_PROFILE = "update_person_profile";
+    public static String UPDATE_IMAGE_PERSON_PROFILE = "update_image_person_profile";
 
     public static String ID = "id";
     public static String ID_TOKEN = "idToken";
@@ -36,12 +38,16 @@ public class Constant {
     public static String COLOR_HEX = "color";
     public static String IS_DEFAULT = "isDefault";
     public static String UPLOADED = "uploaded";
+    public static String GET_FILE_CODE = "file_code";
+    public static String GET_TAGS_CODE = "tags_code";
+    public static String GET_LINKS_CODE = "links_code";
 
 
     public static int pageSize = 10;
     public static int imageAndVideoTabPosition = 0;
     public static int audioTabPosition = 1;
     public static int linkTabPosition = 2;
+    public static String DEFAULT_TAG_COLOR = "#1BA0FC";
 
 
     public static String imageType = "image";

@@ -1,9 +1,9 @@
 package com.lnb.imemo.Model;
 
 public class Root<T> {
-    public T result;
-    public int statusCode;
-    public Object error;
+    private T result;
+    private int statusCode;
+    private Object error;
 
     public Root() {
     }

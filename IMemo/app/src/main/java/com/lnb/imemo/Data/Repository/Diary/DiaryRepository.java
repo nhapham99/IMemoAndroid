@@ -25,6 +25,7 @@ import com.lnb.imemo.Utils.Utils;
 
 import java.util.List;
 
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 
@@ -87,22 +88,46 @@ public class DiaryRepository {
     public void createDiary(@NonNull String token, @NonNull Diary diary) {
         String jsonString = gsonBuilder.toJson(diary);
         JsonObject body = new JsonParser().parse(jsonString).getAsJsonObject();
-        LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
+        body.remove("isUploading");
+        Log.d(TAG, "createDiary: " + body.toString());
+
+        LiveData<Root<JsonObject>> source = LiveDataReactiveStreams.fromPublisher(
                 diaryAPI.createDiary(token, body)
-                        .onErrorReturn(throwable -> {
-                            Log.d(TAG, "apply: " + throwable.getMessage());
-                            return new JsonObject();
+                        .onErrorReturn(new Function<Throwable, Root<JsonObject>>() {
+                            @Override
+                            public Root<JsonObject> apply(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
+                                Log.d(TAG, "apply: " + throwable.getMessage());
+                                String message = throwable.getMessage();
+                                Root<JsonObject> diaryRoot = new Root<>();
+                                if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                    diaryRoot.setStatusCode(409);
+                                } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                    diaryRoot.setStatusCode(-1);
+                                } else {
+                                    diaryRoot.setStatusCode(-2);
+                                }
+                                return diaryRoot;
+                            }
                         })
                         .subscribeOn(Schedulers.io())
         );
 
-        diaryRepoLiveData.addSource(source, new Observer<JsonObject>() {
+        diaryRepoLiveData.addSource(source, new Observer<Root<JsonObject>>() {
             @Override
-            public void onChanged(JsonObject jsonObject) {
-                Log.d(TAG, "onChanged: " + jsonObject.toString());
+            public void onChanged(Root<JsonObject> root) {
+                ResponseRepo<Pair<Utils.State,JsonObject>> responseRepo = new ResponseRepo<>();
+                responseRepo.setKey(Constant.CREATE_DIARY_KEY);
+                if (root.getStatusCode() == 0) {
+                    responseRepo.setData(new Pair<>(Utils.State.SUCCESS, root.getResult()));
+                } else if (root.getStatusCode() == -1) {
+                    responseRepo.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                } else {
+                    responseRepo.setData(new Pair<>(Utils.State.FAILURE, null));
+                }
+                diaryRepoLiveData.setValue(responseRepo);
+                diaryRepoLiveData.removeSource(source);
             }
         });
-        diaryRepoLiveData.removeSource(source);
     }
 
     public void getDiaryById(@NonNull String token, @NonNull String id) {

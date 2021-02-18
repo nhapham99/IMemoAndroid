@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginBottom="@dimen/length_10dp">
+    <TextView
+        android:id="@+id/content_notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mr.Abc vừa chia sẻ tới bạn một memo của anh ấy cho một người nào đó" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/length_1dp"
+        android:background="@color/grey_light"
+        android:layout_marginTop="@dimen/length_5dp" />
+</LinearLayout>

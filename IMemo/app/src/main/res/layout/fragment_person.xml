@@ -1,14 +1,159 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Presentation.Person.PersonFragment">
+    tools:context=".Presentation.Person.PersonFragment"
+    android:background="@color/white">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="person" />
+        android:orientation="vertical">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:text="Cài đặt chung"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:fontFamily="@font/roboto_medium"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/length_10dp"
+            android:elevation="3dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/length_1dp"
+            android:background="#E3E3E3"
+            android:elevation="1dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/grey_stroke_layout"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/length_20dp"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:layout_marginRight="@dimen/length_10dp"
+            android:elevation="2dp"
+            android:fadingEdgeLength="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/length_20dp"
+                android:paddingBottom="@dimen/length_20dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/length_20dp"
+                    android:src="@drawable/ic_setting" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/length_20dp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:text="Cài đặt"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/length_1dp"
+                android:background="#C4C4C4" />
+
+            <LinearLayout
+                android:id="@+id/personal_setting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/length_20dp"
+                android:paddingBottom="@dimen/length_20dp">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="@dimen/length_20dp"
+                    android:src="@drawable/ic_item_setting" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/length_20dp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:text="Cá nhân"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/length_1dp"
+                android:background="#C4C4C4" />
+
+            <LinearLayout
+                android:id="@+id/tags_setting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/length_20dp"
+                android:paddingBottom="@dimen/length_20dp">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="@dimen/length_20dp"
+                    android:src="@drawable/ic_item_setting" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/length_20dp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:text="Thẻ của tôi"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/sign_out"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/grey_stroke_layout"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/length_20dp"
+            android:paddingBottom="@dimen/length_20dp"
+            android:layout_marginTop="@dimen/length_20dp"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:layout_marginRight="@dimen/length_10dp"
+            android:elevation="2dp"
+            android:fadingEdgeLength="1dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_20dp"
+                android:src="@drawable/ic_sign_out" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_20dp"
+                android:fontFamily="@font/roboto_medium"
+                android:text="Đăng xuất"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+    </LinearLayout>
 </FrameLayout>

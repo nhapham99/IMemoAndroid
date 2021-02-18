@@ -17,6 +17,7 @@ import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
 import com.lnb.imemo.Data.Repository.UploadFile.UploadFileRepository;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Tags;
+import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.FileUtils;
 import com.lnb.imemo.Utils.Utils;
@@ -32,23 +33,19 @@ public class UploadViewModel extends ViewModel {
     private static final String TAG = "UploadViewModel";
     private Context context;
     private UploadFileRepository uploadFileRepository;
-    private TagsRepository tagsRepository;
     private DiaryRepository diaryRepository;
     private Observer<ResponseRepo> uploadObservable;
-    private Observer<ResponseRepo> tagsObservable;
-    private Observer<ResponseRepo> diaryObservable;
     private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
     private final Diary uploadDiary;
+    private User mUser;
 
     public UploadViewModel(Context context) {
         this.context = context;
         uploadFileRepository = new UploadFileRepository();
-        tagsRepository = new TagsRepository();
         diaryRepository = new DiaryRepository();
         uploadDiary = new Diary();
+        mUser = User.getUser();
         subscribeUploadObservable();
-        subscribeTagAction();
-        subscribeDiaryObservable();
     }
 
     protected void uploadFile(Uri uri) {
@@ -59,15 +56,7 @@ public class UploadViewModel extends ViewModel {
                 originFile);
         MultipartBody.Part file = MultipartBody.Part.createFormData("resource", originFile.getName(), filePart);
         Log.d(TAG, "onActivityResult: " + FileUtils.getPath(context, uri));
-        uploadFileRepository.uploadFile(Utils.token, file);
-    }
-
-    protected void createTags(String name, String color, Boolean isDefault) {
-        tagsRepository.createTags(Utils.token, name, color, isDefault);
-    }
-
-    protected void createDiary(Diary diary) {
-        diaryRepository.createDiary(Utils.token, diary);
+        uploadFileRepository.uploadFile(mUser.getToken(), file);
     }
 
     private void subscribeUploadObservable() {
@@ -81,7 +70,6 @@ public class UploadViewModel extends ViewModel {
                     Pair<Utils.State, JsonObject> responseRepoObject = (Pair<Utils.State, JsonObject>) responseRepo.getData();
                     Utils.State state = responseRepoObject.first;
                     JsonObject responseJsonObject = responseRepoObject.second;
-
                     switch (state) {
                         case SUCCESS:
                             JsonObject response = responseRepoObject.second.getAsJsonObject(Constant.RESULT);
@@ -106,34 +94,6 @@ public class UploadViewModel extends ViewModel {
         uploadFileRepository.observableUploadFile().observeForever(uploadObservable);
     }
 
-    private void subscribeTagAction() {
-        tagsObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo response) {
-                if (response.getKey().equals(Constant.GET_ALL_TAGS_KEY)) {
-                    Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) response.getData();
-                    Log.d(TAG, "onChanged: " + pair.first);
-
-                } else if (response.getKey().equals(Constant.GET_TAGS_BY_ID_KEY)) {
-                    Pair<Utils.State, Tags> pair = (Pair<Utils.State, Tags>) response.getData();
-                    Log.d(TAG, "onChanged: " + pair.first);
-
-                }
-            }
-        };
-        tagsRepository.observableTagLiveData().observeForever(tagsObservable);
-    }
-
-    private void subscribeDiaryObservable() {
-        diaryObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                JsonObject responseJsonObject = (JsonObject) responseRepo.getData();
-                Log.d(TAG, "onChanged: " + responseJsonObject.toString());
-            }
-        };
-        diaryRepository.observableDiaryRepo().observeForever(diaryObservable);
-    }
 
     public Diary getUploadDiary() {
         return uploadDiary;
@@ -143,12 +103,11 @@ public class UploadViewModel extends ViewModel {
         return viewModelLiveData;
     }
 
+
     @Override
     protected void onCleared() {
         super.onCleared();
         uploadFileRepository.observableUploadFile().removeObserver(uploadObservable);
-        tagsRepository.observableTagLiveData().removeObserver(tagsObservable);
-        diaryRepository.observableDiaryRepo().removeObserver(diaryObservable);
     }
 
 }

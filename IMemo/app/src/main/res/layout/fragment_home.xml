@@ -14,173 +14,60 @@
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:elevation="0dp"
+            app:elevation="0dp">
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/home_toolBar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="?attr/actionBarSize"
                 android:background="@color/white"
-                app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed">
+                app:layout_scrollFlags="scroll|enterAlways"
+                android:elevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/home_toolBar"
-                    android:layout_marginTop="?attr/actionBarSize"
-                    android:orientation="vertical"
-                    app:layout_collapseMode="none">
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="@dimen/length_10dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/home_create_new_memo"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/length_90dp"
-                        android:layout_marginLeft="@dimen/length_10dp"
-                        android:layout_marginTop="@dimen/length_10dp"
-                        android:layout_marginRight="@dimen/length_10dp"
-                        android:layout_marginBottom="@dimen/length_10dp"
-                        android:background="@drawable/memo_upload"
-                        android:fontFamily="@font/roboto_regular"
-                        android:paddingLeft="@dimen/length_10dp"
-                        android:paddingTop="@dimen/length_10dp"
-                        android:text="Tạo memo mới"
-                        android:textColor="#666666" />
+                    <ImageView
+                        android:layout_width="@dimen/length_35dp"
+                        android:layout_height="@dimen/length_35dp"
+                        android:src="@drawable/memo_logo" />
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/length_1dp"
-                        android:background="#E4E6EB" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/length_30dp"
-                        android:layout_marginTop="@dimen/length_5dp"
-                        android:layout_marginBottom="@dimen/length_5dp"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:id="@+id/upload_memo_file"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="horizontal"
-                            android:paddingLeft="@dimen/length_10dp"
-                            android:paddingRight="@dimen/length_10dp">
-
-                            <ImageView
-                                android:layout_width="@dimen/length_25dp"
-                                android:layout_height="@dimen/length_25dp"
-                                android:src="@drawable/ic_up_image" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="@dimen/length_5dp"
-                                android:fontFamily="@font/roboto_bold"
-                                android:text="Tệp"
-                                android:textColor="#666666" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/upload_memo_tag"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="horizontal"
-                            android:paddingLeft="@dimen/length_10dp"
-                            android:paddingRight="@dimen/length_10dp">
-
-                            <ImageView
-                                android:layout_width="@dimen/length_25dp"
-                                android:layout_height="@dimen/length_25dp"
-                                android:src="@drawable/up_tag_icon" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="@dimen/length_5dp"
-                                android:fontFamily="@font/roboto_bold"
-                                android:text="Tag"
-                                android:textColor="#666666" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/upload_memo_link"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="horizontal"
-                            android:paddingLeft="@dimen/length_10dp"
-                            android:paddingRight="@dimen/length_10dp">
-
-                            <ImageView
-                                android:layout_width="@dimen/length_25dp"
-                                android:layout_height="@dimen/length_25dp"
-                                android:src="@drawable/up_link_icon" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="@dimen/length_5dp"
-                                android:fontFamily="@font/roboto_bold"
-                                android:text="Link"
-                                android:textColor="#666666" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/home_toolBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="@color/white"
-                    app:layout_collapseMode="pin">
-
-                    <LinearLayout
+                    <com.mancj.materialsearchbar.MaterialSearchBar
+                        android:id="@+id/searchBar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="@dimen/length_10dp">
+                        android:layout_marginLeft="@dimen/length_10dp"
+                        android:layout_weight="1"
+                        app:mt_hint="Tìm kiếm..."
+                        app:mt_maxSuggestionsCount="10" />
 
-                        <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:src="@drawable/memo_logo"/>
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/home_user_avatar"
+                        android:layout_width="@dimen/length_35dp"
+                        android:layout_height="@dimen/length_35dp"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="@dimen/length_10dp"
+                        android:layout_weight="0"
+                        android:src="@drawable/person_icon_top" />
 
-                        <com.mancj.materialsearchbar.MaterialSearchBar
-                            android:layout_weight="1"
-                            android:layout_marginLeft="@dimen/length_10dp"
-                            android:id="@+id/searchBar"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            app:mt_hint="Tìm kiếm..."
-                            app:mt_maxSuggestionsCount="10" />
-
-                        <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/home_user_avatar"
-                            android:layout_weight="0"
-                            android:layout_gravity="center"
-                            android:layout_width="@dimen/length_35dp"
-                            android:layout_height="@dimen/length_35dp"
-                            android:src="@drawable/person_icon_top"
-                            android:layout_marginLeft="@dimen/length_10dp"/>
-
-                        <ImageView
-                            android:id="@+id/home_filter"
-                            android:layout_weight="0"
-                            android:layout_width="@dimen/length_30dp"
-                            android:layout_height="@dimen/length_30dp"
-                            android:src="@drawable/ic_filter"
-                            android:layout_marginLeft="10dp"
-                            android:layout_gravity="center"
-                            android:layout_marginRight="@dimen/length_10dp"
-                            android:padding="@dimen/length_5dp"/>
-                    </LinearLayout>
-                </androidx.appcompat.widget.Toolbar>
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
+                    <ImageView
+                        android:id="@+id/home_filter"
+                        android:layout_width="@dimen/length_30dp"
+                        android:layout_height="@dimen/length_30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="@dimen/length_10dp"
+                        android:layout_weight="0"
+                        android:padding="@dimen/length_5dp"
+                        android:src="@drawable/ic_filter" />
+                </LinearLayout>
+            </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -194,9 +81,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="@dimen/length_10dp"
+                android:layout_marginTop="@dimen/length_20dp"
                 android:layout_marginRight="@dimen/length_10dp"
-                android:layout_marginTop="@dimen/length_10dp"/>
-
+                android:overScrollMode="never"/>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 

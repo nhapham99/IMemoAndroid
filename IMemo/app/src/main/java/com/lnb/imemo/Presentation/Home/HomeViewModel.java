@@ -9,9 +9,11 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
+import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.PreviewLink.PreviewLinkRepository;
 import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
+import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Tags;
@@ -33,10 +35,13 @@ public class HomeViewModel extends ViewModel {
     private MediatorLiveData<Utils.State> deleteTagLiveData = new MediatorLiveData<>();
     private MediatorLiveData<Utils.State> getAllMemoLiveData = new MediatorLiveData<>();
     private MediatorLiveData<Utils.State> deleteDiaryLiveData = new MediatorLiveData<>();
+    private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
     private Observer<ResponseRepo> tagsObservable;
     private Observer<ResponseRepo> diaryObservable;
+    private Boolean isGetDairyForCreate = false;
 
     protected User mUser;
+    protected PersonProfile personProfile;
     protected static List<Diary> listDiary = new ArrayList<>();
 
     public HomeViewModel() {
@@ -44,6 +49,8 @@ public class HomeViewModel extends ViewModel {
         diaryRepository = new DiaryRepository();
         previewLinkRepository = new PreviewLinkRepository();
         mUser = User.getUser();
+        personProfile = PersonProfile.getInstance();
+        Log.d(TAG, "HomeViewModel: " + personProfile.toString());
         subscribeTagAction();
         subscribeDiary();
     }
@@ -72,11 +79,15 @@ public class HomeViewModel extends ViewModel {
     }
 
     protected void createDiary(Diary diary) {
-        diaryRepository.createDiary(Utils.token, diary);
+        diaryRepository.createDiary(mUser.getToken(), diary);
     }
 
     public void deleteDiary(int diaryPosition) {
         diaryRepository.deleteDiary(mUser.getToken(), listDiary.get(diaryPosition).getId());
+    }
+
+    public void getDiaryById(String id) {
+        diaryRepository.getDiaryById(mUser.getToken(), id);
     }
 
 
@@ -111,13 +122,42 @@ public class HomeViewModel extends ViewModel {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
                 String key = responseRepo.getKey();
-                if (key.equals(Constant.GET_DIARIES_KEY)) {
+                if (key == Constant.GET_DIARIES_KEY) {
                     Log.d(TAG, "onChanged: " + responseRepo.getData());
                     Pair<Utils.State, List<Diary>> response = (Pair<Utils.State, List<Diary>>) responseRepo.getData();
                     listDiary = response.second;
                     getAllMemoLiveData.setValue(response.first);
-                } else if (key.equals(Constant.DELETE_DIARY_KEY)) {
+                } else if (key == Constant.DELETE_DIARY_KEY) {
                     deleteDiaryLiveData.setValue((Utils.State) responseRepo.getData());
+                } else if (key == Constant.CREATE_DIARY_KEY) {
+                    Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                    ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
+                    switch (pair.first) {
+                        case SUCCESS:
+                            String id = pair.second.getAsJsonObject(Constant.RESULT).get("id").getAsString();
+                            isGetDairyForCreate = true;
+                            getDiaryById(id);
+                            break;
+                        case FAILURE:
+                            response.setData(new Pair<>(Utils.State.FAILURE, null));
+                            break;
+                        case NO_INTERNET:
+                            response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                            break;
+                    }
+                    response.setKey(Constant.CREATE_DIARY_KEY);
+                    viewModelLiveData.setValue(response);
+                } else if (key == Constant.GET_DIARY_BY_ID_KEY) {
+                    Pair<Utils.State, Diary> pair = (Pair<Utils.State, Diary>) responseRepo.getData();
+                    ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
+                    response.setKey(Constant.GET_DIARY_BY_ID_KEY);
+                    switch (pair.first) {
+                        case SUCCESS:
+                            isGetDairyForCreate = false;
+                            response.setKey(Constant.CREATE_DIARY_KEY);
+                            break;
+                    }
+                    response.setData(pair);
                 }
             }
         };
@@ -136,6 +176,10 @@ public class HomeViewModel extends ViewModel {
 
     public MediatorLiveData<Utils.State> observableGetAllDiary() {
         return getAllMemoLiveData;
+    }
+
+    public MediatorLiveData<ResponseRepo> getViewModelLiveData() {
+        return viewModelLiveData;
     }
 
     public MediatorLiveData<Utils.State> observableDeleteDiary() { return deleteDiaryLiveData; }

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="@dimen/length_5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/length_10dp"
+        android:layout_marginBottom="@dimen/length_10dp"
+        android:background="@null">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="@dimen/length_10dp"
+            android:paddingBottom="@dimen/length_10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thêm thẻ"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_centerHorizontal="true"/>
+
+            <ImageButton
+                android:id="@+id/add_tag_escape"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_escape"
+                android:background="@drawable/circle_indicator_selected"
+                android:backgroundTint="#F0F2F5"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="@dimen/length_20dp"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/length_1dp"
+            android:background="#E3E3E3" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_tag_name_textfield"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nhập tên thẻ"
+            android:background="@color/white"
+            android:layout_marginTop="@dimen/length_10dp"
+            android:layout_marginStart="@dimen/length_10dp"
+            android:layout_marginEnd="@dimen/length_10dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:fontFamily="@font/roboto_regular">
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:id="@+id/username" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/length_10dp"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:layout_marginTop="@dimen/length_10dp">
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/create_tag_is_default_tag"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đặt làm mặc định"
+                android:fontFamily="@font/roboto_regular" />
+
+            <View
+                android:id="@+id/create_tag_color_picker"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/circle_indicator_selected"
+                android:layout_gravity="center_vertical"
+                />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/create_tag_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/length_50dp"
+            android:text="Tạo mới"
+            android:textColor="@color/white"
+            android:textAllCaps="false"
+            android:fontFamily="@font/roboto_bold"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:layout_marginRight="@dimen/length_10dp"
+            android:layout_marginTop="@dimen/length_10dp"/>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

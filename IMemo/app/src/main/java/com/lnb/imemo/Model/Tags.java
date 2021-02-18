@@ -3,22 +3,25 @@ package com.lnb.imemo.Model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.lnb.imemo.Utils.Constant;
+
 public class Tags implements Parcelable {
     private String id;
     private String name;
     private String color;
-    private Boolean isisDefault;
+    private Boolean isDefault;
     private String createdAt;
     private String updatedAt;
 
     public Tags() {
+        setColor(Constant.DEFAULT_TAG_COLOR);
     }
 
-    public Tags(String id, String name, String color, Boolean isisDefault, String createdAt, String updatedAt) {
+    public Tags(String id, String name, String color, Boolean isDefault, String createdAt, String updatedAt) {
         this.id = id;
         this.name = name;
         this.color = color;
-        this.isisDefault = isisDefault;
+        this.isDefault = isDefault;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -28,7 +31,7 @@ public class Tags implements Parcelable {
         name = in.readString();
         color = in.readString();
         byte tmpIsisDefault = in.readByte();
-        isisDefault = tmpIsisDefault == 0 ? null : tmpIsisDefault == 1;
+        isDefault = tmpIsisDefault == 0 ? null : tmpIsisDefault == 1;
         createdAt = in.readString();
         updatedAt = in.readString();
     }
@@ -38,7 +41,7 @@ public class Tags implements Parcelable {
         dest.writeString(id);
         dest.writeString(name);
         dest.writeString(color);
-        dest.writeByte((byte) (isisDefault == null ? 0 : isisDefault ? 1 : 2));
+        dest.writeByte((byte) (isDefault == null ? 0 : isDefault ? 1 : 2));
         dest.writeString(createdAt);
         dest.writeString(updatedAt);
     }
@@ -59,6 +62,15 @@ public class Tags implements Parcelable {
             return new Tags[size];
         }
     };
+
+    public void resetTag() {
+        this.setColor(Constant.DEFAULT_TAG_COLOR);
+        this.setIsDefault(null);
+        this.setName(null);
+        this.setCreatedAt(null);
+        this.setId(null);
+        this.setUpdatedAt(null);
+    }
 
     public String getId() {
         return id;
@@ -84,12 +96,12 @@ public class Tags implements Parcelable {
         this.color = color;
     }
 
-    public Boolean getIsisDefault() {
-        return isisDefault;
+    public Boolean getIsDefault() {
+        return isDefault;
     }
 
-    public void setIsisDefault(Boolean isisDefault) {
-        this.isisDefault = isisDefault;
+    public void setIsDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
     public String getCreatedAt() {
@@ -114,7 +126,7 @@ public class Tags implements Parcelable {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", color='" + color + '\'' +
-                ", isisDefault=" + isisDefault +
+                ", isisDefault=" + isDefault +
                 ", createdAt='" + createdAt + '\'' +
                 ", updatedAt='" + updatedAt + '\'' +
                 '}';

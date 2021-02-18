@@ -5,8 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="@color/white"
-    android:layout_marginTop="@dimen/length_10dp"
-    android:layout_marginBottom="@dimen/length_10dp">
+    android:layout_marginBottom="@dimen/length_20dp"
+    android:elevation="3dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -49,10 +49,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/memo_item_tag_list"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/length_20dp"
+        android:layout_height="@dimen/length_30dp"
         android:layout_marginLeft="@dimen/length_10dp"
         android:layout_marginTop="@dimen/length_10dp"
-        android:orientation="horizontal"/>
+        android:orientation="horizontal" />
 
     <TextView
         android:id="@+id/memo_item_content"
@@ -62,7 +62,7 @@
         android:layout_marginLeft="@dimen/length_10dp"
         android:layout_marginRight="@dimen/length_10dp"
         android:fontFamily="@font/roboto_regular"
-        android:textColor="@color/black"/>
+        android:textColor="@color/black" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/memo_item_tabLayout"
