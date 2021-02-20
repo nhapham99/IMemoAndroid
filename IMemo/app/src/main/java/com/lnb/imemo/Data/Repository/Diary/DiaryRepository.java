@@ -12,17 +12,20 @@ import androidx.lifecycle.Observer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.lnb.imemo.Data.APIClient;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Root;
-import com.lnb.imemo.Model.ResultDiaries;
-import com.lnb.imemo.Model.ResultDiary;
+import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
+import com.lnb.imemo.Data.Repository.Model.ResultDiary;
 import com.lnb.imemo.Model.Diary;
+import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.functions.Function;
@@ -89,6 +92,7 @@ public class DiaryRepository {
         String jsonString = gsonBuilder.toJson(diary);
         JsonObject body = new JsonParser().parse(jsonString).getAsJsonObject();
         body.remove("isUploading");
+        body.remove("tags");
         Log.d(TAG, "createDiary: " + body.toString());
 
         LiveData<Root<JsonObject>> source = LiveDataReactiveStreams.fromPublisher(
@@ -201,6 +205,146 @@ public class DiaryRepository {
             }
         });
     }
+
+    public void shareDiary(String token, String diaryId, ArrayList<String> emails) {
+        JsonObject body = new JsonObject();
+        body.addProperty("id", diaryId);
+        JsonArray jsonElements = new JsonArray();
+        for (String email: emails) {
+            jsonElements.add(email);
+        }
+        body.add("emails", jsonElements);
+        Log.d(TAG, "shareDiary: " + body.toString());
+
+        LiveData<Root<JsonObject>> source = LiveDataReactiveStreams.fromPublisher(
+                diaryAPI.shareDiary(token, body)
+                .onErrorReturn(new Function<Throwable, Root<JsonObject>>() {
+                    @Override
+                    public Root<JsonObject> apply(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
+                        Log.d(TAG, "apply: " + throwable.getMessage());
+                        String message = throwable.getMessage();
+                        Root<JsonObject> diaryRoot = new Root<>();
+                        if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                            diaryRoot.setStatusCode(409);
+                        } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                            diaryRoot.setStatusCode(-1);
+                        } else {
+                            diaryRoot.setStatusCode(-2);
+                        }
+                        return diaryRoot;
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+        );
+        
+        diaryRepoLiveData.addSource(source, new Observer<Root<JsonObject>>() {
+            @Override
+            public void onChanged(Root<JsonObject> root) {
+                ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                Log.d(TAG, "onChanged: " + root.toString());
+                if (root.getStatusCode() == 0) {
+                    response.setData(Utils.State.SUCCESS);
+                } else if (root.getStatusCode() == -1) {
+                    response.setData(Utils.State.NO_INTERNET);
+                } else {
+                    response.setData(Utils.State.FAILURE);
+                }
+                response.setKey(Constant.SHARE_DIARY);
+                diaryRepoLiveData.setValue(response);
+                diaryRepoLiveData.removeSource(source);
+            }
+        });
+    }
+
+    public void publicDiary(@NonNull String token, @NonNull String id) {
+        LiveData<Root<JsonObject>> source = LiveDataReactiveStreams.fromPublisher(
+                diaryAPI.publicDiary(token, id)
+                        .onErrorReturn(throwable -> {
+                            Log.d(TAG, "apply: " + throwable.getMessage());
+                            String message = throwable.getMessage();
+                            Root<JsonObject> diaryRoot = new Root<>();
+                            if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                diaryRoot.setStatusCode(409);
+                            } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                diaryRoot.setStatusCode(-1);
+                            } else {
+                                diaryRoot.setStatusCode(-2);
+                            }
+                            return diaryRoot;
+                        })
+                        .subscribeOn(Schedulers.io())
+        );
+        diaryRepoLiveData.addSource(source, new Observer<Root<JsonObject>>() {
+            @Override
+            public void onChanged(Root<JsonObject> root) {
+                ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                Log.d(TAG, "onChanged: " + root.toString());
+                if (root.getStatusCode() == 0) {
+                    response.setData(Utils.State.SUCCESS);
+                } else if (root.getStatusCode() == -1) {
+                    response.setData(Utils.State.NO_INTERNET);
+                } else {
+                    response.setData(Utils.State.FAILURE);
+                }
+                response.setKey(Constant.PUBLIC_DIARY);
+                diaryRepoLiveData.setValue(response);
+                diaryRepoLiveData.removeSource(source);
+            }
+        });
+    }
+
+    public void updateDiary(String token, Diary diary) {
+        ArrayList<Tags> listTags = diary.getTags();
+        ArrayList<String> tagIds = new ArrayList<>();
+        for (Tags tag : listTags) {
+            tagIds.add(tag.getId());
+        }
+        diary.setTagIds(tagIds);
+        String jsonString = gsonBuilder.toJson(diary);
+        JsonObject body = new JsonParser().parse(jsonString).getAsJsonObject();
+        body.remove("isUploading");
+        body.remove("tags");
+        Log.d(TAG, "createDiary: " + body.toString());
+
+        LiveData<Root<JsonObject>> source = LiveDataReactiveStreams.fromPublisher(
+                diaryAPI.updateDiary(token, diary.getId(), body)
+                        .onErrorReturn(new Function<Throwable, Root<JsonObject>>() {
+                            @Override
+                            public Root<JsonObject> apply(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
+                                Log.d(TAG, "apply: " + throwable.getMessage());
+                                String message = throwable.getMessage();
+                                Root<JsonObject> diaryRoot = new Root<>();
+                                if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                    diaryRoot.setStatusCode(409);
+                                } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                    diaryRoot.setStatusCode(-1);
+                                } else {
+                                    diaryRoot.setStatusCode(-2);
+                                }
+                                return diaryRoot;
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+        );
+
+        diaryRepoLiveData.addSource(source, new Observer<Root<JsonObject>>() {
+            @Override
+            public void onChanged(Root<JsonObject> root) {
+                ResponseRepo<Pair<Utils.State,JsonObject>> responseRepo = new ResponseRepo<>();
+                responseRepo.setKey(Constant.UPDATE_DIARY_KEY);
+                if (root.getStatusCode() == 0) {
+                    responseRepo.setData(new Pair<>(Utils.State.SUCCESS, root.getResult()));
+                } else if (root.getStatusCode() == -1) {
+                    responseRepo.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                } else {
+                    responseRepo.setData(new Pair<>(Utils.State.FAILURE, null));
+                }
+                diaryRepoLiveData.setValue(responseRepo);
+                diaryRepoLiveData.removeSource(source);
+            }
+        });
+    }
+
 
 
     public MediatorLiveData<ResponseRepo> observableDiaryRepo() {

@@ -1,36 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingTop="@dimen/length_10dp"
-    android:paddingBottom="@dimen/length_10dp">
-
-    <ImageView
-        android:id="@+id/create_memo_resource_imageView"
-        android:layout_width="@dimen/length_25dp"
-        android:layout_height="@dimen/length_30dp"
-        android:src="@drawable/ic_file"
-        android:tint="@color/black"/>
-
-    <TextView
-        android:id="@+id/create_memo_resource_name"
-        android:layout_width="wrap_content"
+    android:orientation="vertical">
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="file_name.pdf"
-        android:layout_marginLeft="@dimen/length_10dp"
-        android:textSize="@dimen/text_16sp"
-        android:fontFamily="@font/roboto_regular"
-        android:textColor="@color/black"/>
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/length_10dp"
+        android:paddingBottom="@dimen/length_5dp">
 
-    <ImageView
-        android:id="@+id/create_memo_remove_resource"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_remove"
-        android:layout_marginLeft="@dimen/length_20dp"
-        android:tint="#999999"/>
+        <ImageView
+            android:id="@+id/create_memo_resource_imageView"
+            android:layout_width="@dimen/length_25dp"
+            android:layout_height="@dimen/length_30dp"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:src="@drawable/ic_file"
+            app:tint="@color/black" />
 
+        <TextView
+            android:id="@+id/create_memo_resource_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="file_name.pdf"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:textSize="@dimen/text_16sp"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@color/black"/>
+
+        <ImageView
+            android:id="@+id/create_memo_remove_resource"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_remove"
+            android:layout_marginLeft="@dimen/length_20dp"
+            app:tint="#999999"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/line"
+        android:layout_marginTop="@dimen/length_5dp"/>
 </LinearLayout>

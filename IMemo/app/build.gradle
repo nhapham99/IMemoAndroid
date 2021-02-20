@@ -55,34 +55,33 @@ dependencies {
     def retrofitVersion = "2.5.0"
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
-
     // Rx-Retrofit Call Adapter
     def rxcalladapter_version = '2.5.0'
     implementation "com.squareup.retrofit2:adapter-rxjava2:$rxcalladapter_version"
-
     // Reactive Streams (convert Observable to LiveData)
     def reactivestreams_version = "1.1.1"
     implementation "android.arch.lifecycle:reactivestreams:$reactivestreams_version"
-
     // Blur view
     implementation 'com.eightbitlab:blurview:1.6.5'
-
     // image grid
     implementation 'com.felipecsl.asymmetricgridview:library:2.0.1'
-
     // image loader
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-
     // bottom circle
     implementation 'me.relex:circleindicator:2.1.6'
-
+    //round image
     implementation 'com.makeramen:roundedimageview:2.3.0'
+    // refresh recyclerview
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
-
+    // search bar
     implementation 'com.github.mancj:MaterialSearchBar:0.8.5'
+    // circle image
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+    // date picker
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
-
+    // color picker
     implementation "com.github.skydoves:colorpickerview:2.2.2"
+    // video player
+    implementation 'com.github.tcking:giraffeplayer2:0.1.25-lazyLoad'
 }

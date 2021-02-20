@@ -1,4 +1,6 @@
-package com.lnb.imemo.Model;
+package com.lnb.imemo.Data.Repository.Model;
+
+import com.lnb.imemo.Model.Tags;
 
 import java.util.List;
 

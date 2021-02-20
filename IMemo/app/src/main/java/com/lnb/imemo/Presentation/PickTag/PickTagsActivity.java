@@ -13,21 +13,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 
-import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
-import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Presentation.PickTag.RecyclerViewAdapter.PickTagsRecyclerViewAdapter;
 import com.lnb.imemo.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 
 public class PickTagsActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "PickTagsActivity";

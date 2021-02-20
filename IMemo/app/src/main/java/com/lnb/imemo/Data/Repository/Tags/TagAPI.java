@@ -1,11 +1,8 @@
 package com.lnb.imemo.Data.Repository.Tags;
 
 import com.google.gson.JsonObject;
-import com.lnb.imemo.Model.ResultTags;
+import com.lnb.imemo.Data.Repository.Model.ResultTags;
 import com.lnb.imemo.Model.Root;
-import com.lnb.imemo.Model.Tags;
-
-import java.util.List;
 
 import io.reactivex.Flowable;
 import retrofit2.http.Body;

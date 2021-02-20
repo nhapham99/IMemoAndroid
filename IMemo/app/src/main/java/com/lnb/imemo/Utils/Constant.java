@@ -1,6 +1,9 @@
 package com.lnb.imemo.Utils;
 
 public class Constant {
+    public static String PUBLIC_DIARY = "public_diary";
+    public static String SHARE_DIARY = "share_diary";
+    public static String GET_ALL_NOTIFICATION = "get_all_notification";
     public static String LOGIN_GOOGLE_KEY = "login_google";
     public static String LOGIN_KEY = "login";
     public static String REGISTER_KEY = "register";

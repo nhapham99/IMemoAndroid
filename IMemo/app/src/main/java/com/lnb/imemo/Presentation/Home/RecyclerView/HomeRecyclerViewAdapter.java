@@ -39,15 +39,21 @@ import java.util.ArrayList;
 
 public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final String TAG = "HomeRecyclerViewAdapter";
+
+
     private ArrayList<Diary> listMemo = new ArrayList<>();
     private HomeViewModel viewModel;
     private Context mContext;
     private int TYPE_HEADER = 0;
     private int TYPE_NORMAL = 1;
     private final int TYPE_UPLOADING = 2;
+    private final int TYPE_NO_TAGS = 3;
+    private final int TYPE_NO_TAB = 4;
+    private final int TYPE_NO_TAGS_AND_TAB = 5;
+    private final int TYPE_FILTER = 6;
+    private Boolean isFilter = false;
 
-
-    private MediatorLiveData<Pair<String, Integer>> actionObservable = new MediatorLiveData<>();
+    private final MediatorLiveData<Pair<String, Integer>> actionObservable = new MediatorLiveData<>();
 
     public HomeRecyclerViewAdapter(ArrayList<Diary> listMemo) {
         this.listMemo = listMemo;
@@ -57,13 +63,26 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
+        Log.d(TAG, "onCreateViewHolder: " + viewType);
+        mContext = parent.getContext();
         if (viewType == TYPE_NORMAL) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_item, parent, false);
-            mContext = parent.getContext();
             return new HomeRecyclerViewHolder(view);
+        } else if(viewType == TYPE_FILTER) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.memo_filter_layout, parent, false);
+            return new HomeFilterViewHolder(view);
         } else if (viewType == TYPE_UPLOADING) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.uploading_memo_layout, parent, false);
             return new HomeRecyclerViewHolder(view);
+        } else if (viewType == TYPE_NO_TAGS) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recyclerview_no_tag, parent, false);
+            return new HomeRecyclerViewNoTagsHolder(view);
+        } else if (viewType == TYPE_NO_TAB) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_no_tab_layout, parent, false);
+            return new HomeRecyclerViewNoTabHolder(view);
+        } else if (viewType == TYPE_NO_TAGS_AND_TAB) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_no_tag_and_tab, parent, false);
+            return new HomeRecyclerViewNoTabAndTagHolder(view);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_header, parent, false);
             return new HeaderViewHolder(view);
@@ -75,8 +94,16 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (position == 0) {
             initViewForHeader((HeaderViewHolder) holder, position);
+        } else if (position == 1 && isFilter == true) {
+
         } else if (listMemo.get(position - 1).getUploading() != null) {
             initViewForHomeItem((HomeRecyclerViewHolder) holder, position);
+        } else if (listMemo.get(position - 1).getTags().size() == 0 && listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+            initViewForHomeNoTabAndTagItem((HomeRecyclerViewNoTabAndTagHolder) holder, position);
+        } else if (listMemo.get(position - 1).getTags().size() == 0) {
+            initViewForHomeNoTagItem((HomeRecyclerViewNoTagsHolder) holder, position);
+        } else if (listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+            initViewForHomeNoTabItem((HomeRecyclerViewNoTabHolder) holder, position);
         } else {
             initViewForHomeItem((HomeRecyclerViewHolder) holder, position);
         }
@@ -112,6 +139,171 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         });
     }
 
+    private void initViewForHomeNoTagItem(HomeRecyclerViewNoTagsHolder holder, int position) {
+        Diary diary = listMemo.get(position - 1);
+        // setup views
+
+        holder.title.setText(diary.getTitle());
+        // uploading == null => uploaded
+        if (diary.getUploading() == null) {
+            holder.time.setText(DateHelper.dateConverter(diary.getCreatedAt()));
+        }
+
+        holder.popDownMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+                popupMenu.inflate(R.menu.pop_down_menu);
+                popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.pop_down_edit:
+                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                                break;
+                            case R.id.pop_down_pin:
+                                break;
+                            case R.id.pop_down_delete:
+                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position - 1));
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
+
+        if (diary.getContent() == null) {
+            holder.content.setVisibility(View.GONE);
+        } else {
+            holder.content.setText(diary.getContent());
+        }
+
+        ArrayList<Resource> listResource = (ArrayList<Resource>) diary.getResources();
+        ArrayList<Resource> listImageAndVideo = new ArrayList<>();
+        ArrayList<Resource> listAudio = new ArrayList<>();
+        ArrayList<Link> listLinks = (ArrayList<Link>) diary.getLinks();
+        try {
+            for (Resource resource : listResource) {
+                if (resource.getType().contains(Constant.imageType)) {
+                    listImageAndVideo.add(resource);
+                } else if (resource.getType().equals(Constant.videoType)) {
+                    listImageAndVideo.add(resource);
+                } else if (resource.getType().equals(Constant.audioType)) {
+                    listAudio.add(resource);
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "initViewForHomeItem: " + e.getMessage());
+        }
+
+        ArrayList<String> listTabs = new ArrayList<>();
+        ArrayList<Fragment> listFragments = new ArrayList<>();
+
+        try {
+            if (listImageAndVideo.size() != 0) {
+                listTabs.add(mContext.getResources().getText(R.string.image_and_video).toString());
+                listFragments.add(new ImageFragment(listImageAndVideo));
+            }
+
+            if (listLinks.size() != 0) {
+                listTabs.add(mContext.getResources().getText(R.string.link).toString());
+                listFragments.add(new LinkFragment(listLinks));
+            }
+
+            if (listAudio.size() != 0) {
+                listTabs.add(mContext.getResources().getText(R.string.audio).toString());
+                Log.d(TAG, "onBindViewHolder: " + listAudio.size());
+                listFragments.add(new AudioFragment(listAudio));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            MemoTabAdapter adapter = new MemoTabAdapter(((FragmentActivity) mContext));
+            adapter.setData(listTabs, listFragments);
+            holder.viewPager.setAdapter(adapter);
+            new TabLayoutMediator(holder.tabLayout, holder.viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
+                @Override
+                public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                    tab.setText(listTabs.get(position));
+                }
+            }).attach();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actionObservable.setValue(new Pair<>("share_action", position));
+            }
+        });
+    }
+
+    private void initViewForHomeNoTabItem(HomeRecyclerViewNoTabHolder holder, int position) {
+        Diary diary = listMemo.get(position - 1);
+        // setup views
+
+        holder.title.setText(diary.getTitle());
+        // uploading == null => uploaded
+        if (diary.getUploading() == null) {
+            holder.time.setText(DateHelper.dateConverter(diary.getCreatedAt()));
+        }
+
+        holder.popDownMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+                popupMenu.inflate(R.menu.pop_down_menu);
+                popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.pop_down_edit:
+                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                                break;
+                            case R.id.pop_down_pin:
+                                break;
+                            case R.id.pop_down_delete:
+                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position - 1));
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
+
+
+        // if diary tags is null remove view
+        try {
+            ArrayList<Tags> listTags = diary.getTags();
+            holder.tags.setAdapter(new TagRecyclerViewAdapter(listTags));
+            holder.tags.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
+        } catch (Exception e) {
+            Log.d(TAG, "initViewForHomeItem: " + e.getMessage());
+        }
+
+        if (diary.getContent() == null) {
+            holder.content.setVisibility(View.GONE);
+        } else {
+            holder.content.setText(diary.getContent());
+        }
+
+        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actionObservable.setValue(new Pair<>("share_action", position));
+            }
+        });
+
+    }
+
     private void initViewForHomeItem(HomeRecyclerViewHolder holder, int position) {
         Diary diary = listMemo.get(position - 1);
         // setup views
@@ -132,11 +324,12 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.pop_down_edit:
+                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                                 break;
                             case R.id.pop_down_pin:
                                 break;
                             case R.id.pop_down_delete:
-                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position - 1));
                                 break;
                         }
                         return false;
@@ -166,40 +359,50 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         ArrayList<Resource> listImageAndVideo = new ArrayList<>();
         ArrayList<Resource> listAudio = new ArrayList<>();
         ArrayList<Link> listLinks = (ArrayList<Link>) diary.getLinks();
-        for (Resource resource : listResource) {
-            if (resource.getType().equals(Constant.imageType)) {
-                listImageAndVideo.add(resource);
-            } else if (resource.getType().equals(Constant.videoType)) {
-                listImageAndVideo.add(resource);
-            } else if (resource.getType().equals(Constant.audioType)) {
-                listAudio.add(resource);
+        try {
+            for (Resource resource : listResource) {
+                Log.d(TAG, "initViewForHomeItem: " + resource.getType());
+                if (resource.getType().contains(Constant.imageType)) {
+                    listImageAndVideo.add(resource);
+                } else if (resource.getType().equals(Constant.videoType)) {
+                    listImageAndVideo.add(resource);
+                } else if (resource.getType().equals(Constant.audioType)) {
+                    listAudio.add(resource);
+                }
             }
+        } catch (Exception e) {
+            Log.d(TAG, "initViewForHomeItem: " + e.getMessage());
         }
 
         ArrayList<String> listTabs = new ArrayList<>();
         ArrayList<Fragment> listFragments = new ArrayList<>();
 
-        if (listImageAndVideo.size() != 0) {
-            listTabs.add(mContext.getResources().getText(R.string.image_and_video).toString());
-            listFragments.add(new ImageFragment(listImageAndVideo));
+        try {
+            if (listImageAndVideo.size() != 0) {
+                listTabs.add(mContext.getResources().getText(R.string.image_and_video).toString());
+                listFragments.add(new ImageFragment(listImageAndVideo));
+            }
+
+            if (listLinks.size() != 0) {
+                listTabs.add(mContext.getResources().getText(R.string.link).toString());
+                listFragments.add(new LinkFragment(listLinks));
+            }
+
+            if (listAudio.size() != 0) {
+                listTabs.add(mContext.getResources().getText(R.string.audio).toString());
+                Log.d(TAG, "onBindViewHolder: " + listAudio.size());
+                listFragments.add(new AudioFragment(listAudio));
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "initViewForHomeItem: " + e.getMessage());
         }
 
-        if (listLinks.size() != 0) {
-            listTabs.add(mContext.getResources().getText(R.string.link).toString());
-            listFragments.add(new LinkFragment(listLinks));
-        }
-
-        if (listAudio.size() != 0) {
-            listTabs.add(mContext.getResources().getText(R.string.audio).toString());
-            Log.d(TAG, "onBindViewHolder: " + listAudio.size());
-            listFragments.add(new AudioFragment(listAudio));
-        }
 
         if (listTabs.size() == 0) {
             holder.tabLayout.setVisibility(View.GONE);
         }
 
-        MemoTabAdapter adapter = new MemoTabAdapter(((FragmentActivity)mContext));
+        MemoTabAdapter adapter = new MemoTabAdapter(((FragmentActivity) mContext));
         adapter.setData(listTabs, listFragments);
         holder.viewPager.setAdapter(adapter);
 
@@ -209,7 +412,66 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                 tab.setText(listTabs.get(position));
             }
         }).attach();
+
+        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actionObservable.setValue(new Pair<>("share_action", position));
+            }
+        });
+
     }
+
+    private void initViewForHomeNoTabAndTagItem(HomeRecyclerViewNoTabAndTagHolder holder, int position) {
+        Diary diary = listMemo.get(position - 1);
+        // setup views
+
+        holder.title.setText(diary.getTitle());
+        // uploading == null => uploaded
+        if (diary.getUploading() == null) {
+            holder.time.setText(DateHelper.dateConverter(diary.getCreatedAt()));
+        }
+
+        holder.popDownMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+                popupMenu.inflate(R.menu.pop_down_menu);
+                popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.pop_down_edit:
+                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                                break;
+                            case R.id.pop_down_pin:
+                                break;
+                            case R.id.pop_down_delete:
+                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position - 1));
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
+
+
+        if (diary.getContent() == null) {
+            holder.content.setVisibility(View.GONE);
+        } else {
+            holder.content.setText(diary.getContent());
+        }
+
+        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actionObservable.setValue(new Pair<>("share_action", position));
+            }
+        });
+    }
+
 
     public MediatorLiveData<Pair<String, Integer>> observableAction() {
         return actionObservable;
@@ -228,22 +490,42 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public void addMemo(Diary diary) {
+        Log.d(TAG, "addMemo: " + diary.toString());
         listMemo.add(0, diary);
         notifyDataSetChanged();
     }
 
     public void removeAtPosition(int position) {
         this.listMemo.remove(position);
-        notifyItemRemoved(position);
-        notifyItemRangeChanged(position, listMemo.size());
+        notifyItemRemoved(position + 1);
+        notifyItemRangeChanged(position + 1, listMemo.size());
     }
+
+    public void updateMemoAt(int position, Diary diary) {
+        listMemo.set(position, diary);
+        Log.d(TAG, "updateMemoAt: " + listMemo.toString());
+        notifyItemRangeChanged(position, 2);
+    }
+
+    public void insertFilter() {
+
+    }
+
 
     @Override
     public int getItemViewType(int position) {
         if (position == 0) {
             return TYPE_HEADER;
+        } else if (position == 1 && isFilter == true) {
+            return TYPE_FILTER;
         } else if (listMemo.get(position - 1).getUploading() != null) {
             return TYPE_UPLOADING;
+        } else if (listMemo.get(position - 1).getTags().size() == 0 && listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+            return TYPE_NO_TAGS_AND_TAB;
+        } else if (listMemo.get(position - 1).getTags().size() == 0) {
+            return TYPE_NO_TAGS;
+        } else if (listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+            return TYPE_NO_TAB;
         } else {
             return TYPE_NORMAL;
         }
@@ -257,6 +539,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         TabLayout tabLayout;
         ViewPager2 viewPager;
         ImageView popDownMenu;
+        LinearLayout shareMemo;
+
         public HomeRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.memo_title);
@@ -266,7 +550,78 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             tabLayout = itemView.findViewById(R.id.memo_item_tabLayout);
             tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
             viewPager = itemView.findViewById(R.id.view_pager);
+            viewPager.setUserInputEnabled(false);
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
+            shareMemo = itemView.findViewById(R.id.memo_share);
+        }
+    }
+
+    class HomeFilterViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout resetFilter;
+        RecyclerView filterRecyclerView;
+        public HomeFilterViewHolder(@NonNull View itemView) {
+            super(itemView);
+            resetFilter = itemView.findViewById(R.id.reset_filter);
+            filterRecyclerView = itemView.findViewById(R.id.filter_item_recyclerview);
+        }
+    }
+
+    class HomeRecyclerViewNoTabAndTagHolder extends RecyclerView.ViewHolder {
+        TextView title;
+        TextView time;
+        TextView content;
+        ImageView popDownMenu;
+        LinearLayout shareMemo;
+
+        public HomeRecyclerViewNoTabAndTagHolder(@NonNull View itemView) {
+            super(itemView);
+            title = itemView.findViewById(R.id.memo_title);
+            time = itemView.findViewById(R.id.memo_time);
+            content = itemView.findViewById(R.id.memo_item_content);
+            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
+            shareMemo = itemView.findViewById(R.id.memo_share);
+        }
+    }
+
+    class HomeRecyclerViewNoTabHolder extends RecyclerView.ViewHolder {
+        TextView title;
+        TextView time;
+        RecyclerView tags;
+        TextView content;
+        ImageView popDownMenu;
+        LinearLayout shareMemo;
+
+        public HomeRecyclerViewNoTabHolder(@NonNull View itemView) {
+            super(itemView);
+            title = itemView.findViewById(R.id.memo_title);
+            time = itemView.findViewById(R.id.memo_time);
+            tags = itemView.findViewById(R.id.memo_item_tag_list);
+            content = itemView.findViewById(R.id.memo_item_content);
+            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
+            shareMemo = itemView.findViewById(R.id.memo_share);
+        }
+    }
+
+    class HomeRecyclerViewNoTagsHolder extends RecyclerView.ViewHolder {
+        TextView title;
+        TextView time;
+        TextView content;
+        TabLayout tabLayout;
+        ViewPager2 viewPager;
+        ImageView popDownMenu;
+        LinearLayout shareMemo;
+
+        public HomeRecyclerViewNoTagsHolder(@NonNull View itemView) {
+            super(itemView);
+            title = itemView.findViewById(R.id.memo_title);
+            time = itemView.findViewById(R.id.memo_time);
+            content = itemView.findViewById(R.id.memo_item_content);
+            tabLayout = itemView.findViewById(R.id.memo_item_tabLayout);
+            tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+            viewPager = itemView.findViewById(R.id.view_pager);
+            viewPager.setUserInputEnabled(false);
+            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
+            shareMemo = itemView.findViewById(R.id.memo_share);
         }
     }
 
@@ -274,31 +629,13 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         private LinearLayout memoUploadFile, memoUploadTag, memoUpLoadLink;
         private TextView homeNewMemo;
+
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             homeNewMemo = itemView.findViewById(R.id.home_create_new_memo);
             memoUploadFile = itemView.findViewById(R.id.upload_memo_file);
             memoUploadTag = itemView.findViewById(R.id.upload_memo_tag);
             memoUpLoadLink = itemView.findViewById(R.id.upload_memo_link);
-        }
-    }
-
-    class UploadMemoViewHolder extends RecyclerView.ViewHolder {
-        TextView title;
-        RecyclerView tags;
-        TextView content;
-        TabLayout tabLayout;
-        ViewPager2 viewPager;
-        ImageView popDownMenu;
-        public UploadMemoViewHolder(@NonNull View itemView) {
-            super(itemView);
-            title = itemView.findViewById(R.id.memo_title);
-            tags = itemView.findViewById(R.id.memo_item_tag_list);
-            content = itemView.findViewById(R.id.memo_item_content);
-            tabLayout = itemView.findViewById(R.id.memo_item_tabLayout);
-            tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-            viewPager = itemView.findViewById(R.id.view_pager);
-            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
         }
     }
 

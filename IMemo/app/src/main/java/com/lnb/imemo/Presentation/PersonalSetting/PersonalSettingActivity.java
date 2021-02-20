@@ -25,14 +25,12 @@ import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
-import com.lnb.imemo.Utils.DateHelper;
 import com.lnb.imemo.Utils.Utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import de.hdodenhof.circleimageview.CircleImageView;

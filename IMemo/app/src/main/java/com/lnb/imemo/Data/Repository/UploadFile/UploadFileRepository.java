@@ -33,6 +33,7 @@ public class UploadFileRepository {
     }
 
     public void uploadFile(String token, MultipartBody.Part body) {
+        Log.d(TAG, "uploadFile: " + body.toString());
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
                 uploadFileAPI.uploadFile(token, body)
                 .onErrorReturn(new Function<Throwable, JsonObject>() {

@@ -13,17 +13,14 @@ import com.google.gson.JsonObject;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
-import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
 import com.lnb.imemo.Data.Repository.UploadFile.UploadFileRepository;
 import com.lnb.imemo.Model.Diary;
-import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.FileUtils;
 import com.lnb.imemo.Utils.Utils;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -35,6 +32,7 @@ public class UploadViewModel extends ViewModel {
     private UploadFileRepository uploadFileRepository;
     private DiaryRepository diaryRepository;
     private Observer<ResponseRepo> uploadObservable;
+    private Observer<ResponseRepo> diaryObserver;
     private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
     private final Diary uploadDiary;
     private User mUser;
@@ -46,6 +44,7 @@ public class UploadViewModel extends ViewModel {
         uploadDiary = new Diary();
         mUser = User.getUser();
         subscribeUploadObservable();
+        subscribeDiaryObservable();
     }
 
     protected void uploadFile(Uri uri) {
@@ -57,6 +56,28 @@ public class UploadViewModel extends ViewModel {
         MultipartBody.Part file = MultipartBody.Part.createFormData("resource", originFile.getName(), filePart);
         Log.d(TAG, "onActivityResult: " + FileUtils.getPath(context, uri));
         uploadFileRepository.uploadFile(mUser.getToken(), file);
+    }
+
+    public void updateDiary() {
+        diaryRepository.updateDiary(mUser.getToken(), getUploadDiary());
+    }
+
+    private void subscribeDiaryObservable() {
+        diaryObserver = new Observer<ResponseRepo>() {
+            @Override
+            public void onChanged(ResponseRepo responseRepo) {
+                String key = responseRepo.getKey();
+                if (key == Constant.UPDATE_DIARY_KEY) {
+                    Pair<Utils.State,JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                    ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                    response.setKey(Constant.UPDATE_DIARY_KEY);
+                    response.setData(pair.first);
+                    viewModelLiveData.setValue(response);
+                }
+            }
+        };
+
+        diaryRepository.observableDiaryRepo().observeForever(diaryObserver);
     }
 
     private void subscribeUploadObservable() {
@@ -108,6 +129,7 @@ public class UploadViewModel extends ViewModel {
     protected void onCleared() {
         super.onCleared();
         uploadFileRepository.observableUploadFile().removeObserver(uploadObservable);
+        diaryRepository.observableDiaryRepo().removeObserver(diaryObserver);
     }
 
 }

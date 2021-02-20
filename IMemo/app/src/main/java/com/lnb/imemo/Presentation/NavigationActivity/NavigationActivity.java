@@ -19,7 +19,10 @@ public class NavigationActivity extends AppCompatActivity {
     private static final String TAG = "NavigationActivity";
     // ui
     private BottomNavigationView bottomNavigationView;
-
+    private Fragment homeFragment = HomeFragment.getHomeFragment();
+    private Fragment mailFragment = MailFragment.getMailFragment();
+    private Fragment notificationFragment = NotificationFragment.getNotificationFragment();
+    private PersonFragment personFragment = PersonFragment.getPersonFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,28 +31,23 @@ public class NavigationActivity extends AppCompatActivity {
     }
 
     private void init() {
-        loadFragment(HomeFragment.getHomeFragment());
+        loadFragment(homeFragment);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment fragment;
                 switch (item.getItemId()) {
                     case R.id.home:
-                        fragment = HomeFragment.getHomeFragment();
-                        loadFragment(fragment);
+                        loadFragment(homeFragment);
                         return true;
                     case R.id.mail:
-                        fragment = MailFragment.getMailFragment();
-                        loadFragment(fragment);
+                        loadFragment(mailFragment);
                         return true;
                     case R.id.notification:
-                        fragment = NotificationFragment.getNotificationFragment();
-                        loadFragment(fragment);
+                        loadFragment(notificationFragment);
                         return true;
                     case R.id.person:
-                        fragment = PersonFragment.getPersonFragment();
-                        loadFragment(fragment);
+                        loadFragment(personFragment);
                         return true;
                 }
                 return false;

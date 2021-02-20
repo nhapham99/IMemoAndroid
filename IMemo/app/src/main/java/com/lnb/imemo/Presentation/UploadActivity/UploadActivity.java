@@ -6,6 +6,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -25,8 +26,11 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
+import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.ResponseRepo;
+import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Presentation.PickTag.PickTagsActivity;
 import com.lnb.imemo.Presentation.PreviewLink.PreviewActivity;
 import com.lnb.imemo.Presentation.UploadActivity.Adapter.TagRecyclerViewAdapter;
@@ -35,6 +39,8 @@ import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.DateHelper;
 import com.lnb.imemo.Utils.Utils;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -145,9 +151,46 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             }
             viewModel.getUploadDiary().getLinks().add(link);
             resourceAdapter.addItem(link);
+        } else if (getIntent().getParcelableExtra("diary_edit") != null) {
+            Diary diary = getIntent().getParcelableExtra("diary_edit");
+            setupViewForEdit(diary);
         }
 
 
+    }
+
+    private void setupViewForEdit(Diary diary) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        try {
+            diaryTime.setTime(simpleDateFormat.parse(diary.getTime()));
+            SimpleDateFormat currentDateFormat = new SimpleDateFormat("EEEE', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
+            Log.d(TAG, "setupViewForEdit: " + diaryTime.getTime().toString());
+            String[] splitDate = currentDateFormat.format(diaryTime.getTime()).split(",");
+            createMemoDate.setText(DateHelper.convertDate(splitDate[0]) + "," + splitDate[1]);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        createMemoTitle.setText(diary.getTitle());
+        createMemoContent.setText(diary.getContent());
+        ArrayList<Object> listObject = new ArrayList<>();
+        listObject.addAll(diary.getResources());
+        listObject.addAll(diary.getLinks());
+        resourceAdapter.setData(listObject);
+        if (diary.getTags().size() == 0) {
+            createMemoTagsRecyclerView.setVisibility(View.GONE);
+        } else {
+            tagsAdapter = new TagRecyclerViewAdapter(diary.getTags());
+            createMemoTagsRecyclerView.setVisibility(View.VISIBLE);
+            createMemoTagsRecyclerView.setAdapter(tagsAdapter);
+            createMemoTagsRecyclerView.setLayoutManager(new LinearLayoutManager(UploadActivity.this, LinearLayoutManager.HORIZONTAL, false));
+        }
+        ArrayList<String> tagIds = new ArrayList<>();
+        for (Tags tags : diary.getTags()) {
+            tagIds.add(tags.getId());
+        }
+        diary.setTagIds(tagIds);
+        viewModel.getUploadDiary().setDiary(diary);
+        createMemoButton.setText("Cập nhật");
     }
 
     private void subscribeViewModelObservable() {
@@ -161,6 +204,12 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                    switch (response.first) {
                        case SUCCESS:
                            resourceAdapter.addItem(response.second);
+                           Object object = response.second;
+                           if (object instanceof Link) {
+                               viewModel.getUploadDiary().getLinks().add((Link) object);
+                           } else if (object instanceof Resource) {
+                               viewModel.getUploadDiary().getResources().add((Resource) object);
+                           }
                            break;
                        case FAILURE:
                            Toast.makeText(UploadActivity.this, "Lỗi tải file lên", Toast.LENGTH_SHORT).show();
@@ -171,6 +220,23 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                    }
                } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                    Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
+               } else if (key == Constant.UPDATE_DIARY_KEY) {
+                   Utils.State state = (Utils.State) responseRepo.getData();
+                   switch (state) {
+                       case SUCCESS:
+                           Toast.makeText(UploadActivity.this, "Cập nhật memo thành công", Toast.LENGTH_SHORT).show();
+                           Intent intent = new Intent();
+                           intent.putExtra("update_memo", viewModel.getUploadDiary());
+                           setResult(Activity.RESULT_OK, intent);
+                           finish();
+                           break;
+                       case FAILURE:
+                           Toast.makeText(UploadActivity.this, "Cập nhật memo không thành công", Toast.LENGTH_SHORT).show();
+                           break;
+                       case NO_INTERNET:
+                           Toast.makeText(UploadActivity.this, "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
+                           break;
+                   }
                }
            }
        });
@@ -205,11 +271,13 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         } else if (requestCode == GET_TAGS) {
             if (resultCode == RESULT_OK) {
                 Log.d(TAG, "onActivityResult: " + data.getStringArrayListExtra("arrayTagIds").toString());
-                tagsAdapter = new TagRecyclerViewAdapter(data.getParcelableArrayListExtra("arrayTag"));
+                ArrayList<Tags> listTags = data.getParcelableArrayListExtra("arrayTag");
+                tagsAdapter = new TagRecyclerViewAdapter(listTags);
                 createMemoTagsRecyclerView.setVisibility(View.VISIBLE);
                 createMemoTagsRecyclerView.setAdapter(tagsAdapter);
                 createMemoTagsRecyclerView.setLayoutManager(new LinearLayoutManager(UploadActivity.this, LinearLayoutManager.HORIZONTAL, false));
                 viewModel.getUploadDiary().setTagIds(data.getStringArrayListExtra("arrayTagIds"));
+                viewModel.getUploadDiary().setTags(listTags);
                 subscribeRemoveTag();
             } else {
                 Log.d(TAG, "onActivityResult: failure" );
@@ -278,12 +346,27 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         finish();
     }
 
+    private void updateMemo() {
+        viewModel.getUploadDiary().setTitle(createMemoTitle.getText().toString());
+        if (createMemoContent.getText().length() != 0) {
+            viewModel.getUploadDiary().setContent(createMemoContent.getText().toString());
+        }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        viewModel.getUploadDiary().setTime(simpleDateFormat.format(diaryTime.getTime()));
+        viewModel.updateDiary();
+    }
+
+
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.create_memo_button:
-                createMemo();
+                if (createMemoButton.getText().toString().equals("Cập nhật")) {
+                    updateMemo();
+                } else {
+                    createMemo();
+                }
                 break;
             case R.id.create_memo_escape:
                 finish();

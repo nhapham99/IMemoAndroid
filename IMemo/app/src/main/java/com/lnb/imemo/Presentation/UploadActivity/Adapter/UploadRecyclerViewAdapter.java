@@ -16,11 +16,13 @@ import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
+import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
-    private final ArrayList<Object> listUploadResource = new ArrayList<>();
+    private ArrayList<Object> listUploadResource = new ArrayList<>();
     private static int TYPE_FILE = 1;
     private static int TYPE_IMAGE_AND_VIDEO = 2;
     private static int TYPE_LINK = 3;
@@ -38,7 +40,7 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
             view = LayoutInflater.from(mContext).inflate(R.layout.create_memo_resource_layout, parent, false);
             return new FileViewHolder(view);
         } else {
-            view = LayoutInflater.from(mContext).inflate(R.layout.link_item_layout, parent, false);
+            view = LayoutInflater.from(mContext).inflate(R.layout.upload_link_item_layout, parent, false);
             return new LinkRecyclerViewHolder(view);
         }
     }
@@ -51,7 +53,7 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
                 ImageAndVideoViewHolder imageAndVideoViewHolder = (ImageAndVideoViewHolder) holder;
                 Glide.with(mContext).load(resource.getUrl()).into(imageAndVideoViewHolder.imageResource);
                 imageAndVideoViewHolder.resourceName.setText(resource.getName());
-            } else if (resource.getType().equals(Constant.imageType)) {
+            } else if (resource.getType().contains(Constant.imageType)) {
                 ImageAndVideoViewHolder imageAndVideoViewHolder = (ImageAndVideoViewHolder) holder;
                 Glide.with(mContext).load(resource.getUrl()).into(imageAndVideoViewHolder.imageResource);
                 imageAndVideoViewHolder.resourceName.setText(resource.getName());
@@ -80,7 +82,7 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
     public int getItemViewType(int position) {
         if (listUploadResource.get(position) instanceof Resource) {
             Resource resource = (Resource) listUploadResource.get(position);
-            if (resource.getType().equals(Constant.videoType) || resource.getType().equals(Constant.imageType)) {
+            if (resource.getType().equals(Constant.videoType) || resource.getType().contains(Constant.imageType)) {
                 return TYPE_IMAGE_AND_VIDEO;
             } else {
                 return TYPE_FILE;
@@ -94,6 +96,12 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
     @Override
     public int getItemCount() {
         return listUploadResource.size();
+    }
+
+    public void setData(ArrayList<Object> list) {
+        listUploadResource.clear();
+        listUploadResource.addAll(list);
+        notifyDataSetChanged();
     }
 
     public void addItem(Object o) {
@@ -135,12 +143,14 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
         TextView linkTitle;
         TextView linkDescription;
         TextView linkUrl;
+        ImageView deleteLink;
         public LinkRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);
             linkImage = itemView.findViewById(R.id.link_imageView);
             linkTitle = itemView.findViewById(R.id.link_title);
             linkDescription = itemView.findViewById(R.id.link_description);
             linkUrl = itemView.findViewById(R.id.link_url);
+            deleteLink = itemView.findViewById(R.id.delete_link);
         }
     }
 }

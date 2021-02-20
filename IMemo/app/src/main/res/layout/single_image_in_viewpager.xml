@@ -11,4 +11,9 @@
         android:scaleType="centerCrop"
         app:riv_corner_radius="@dimen/length_8dp"/>
 
+    <tcking.github.com.giraffeplayer2.VideoView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
 </RelativeLayout>

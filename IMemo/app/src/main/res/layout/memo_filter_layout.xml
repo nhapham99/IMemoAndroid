@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:paddingLeft="@dimen/length_20dp"
+        android:paddingRight="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="memo by"
+            android:textAllCaps="true"
+            android:textColor="#999999"
+            android:fontFamily="@font/roboto_medium"
+            android:textSize="@dimen/text_16sp"
+            android:layout_centerVertical="true"/>
+
+        <LinearLayout
+            android:id="@+id/reset_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/grey_stroke_layout"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:paddingLeft="@dimen/length_10dp"
+            android:paddingRight="@dimen/length_10dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:elevation="0.5dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_reset" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity=""
+                android:text="Reset"
+                android:paddingLeft="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_medium"
+                android:textColor="#999999"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/filter_item_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

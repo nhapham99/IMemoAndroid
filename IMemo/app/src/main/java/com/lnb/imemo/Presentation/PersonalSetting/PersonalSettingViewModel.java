@@ -14,7 +14,6 @@ import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
 
 import com.lnb.imemo.Data.Repository.UploadFile.UploadFileRepository;
 import com.lnb.imemo.Model.PersonProfile;
-import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;

@@ -2,7 +2,8 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +29,7 @@
         android:id="@+id/memo_upload_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:alpha="0.8">
+        android:alpha="0.7">
         <include layout="@layout/home_recycler_view_item"/>
     </RelativeLayout>
 

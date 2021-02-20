@@ -2,6 +2,7 @@ package com.lnb.imemo.Presentation.Home.TabFragment.AudioRecyclerView;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -154,7 +155,11 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
 
     private Boolean prepareMediaPlayer(AudioRecyclerViewHolder holder, int position) {
         try {
-            mediaPlayers.get(position).setDataSource(Utils.storeUrl + listAudio.get(position).getUrl());
+            String url = listAudio.get(position).getUrl();
+            if (!url.contains(Utils.storeUrl)) {
+                url = Utils.storeUrl + url;
+            }
+            mediaPlayers.get(position).setDataSource(url);
             mediaPlayers.get(position).prepare();
             return true;
         } catch (Exception exception) {

@@ -13,10 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
+import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 import com.makeramen.roundedimageview.RoundedImageView;
 
+
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import tcking.github.com.giraffeplayer2.VideoInfo;
+import tcking.github.com.giraffeplayer2.VideoView;
 
 public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAndVideoViewPagerAdapter.ImageAndVideoViewHolder> {
     private ArrayList<Resource> listImage;
@@ -38,8 +44,21 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
     @Override
     public void onBindViewHolder(@NonNull ImageAndVideoViewHolder holder, int position) {
         try {
-            String urlImage = listImage.get(position).getUrl();
-            Glide.with(mContext).load(Utils.storeUrl + urlImage).into(holder.imageView);
+            if (listImage.get(position).getType().contains(Constant.imageType)) {
+                holder.videoPlayer.setVisibility(View.GONE);
+                String urlImage = listImage.get(position).getUrl();
+                if (!urlImage.contains(Utils.storeUrl)) {
+                    urlImage = Utils.storeUrl + urlImage;
+                }
+                Glide.with(mContext).load(urlImage).into(holder.imageView);
+            } else {
+                holder.imageView.setVisibility(View.GONE);
+                String urlVideo = listImage.get(position).getUrl();
+                if (!urlVideo.contains(Utils.storeUrl)) {
+                    urlVideo = Utils.storeUrl + urlVideo;
+                }
+                holder.videoPlayer.setVideoPath(urlVideo).getPlayer().start();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -52,10 +71,11 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
 
     class ImageAndVideoViewHolder extends RecyclerView.ViewHolder {
         RoundedImageView imageView;
-
+        VideoView videoPlayer;
         public ImageAndVideoViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.memo_single_image);
+            videoPlayer = itemView.findViewById(R.id.video_view);
         }
     }
 

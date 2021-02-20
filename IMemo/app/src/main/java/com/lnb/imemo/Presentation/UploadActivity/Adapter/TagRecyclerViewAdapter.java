@@ -19,11 +19,12 @@ import java.util.ArrayList;
 import io.reactivex.subjects.PublishSubject;
 
 public class TagRecyclerViewAdapter extends RecyclerView.Adapter<TagRecyclerViewAdapter.TagRecyclerViewHolder> {
-    private ArrayList<Tags> listTags;
+    private ArrayList<Tags> listTags = new ArrayList<>();
     private PublishSubject<Integer> removeTagObservable = PublishSubject.create();
     public TagRecyclerViewAdapter(ArrayList<Tags> listTags) {
         this.listTags = listTags;
     }
+    public TagRecyclerViewAdapter() {}
 
     @NonNull
     @Override
@@ -45,6 +46,16 @@ public class TagRecyclerViewAdapter extends RecyclerView.Adapter<TagRecyclerView
                 removeTagObservable.onNext(position);
             }
         });
+    }
+
+    public ArrayList<Tags> getListTags() {
+        return listTags;
+    }
+
+    public void setListTags(ArrayList<Tags> listTags) {
+        this.listTags.clear();
+        this.listTags.addAll(listTags);
+        notifyDataSetChanged();
     }
 
     public PublishSubject<Integer> getRemoveTagObservable() {

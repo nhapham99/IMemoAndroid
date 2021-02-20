@@ -1,6 +1,5 @@
 package com.lnb.imemo.Presentation.PreviewLink;
 
-import android.database.Observable;
 import android.util.Log;
 import android.util.Pair;
 
@@ -12,8 +11,6 @@ import com.lnb.imemo.Data.Repository.PreviewLink.PreviewLinkRepository;
 import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Utils.Utils;
-
-import java.util.ArrayList;
 
 public class PreviewLinkViewModel extends ViewModel {
     private static final String TAG = "PreviewLinkViewModel";

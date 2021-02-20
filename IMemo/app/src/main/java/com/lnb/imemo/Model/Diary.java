@@ -15,10 +15,10 @@ public class Diary implements Parcelable {
     private String time;
     private String createdAt;
     private String updatedAt;
-    private List<Resource> resources;
-    private ArrayList<Tags> tags;
-    private List<Link> links;
-    private List<String> tagIds;
+    private List<Resource> resources = new ArrayList<>();
+    private ArrayList<Tags> tags = new ArrayList<>();
+    private List<Link> links = new ArrayList<>();
+    private List<String> tagIds = new ArrayList<>();
     private Boolean isUploading;
 
 
@@ -201,6 +201,21 @@ public class Diary implements Parcelable {
 
     public void setUploading(Boolean uploading) {
         isUploading = uploading;
+    }
+
+    public void setDiary(Diary diary) {
+        setId(diary.getId());
+        setTagIds((ArrayList<String>) diary.getTagIds());
+        setStatus(diary.getStatus());
+        setTags(diary.getTags());
+        setUploading(diary.getUploading());
+        setTime(diary.getTime());
+        setContent(diary.getContent());
+        setTitle(diary.getTitle());
+        setCreatedAt(diary.getCreatedAt());
+        setLinks(diary.getLinks());
+        setResources(diary.getResources());
+        setUpdatedAt(diary.getUpdatedAt());
     }
 
     @Override

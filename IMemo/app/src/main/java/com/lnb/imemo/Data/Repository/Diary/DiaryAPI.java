@@ -2,8 +2,8 @@ package com.lnb.imemo.Data.Repository.Diary;
 
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Model.Root;
-import com.lnb.imemo.Model.ResultDiaries;
-import com.lnb.imemo.Model.ResultDiary;
+import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
+import com.lnb.imemo.Data.Repository.Model.ResultDiary;
 
 import java.util.List;
 
@@ -12,6 +12,7 @@ import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -28,6 +29,11 @@ public interface DiaryAPI {
                                              @Query("lastId") String lastId
     );
 
+    @PATCH("diaries/{id}")
+    Flowable<Root<JsonObject>> updateDiary(@Header("Authorization") String token,
+                                            @Path("id") String id,
+                                            @Body JsonObject body);
+
     @GET("diaries/{id}")
     Flowable<Root<ResultDiary>> getDiaryById(@Header("Authorization") String token, @Path("id") String id);
 
@@ -37,5 +43,9 @@ public interface DiaryAPI {
     @DELETE("diaries/{id}")
     Flowable<Root<JsonObject>> deleteDiary(@Header("Authorization") String token, @Path("id") String id);
 
+    @POST("diaries/trigger-send-email")
+    Flowable<Root<JsonObject>> shareDiary(@Header("Authorization") String token, @Body JsonObject body);
 
+    @GET("diaries/public/{id}")
+    Flowable<Root<JsonObject>> publicDiary(@Header("Authorization") String token, @Path("id") String id);
 }

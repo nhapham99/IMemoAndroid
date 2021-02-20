@@ -16,8 +16,6 @@ import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
 
-import io.reactivex.Observable;
-
 public class TagSettingViewModel extends ViewModel {
     private static final String TAG = "TagSettingViewModel";
     private TagsRepository tagsRepository;

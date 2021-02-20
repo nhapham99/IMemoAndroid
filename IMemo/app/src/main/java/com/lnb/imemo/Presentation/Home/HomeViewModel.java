@@ -22,6 +22,7 @@ import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class HomeViewModel extends ViewModel {
@@ -39,10 +40,18 @@ public class HomeViewModel extends ViewModel {
     private Observer<ResponseRepo> tagsObservable;
     private Observer<ResponseRepo> diaryObservable;
     private Boolean isGetDairyForCreate = false;
+    public ArrayList<Tags> listTags = new ArrayList<>();
+    public Calendar filterFromDate;
+    public Calendar filterToDate;
+    public ArrayList<String> listFilterTags = new ArrayList<>();
+    public ArrayList<String> filterTimeName = new ArrayList<>();
+    private String tempEmail;
+    private String tempId;
 
     protected User mUser;
     protected PersonProfile personProfile;
     protected static List<Diary> listDiary = new ArrayList<>();
+    private Boolean isUpdateForShare = false;
 
     public HomeViewModel() {
         tagsRepository = new TagsRepository();
@@ -56,7 +65,7 @@ public class HomeViewModel extends ViewModel {
     }
 
     protected void getAllTags() {
-        tagsRepository.getAllTagAction(Utils.token);
+        tagsRepository.getAllTagAction(mUser.getToken());
     }
 
     protected void getTagById(String id) {
@@ -65,6 +74,12 @@ public class HomeViewModel extends ViewModel {
 
     protected void getPreviewLink(String url) {
         previewLinkRepository.getPreViewLink(url);
+    }
+
+    protected void shareDiary(String diaryId, String email) {
+        ArrayList<String> emails = new ArrayList<>();
+        emails.add(email);
+        diaryRepository.shareDiary(mUser.getToken(), diaryId, emails);
     }
 
     protected void getDiaries(@Nullable String query,
@@ -86,6 +101,13 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.deleteDiary(mUser.getToken(), listDiary.get(diaryPosition).getId());
     }
 
+    public void publicDiary(Diary diary, String email) {
+        isUpdateForShare = true;
+        tempEmail = email;
+        tempId = diary.getId();
+        diaryRepository.updateDiary(mUser.getToken(), diary);
+    }
+
     public void getDiaryById(String id) {
         diaryRepository.getDiaryById(mUser.getToken(), id);
     }
@@ -97,8 +119,10 @@ public class HomeViewModel extends ViewModel {
             public void onChanged(ResponseRepo response) {
                 if (response.getKey().equals(Constant.GET_ALL_TAGS_KEY)) {
                     Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) response.getData();
-                    Log.d(TAG, "onChanged: " + pair.first);
-                    allTagsLiveData.setValue(pair.second);
+                    ResponseRepo<Pair<Utils.State, ArrayList<Tags>>> responseRepo = new ResponseRepo<>();
+                    responseRepo.setKey(Constant.GET_ALL_TAGS_KEY);
+                    responseRepo.setData(pair);
+                    viewModelLiveData.setValue(responseRepo);
                 } else if (response.getKey().equals(Constant.GET_TAGS_BY_ID_KEY)) {
                     Pair<Utils.State, Tags> pair = (Pair<Utils.State, Tags>) response.getData();
                     Log.d(TAG, "onChanged: " + pair.first);
@@ -134,19 +158,22 @@ public class HomeViewModel extends ViewModel {
                     ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
                     switch (pair.first) {
                         case SUCCESS:
-                            String id = pair.second.getAsJsonObject(Constant.RESULT).get("id").getAsString();
+                            Log.d(TAG, "onChanged: " + pair.second.toString());
+                            String id = pair.second.get("id").getAsString();
                             isGetDairyForCreate = true;
                             getDiaryById(id);
                             break;
                         case FAILURE:
                             response.setData(new Pair<>(Utils.State.FAILURE, null));
+                            response.setKey(Constant.CREATE_DIARY_KEY);
+                            viewModelLiveData.setValue(response);
                             break;
                         case NO_INTERNET:
                             response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                            response.setKey(Constant.CREATE_DIARY_KEY);
+                            viewModelLiveData.setValue(response);
                             break;
                     }
-                    response.setKey(Constant.CREATE_DIARY_KEY);
-                    viewModelLiveData.setValue(response);
                 } else if (key == Constant.GET_DIARY_BY_ID_KEY) {
                     Pair<Utils.State, Diary> pair = (Pair<Utils.State, Diary>) responseRepo.getData();
                     ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
@@ -158,12 +185,32 @@ public class HomeViewModel extends ViewModel {
                             break;
                     }
                     response.setData(pair);
+                    viewModelLiveData.setValue(response);
+                } else if (key == Constant.SHARE_DIARY) {
+                    Utils.State state = (Utils.State) responseRepo.getData();
+                    ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                    response.setData(state);
+                    response.setKey(Constant.SHARE_DIARY);
+                    viewModelLiveData.setValue(response);
+                } else if (key == Constant.PUBLIC_DIARY) {
+                    Utils.State state = (Utils.State) responseRepo.getData();
+                    if (state == Utils.State.SUCCESS) {
+                        shareDiary(tempId, tempEmail);
+                    }
+                } else if (key == Constant.UPDATE_DIARY_KEY) {
+                    Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                    switch (pair.first) {
+                        case SUCCESS:
+                            if (isUpdateForShare) {
+                                shareDiary(tempId, tempEmail);
+                            }
+                            break;
+                    }
                 }
             }
         };
         diaryRepository.observableDiaryRepo().observeForever(diaryObservable);
     }
-
 
 
     public MediatorLiveData<ArrayList<Tags>> observableAllTags() {
@@ -182,7 +229,9 @@ public class HomeViewModel extends ViewModel {
         return viewModelLiveData;
     }
 
-    public MediatorLiveData<Utils.State> observableDeleteDiary() { return deleteDiaryLiveData; }
+    public MediatorLiveData<Utils.State> observableDeleteDiary() {
+        return deleteDiaryLiveData;
+    }
 
     @Override
     protected void onCleared() {
@@ -191,4 +240,6 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.observableDiaryRepo().removeObserver(diaryObservable);
 
     }
+
+
 }
