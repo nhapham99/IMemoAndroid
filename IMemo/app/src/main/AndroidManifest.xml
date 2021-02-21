@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lnb.imemo">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -13,7 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IMemo"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Presentation.MemoPreview.MemoPreviewActivity"></activity>
+
+        <activity android:name=".Presentation.Login.LoginActivity"></activity>
+        <activity android:name=".Presentation.MemoPreview.MemoPreviewActivity" />
         <activity android:name=".Presentation.ForgotPassword.ForgotPasswordActivity" />
         <activity android:name=".Presentation.TagsSetting.TagsSettingActivity" />
         <activity android:name=".Presentation.PersonalSetting.PersonalSettingActivity" />
@@ -22,7 +24,8 @@
         <activity android:name=".Presentation.Register.RegisterActivity" />
         <activity android:name=".Presentation.NavigationActivity.NavigationActivity" />
         <activity android:name=".Presentation.UploadActivity.UploadActivity" />
-        <activity android:name=".Presentation.Login.LoginActivity">
+        <activity android:name=".Presentation.Introduce.IntroduceActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

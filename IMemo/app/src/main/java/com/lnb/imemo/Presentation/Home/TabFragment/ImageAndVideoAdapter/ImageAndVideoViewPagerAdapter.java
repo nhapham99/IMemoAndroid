@@ -78,5 +78,4 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
             videoPlayer = itemView.findViewById(R.id.video_view);
         }
     }
-
 }

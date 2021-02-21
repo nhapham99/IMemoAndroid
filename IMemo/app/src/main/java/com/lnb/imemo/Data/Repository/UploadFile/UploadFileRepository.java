@@ -59,7 +59,7 @@ public class UploadFileRepository {
             public void onChanged(JsonObject jsonObject) {
                 ResponseRepo<Pair<Utils.State, JsonObject>> responseRepo = new ResponseRepo<>();
                 Log.d(TAG, "onChanged: " + jsonObject.toString());
-                if (jsonObject.get(Constant.UPLOADED).getAsBoolean() == true) {
+                if (jsonObject.get(Constant.UPLOADED).getAsBoolean()) {
                     responseRepo.setData(new Pair<>(Utils.State.SUCCESS, jsonObject));
                 } else {
                     int statusCode = jsonObject.get(Constant.STATUS_CODE).getAsInt();

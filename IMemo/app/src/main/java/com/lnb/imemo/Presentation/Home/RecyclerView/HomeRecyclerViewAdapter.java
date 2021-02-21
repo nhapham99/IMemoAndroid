@@ -1,6 +1,7 @@
 package com.lnb.imemo.Presentation.Home.RecyclerView;
 
 import android.content.Context;
+import android.nfc.Tag;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -37,6 +38,9 @@ import com.lnb.imemo.Utils.DateHelper;
 
 import java.util.ArrayList;
 
+import io.reactivex.functions.Consumer;
+import io.reactivex.subjects.PublishSubject;
+
 public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final String TAG = "HomeRecyclerViewAdapter";
 
@@ -52,10 +56,15 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     private final int TYPE_NO_TAGS_AND_TAB = 5;
     private final int TYPE_FILTER = 6;
     private Boolean isFilter = false;
-
+    private FilterItemRecyclerViewAdapter filterItemRecyclerViewAdapter;
+    private ArrayList<Tags> listFilterTags;
+    private String searchKey;
+    private String timeKey;
     private final MediatorLiveData<Pair<String, Integer>> actionObservable = new MediatorLiveData<>();
+    private final PublishSubject<Pair<String, String>> filterObservable = PublishSubject.create();
 
     public HomeRecyclerViewAdapter(ArrayList<Diary> listMemo) {
+        filterItemRecyclerViewAdapter = new FilterItemRecyclerViewAdapter();
         this.listMemo = listMemo;
     }
 
@@ -92,21 +101,63 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        int size = 0;
+        if (isFilter) {
+            size = size + 2;
+        } else {
+            size = size + 1;
+        }
         if (position == 0) {
             initViewForHeader((HeaderViewHolder) holder, position);
         } else if (position == 1 && isFilter == true) {
-
-        } else if (listMemo.get(position - 1).getUploading() != null) {
+            initViewForHomeFilter((HomeFilterViewHolder) holder);
+        } else if (listMemo.get(position - size).getUploading() != null) {
             initViewForHomeItem((HomeRecyclerViewHolder) holder, position);
-        } else if (listMemo.get(position - 1).getTags().size() == 0 && listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+        } else if (listMemo.get(position - size).getTags().size() == 0 && listMemo.get(position - size).getLinks().size() == 0 && listMemo.get(position - size).getResources().size() == 0) {
             initViewForHomeNoTabAndTagItem((HomeRecyclerViewNoTabAndTagHolder) holder, position);
-        } else if (listMemo.get(position - 1).getTags().size() == 0) {
+        } else if (listMemo.get(position - size).getTags().size() == 0) {
             initViewForHomeNoTagItem((HomeRecyclerViewNoTagsHolder) holder, position);
-        } else if (listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+        } else if (listMemo.get(position - size).getLinks().size() == 0 && listMemo.get(position - size).getResources().size() == 0) {
             initViewForHomeNoTabItem((HomeRecyclerViewNoTabHolder) holder, position);
         } else {
             initViewForHomeItem((HomeRecyclerViewHolder) holder, position);
         }
+    }
+
+    private void initViewForHomeFilter(HomeFilterViewHolder holder) {
+        if (searchKey != null) {
+            filterItemRecyclerViewAdapter.setSearchKey(searchKey);
+        }
+
+        if (timeKey != null) {
+            filterItemRecyclerViewAdapter.setTime(timeKey);
+        }
+
+        if (listFilterTags != null) {
+            filterItemRecyclerViewAdapter.setListTags(listFilterTags);
+        }
+
+        holder.filterRecyclerView.setAdapter(filterItemRecyclerViewAdapter);
+        holder.filterRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
+        holder.resetFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listFilterTags = null;
+                searchKey = null;
+                timeKey = null;
+                filterItemRecyclerViewAdapter.notifyDataSetChanged();
+                isFilter = false;
+                notifyItemRemoved(1);
+                filterObservable.onNext(new Pair<>("reset_all", null));
+            }
+        });
+
+        filterItemRecyclerViewAdapter.getFilterObservable().subscribe(new Consumer<Pair<String, String>>() {
+            @Override
+            public void accept(Pair<String, String> pair) throws Exception {
+                filterObservable.onNext(pair);
+            }
+        });
     }
 
 
@@ -140,7 +191,13 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     private void initViewForHomeNoTagItem(HomeRecyclerViewNoTagsHolder holder, int position) {
-        Diary diary = listMemo.get(position - 1);
+        int size = 0;
+        if (isFilter) {
+            size = size + 2;
+        } else {
+            size = size + 1;
+        }
+        Diary diary = listMemo.get(position - size);
         // setup views
 
         holder.title.setText(diary.getTitle());
@@ -245,7 +302,13 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     private void initViewForHomeNoTabItem(HomeRecyclerViewNoTabHolder holder, int position) {
-        Diary diary = listMemo.get(position - 1);
+        int size = 0;
+        if (isFilter) {
+            size = size + 2;
+        } else {
+            size = size + 1;
+        }
+        Diary diary = listMemo.get(position - size);
         // setup views
 
         holder.title.setText(diary.getTitle());
@@ -305,7 +368,13 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     private void initViewForHomeItem(HomeRecyclerViewHolder holder, int position) {
-        Diary diary = listMemo.get(position - 1);
+        int size = 0;
+        if (isFilter) {
+            size = size + 2;
+        } else {
+            size = size + 1;
+        }
+        Diary diary = listMemo.get(position - size);
         // setup views
 
         holder.title.setText(diary.getTitle());
@@ -423,7 +492,13 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     private void initViewForHomeNoTabAndTagItem(HomeRecyclerViewNoTabAndTagHolder holder, int position) {
-        Diary diary = listMemo.get(position - 1);
+        int size = 0;
+        if (isFilter) {
+            size = size + 2;
+        } else {
+            size = size + 1;
+        }
+        Diary diary = listMemo.get(position - size);
         // setup views
 
         holder.title.setText(diary.getTitle());
@@ -472,6 +547,9 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         });
     }
 
+    public PublishSubject<Pair<String, String>> getFilterObservable() {
+        return filterObservable;
+    }
 
     public MediatorLiveData<Pair<String, Integer>> observableAction() {
         return actionObservable;
@@ -480,7 +558,13 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     @Override
     public int getItemCount() {
-        return listMemo.size() + 1;
+        int size = listMemo.size();
+        if (isFilter) {
+            size = size + 2;
+        } else {
+            size = size + 1;
+        }
+        return size;
     }
 
     public void updateListMemo(ArrayList<Diary> listMemo) {
@@ -507,28 +591,48 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         notifyItemRangeChanged(position, 2);
     }
 
-    public void insertFilter() {
-
+    public void insertFilter(String searchKey, String timeKey, ArrayList<Tags> listFilterTags) {
+        this.searchKey = searchKey;
+        this.timeKey = timeKey;
+        this.listFilterTags = listFilterTags;
+        filterItemRecyclerViewAdapter.setTime(timeKey);
+        filterItemRecyclerViewAdapter.setSearchKey(searchKey);
+        filterItemRecyclerViewAdapter.setListTags(listFilterTags);
+        if (!isFilter) {
+            notifyItemInserted(1);
+            isFilter = true;
+        }
     }
 
 
     @Override
     public int getItemViewType(int position) {
+        int size = 0;
+        if (isFilter) {
+            size = size + 2;
+        } else {
+            size = size + 1;
+        }
         if (position == 0) {
             return TYPE_HEADER;
         } else if (position == 1 && isFilter == true) {
             return TYPE_FILTER;
-        } else if (listMemo.get(position - 1).getUploading() != null) {
+        } else if (listMemo.get(position - size).getUploading() != null) {
             return TYPE_UPLOADING;
-        } else if (listMemo.get(position - 1).getTags().size() == 0 && listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+        } else if (listMemo.get(position - size).getTags().size() == 0 && listMemo.get(position - size).getLinks().size() == 0 && listMemo.get(position - size).getResources().size() == 0) {
             return TYPE_NO_TAGS_AND_TAB;
-        } else if (listMemo.get(position - 1).getTags().size() == 0) {
+        } else if (listMemo.get(position - size).getTags().size() == 0) {
             return TYPE_NO_TAGS;
-        } else if (listMemo.get(position - 1).getLinks().size() == 0 && listMemo.get(position - 1).getResources().size() == 0) {
+        } else if (listMemo.get(position - size).getLinks().size() == 0 && listMemo.get(position - size).getResources().size() == 0) {
             return TYPE_NO_TAB;
         } else {
             return TYPE_NORMAL;
         }
+    }
+
+    public void removeFilter() {
+        notifyItemRemoved(1);
+        isFilter = false;
     }
 
     class HomeRecyclerViewHolder extends RecyclerView.ViewHolder {

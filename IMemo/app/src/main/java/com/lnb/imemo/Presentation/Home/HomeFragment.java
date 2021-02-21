@@ -1,6 +1,8 @@
 package com.lnb.imemo.Presentation.Home;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -45,10 +47,16 @@ import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.subjects.PublishSubject;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -79,7 +87,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private int GET_FILE_CODE = 1;
     private int GET_TAGS = 2;
     private int GET_PREVIEW_LINK = 3;
-    private int UPLOAD_MEMO_CODE = 4;
+    private final int UPLOAD_MEMO_CODE = 4;
+    private final PublishSubject<Pair<String, String>> filterTimeObservable = PublishSubject.create();
+    private final PublishSubject<Pair<String, String>> filterTagObservable = PublishSubject.create();
+    private String searchKey;
+
+
 
     private HomeFragment() {
 
@@ -99,6 +112,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         return view;
     }
 
+    @SuppressLint("CheckResult")
     private void init(View view) {
         // init ui
         homeRecyclerView = view.findViewById(R.id.home_recyclerView);
@@ -120,48 +134,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         filterMemoTimeRecyclerView = view.findViewById(R.id.filter_time_recyclerView);
         filterMemoTagRecyclerView = view.findViewById(R.id.filter_tag_recyclerview);
         filterButton = view.findViewById(R.id.filter_button);
-        filterButton.setOnClickListener(this);
-
-        searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
-            @Override
-            public void onSearchStateChanged(boolean enabled) {
-
-            }
-
-            @Override
-            public void onSearchConfirmed(CharSequence text) {
-
-            }
-
-            @Override
-            public void onButtonClicked(int buttonCode) {
-            }
-        });
 
         viewModel = new HomeViewModel();
-        getAllMemo();
-        ArrayList<String> listHighLightFilterItem = new ArrayList<>();
-        listHighLightFilterItem.add("Sắp tới");
-        highLightFilterAdapter = new FilterRecyclerViewAdapter(listHighLightFilterItem, viewModel.filterTimeName);
-        filterMemoHighLightRecyclerView.setAdapter(highLightFilterAdapter);
-        filterMemoHighLightRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-
-
-        ArrayList<String> listTimeFilterItem = new ArrayList<>();
-        listTimeFilterItem.add("Hôm nay");
-        listTimeFilterItem.add("Hôm qua");
-        listTimeFilterItem.add("1 tuần trước");
-        listTimeFilterItem.add("1 tháng trước");
-        listTimeFilterItem.add("1 năm trước");
-        timeFilterAdapter = new FilterRecyclerViewAdapter(listTimeFilterItem, viewModel.filterTimeName);
-        filterMemoTimeRecyclerView.setAdapter(timeFilterAdapter);
-        filterMemoTimeRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-
-
-        tagFilterAdapter = new FilterRecyclerViewAdapter(viewModel.listFilterTags);
-        filterMemoTagRecyclerView.setAdapter(tagFilterAdapter);
-        filterMemoTagRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-
+        getAllMemo(null, null, null, null, null);
+        setupFilterView();
         // init var
 
         adapter = new HomeRecyclerViewAdapter((ArrayList<Diary>) viewModel.listDiary);
@@ -185,34 +161,77 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 if (key.equals(Constant.DELETE_DIARY_KEY)) {
                     currentChoosedDiaryPosition = adapterAction.second;
                     viewModel.deleteDiary(adapterAction.second);
-                } else if (key == Constant.CREATE_DIARY_KEY) {
+                } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                     Intent intent = new Intent(getActivity(), UploadActivity.class);
                     startActivityForResult(intent, UPLOAD_MEMO_CODE);
-                } else if (key == Constant.GET_FILE_CODE) {
+                } else if (key.equals(Constant.GET_FILE_CODE)) {
                     startUploadFile();
-                } else if (key == Constant.GET_TAGS_CODE) {
+                } else if (key.equals(Constant.GET_TAGS_CODE)) {
                     startPickTags();
-                } else if (key == Constant.GET_LINKS_CODE) {
+                } else if (key.equals(Constant.GET_LINKS_CODE)) {
                     startAddLink();
-                } else if (key == "share_action") {
+                } else if (key.equals("share_action")) {
                     showShareDialog(adapterAction.second);
-                } else if (key == Constant.UPDATE_DIARY_KEY) {
+                } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
                     currentChoosedDiaryPosition = adapterAction.second;
                     Intent intent = new Intent(getActivity(), UploadActivity.class);
                     intent.putExtra("diary_edit", viewModel.listDiary.get(adapterAction.second - 1));
                     startActivityForResult(intent, UPLOAD_MEMO_CODE);
-
                 }
             }
         });
 
+        adapter.getFilterObservable().subscribe(pair -> {
+            String key = pair.first;
+            switch (key) {
+                case "remove_filter_search":
+                    searchKey = null;
+                    filterDiary();
+                    break;
+                case "remove_filter_time":
+                    filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                    viewModel.filterTimeName = "";
+                    filterDiary();
+                    break;
+                case "remove_filter_tag":
+                    Log.d(TAG, "onChanged: " + pair.second);
+                    viewModel.filterTagName.remove(pair.second);
+                    Log.d(TAG, "onChanged: " + viewModel.filterTagName);
+                    filterDiary();
+                    break;
+                case "reset_all":
+                    viewModel.filterTagName.clear();
+                    filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                    viewModel.filterTimeName = "";
+                    searchKey = null;
+                    filterDiary();
+                    break;
+            }
+        });
 
         homeSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getAllMemo();
+                filterDiary();
             }
         });
+
+        searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+            @Override
+            public void onSearchStateChanged(boolean enabled) {
+            }
+
+            @Override
+            public void onSearchConfirmed(CharSequence text) {
+                searchKey = text.toString();
+                filterDiary();
+            }
+
+            @Override
+            public void onButtonClicked(int buttonCode) {
+            }
+        });
+
 
         // load user avatar
         Glide.with(this).load(viewModel.personProfile.getPicture()).into(userAvatar);
@@ -220,6 +239,93 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         subscribeMemoObservable();
         subscribeDeleteMemoObservable();
         subscribeViewModelObservable();
+        subscribeFilterObservable();
+    }
+
+    @SuppressLint("CheckResult")
+    private void subscribeFilterObservable() {
+        filterTimeObservable.subscribe((Pair<String, String> pair) -> {
+            Log.d(TAG, "accept: " + pair.toString());
+            if (pair.first.equals("add_filter")) {
+                String currentFilter = viewModel.filterTimeName;
+                viewModel.filterTimeName = pair.second;
+                Log.d(TAG, "accept: current " + currentFilter + "new: " + pair.second);
+                if (!currentFilter.equals("")) {
+                    filterTimeObservable.onNext(new Pair<>("update_filter", currentFilter));
+                }
+            } else if (pair.first.equals("remove_filter")) {
+                viewModel.filterTimeName = "";
+            }
+        });
+
+
+        filterTagObservable.subscribe(new Consumer<Pair<String, String>>() {
+            @Override
+            public void accept(Pair<String, String> pair) throws Exception {
+                if (pair.first == "add_filter") {
+                    viewModel.filterTagName.add(pair.second);
+                } else if (pair.first == "remove_filter") {
+                    viewModel.filterTagName.remove(pair.second);
+                }
+            }
+        });
+    }
+
+
+    private void setupFilterView() {
+        filterButton.setOnClickListener(this);
+
+        ArrayList<String> listHighLightFilterItem = new ArrayList<>();
+        listHighLightFilterItem.add("Sắp tới");
+        highLightFilterAdapter = new FilterRecyclerViewAdapter(listHighLightFilterItem, filterTimeObservable);
+        filterMemoHighLightRecyclerView.setAdapter(highLightFilterAdapter);
+        filterMemoHighLightRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+
+
+        ArrayList<String> listTimeFilterItem = new ArrayList<>();
+        listTimeFilterItem.add("Hôm nay");
+        listTimeFilterItem.add("Hôm qua");
+        listTimeFilterItem.add("1 tuần trước");
+        listTimeFilterItem.add("1 tháng trước");
+        listTimeFilterItem.add("1 năm trước");
+        timeFilterAdapter = new FilterRecyclerViewAdapter(listTimeFilterItem, filterTimeObservable);
+        filterMemoTimeRecyclerView.setAdapter(timeFilterAdapter);
+        filterMemoTimeRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+
+
+        tagFilterAdapter = new FilterRecyclerViewAdapter(viewModel.listFilterTags, filterTagObservable);
+        tagFilterAdapter.setListChoosed(viewModel.filterTagName);
+        filterMemoTagRecyclerView.setAdapter(tagFilterAdapter);
+        filterMemoTagRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+
+        filterMemoResetHighLight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listHighLightFilterItem.contains(viewModel.filterTimeName)) {
+                    filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                    viewModel.filterTimeName = "";
+                }
+            }
+        });
+
+        filterMemoResetTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listTimeFilterItem.contains(viewModel.filterTimeName)) {
+                    filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                    viewModel.filterTimeName = "";
+                }
+            }
+        });
+
+        filterMemoResetTag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewModel.filterTagName.clear();
+                tagFilterAdapter.reset();
+            }
+        });
+
 
     }
 
@@ -269,6 +375,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         alertDialog.show();
     }
+
 
     private void startUploadFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -327,14 +434,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         }
     }
 
-    private void getAllMemo() {
-        viewModel.getDiaries(null,
-                null,
+    private void getAllMemo(String query, ArrayList<String> tagIds, String fromDate, String toDate, String lastId) {
+        viewModel.getDiaries(query,
+                tagIds,
                 pageNumber,
                 Constant.pageSize,
-                null,
-                null,
-                null
+                fromDate,
+                toDate,
+                lastId
         );
     }
 
@@ -409,11 +516,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         case SUCCESS:
                             viewModel.listTags = pair.second;
                             ArrayList<String> listTags = new ArrayList<>();
-                            for (Tags tags: pair.second) {
+                            for (Tags tags : pair.second) {
                                 listTags.add(tags.getName());
+                                viewModel.mIdTagByNameHashMap.put(tags.getName(), tags.getId());
+                                viewModel.mTagByNameHashMap.put(tags.getName(), tags);
                             }
                             tagFilterAdapter.setData(listTags);
-
                             break;
                     }
                 } else if (key == Constant.SHARE_DIARY) {
@@ -441,8 +549,84 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 drawerLayout.openDrawer(GravityCompat.END);
                 break;
             case R.id.filter_button:
+                filterDiary();
                 break;
         }
+    }
+
+    private void filterDiary() {
+        ArrayList<String> tagIds = new ArrayList<>();
+        ArrayList<Tags> listTags = new ArrayList<>();
+        for (String tagName : viewModel.filterTagName) {
+            tagIds.add(viewModel.mIdTagByNameHashMap.get(tagName));
+            listTags.add(viewModel.mTagByNameHashMap.get(tagName));
+        }
+        String fromDate;
+        String toDate;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
+        Calendar currentTime = Calendar.getInstance();
+        String timeKey;
+        Log.d(TAG, "filterDiary: " + viewModel.filterTimeName);
+        switch (viewModel.filterTimeName) {
+            case "Hôm nay":
+                fromDate = simpleDateFormat.format(currentTime.getTime());
+                toDate = simpleDateFormat.format(currentTime.getTime());
+                timeKey = toDate.split("T")[0];
+                break;
+            case "Hôm qua":
+                Calendar yesterday = Calendar.getInstance();
+                yesterday.add(Calendar.DATE, -1);
+                fromDate = simpleDateFormat.format(yesterday.getTime());
+                toDate = simpleDateFormat.format(yesterday.getTime());
+                timeKey = toDate.split("T")[0];
+                break;
+            case "1 tuần trước":
+                Calendar weekAgo = Calendar.getInstance();
+                weekAgo.add(Calendar.DATE, -7);
+                fromDate = simpleDateFormat.format(weekAgo.getTime());
+                toDate = simpleDateFormat.format(currentTime.getTime());
+                timeKey = fromDate.split("T")[0] + " - " + toDate.split("T")[0];
+                break;
+            case "1 tháng trước":
+                Calendar monthAgo = Calendar.getInstance();
+                monthAgo.add(Calendar.MONTH, -1);
+                fromDate = simpleDateFormat.format(monthAgo.getTime());
+                toDate = simpleDateFormat.format(currentTime.getTime());
+                timeKey = fromDate.split("T")[0] + " - " + toDate.split("T")[0];
+                break;
+            case "1 năm trước":
+                Calendar yearAgo = Calendar.getInstance();
+                yearAgo.add(Calendar.YEAR, -1);
+                fromDate = simpleDateFormat.format(yearAgo.getTime());
+                toDate = simpleDateFormat.format(currentTime.getTime());
+                timeKey = fromDate.split("T")[0] + " - " + toDate.split("T")[0];
+                break;
+            default:
+                fromDate = null;
+                toDate = null;
+                timeKey = null;
+        }
+
+        Log.d(TAG, "filterDiary: " + searchKey);
+        Log.d(TAG, "filterDiary: " + timeKey);
+        Log.d(TAG, "filterDiary: " + listTags);
+
+        if (searchKey != null || timeKey != null || listTags.size() != 0) {
+            if (tagIds.size() != 0) {
+                Log.d(TAG, "filterDiary: tagSize != 0");
+                getAllMemo(searchKey, tagIds, fromDate, toDate, null);
+            } else {
+                Log.d(TAG, "filterDiary: tag size = 0");
+                getAllMemo(searchKey, null, fromDate, toDate, null);
+            }
+            adapter.insertFilter(searchKey, timeKey, listTags);
+        } else if (searchKey == null && timeKey == null && listTags.size() == 0) {
+            Log.d(TAG, "filterDiary: remove all");
+            adapter.removeFilter();
+            getAllMemo(null, null, null, null, null);
+        }
+
+        homeSwipeRefreshLayout.setRefreshing(true);
     }
 
     @Override

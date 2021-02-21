@@ -1,7 +1,9 @@
 package com.lnb.imemo.Presentation.UploadActivity;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Pair;
 
@@ -10,6 +12,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.google.gson.JsonObject;
+import com.lnb.imemo.Data.Repository.Model.FileRequestBody;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
@@ -17,10 +20,12 @@ import com.lnb.imemo.Data.Repository.UploadFile.UploadFileRepository;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;
+import com.lnb.imemo.Utils.FileMetaData;
 import com.lnb.imemo.Utils.FileUtils;
 import com.lnb.imemo.Utils.Utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -48,14 +53,36 @@ public class UploadViewModel extends ViewModel {
     }
 
     protected void uploadFile(Uri uri) {
-        File originFile = FileUtils.getFile(context, uri);
-        String path = FileUtils.getPath(context, uri);
-        Log.d(TAG, "onActivityResult: " + path);
-        RequestBody filePart = RequestBody.create(MediaType.parse(context.getContentResolver().getType(uri)),
-                originFile);
-        MultipartBody.Part file = MultipartBody.Part.createFormData("resource", originFile.getName(), filePart);
+//        File originFile = FileUtils.getFile(context, uri);
+//        String path = FileUtils.getPath(context, uri);
+//        Log.d(TAG, "onActivityResult: " + path);
+//        RequestBody filePart = RequestBody.create(MediaType.parse(context.getContentResolver().getType(uri)),
+//                originFile);
+//        MultipartBody.Part file = MultipartBody.Part.createFormData("resource", originFile.getName(), filePart);
+        FileMetaData fileMetaData = FileMetaData.getFileMetaData(context, uri);
+        try {
+            FileRequestBody requestBody = new FileRequestBody(context.getContentResolver().openInputStream(uri), fileMetaData.mimeType);
+            MultipartBody.Part file = MultipartBody.Part.createFormData("resource", fileMetaData.displayName, requestBody);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         Log.d(TAG, "onActivityResult: " + FileUtils.getPath(context, uri));
-        uploadFileRepository.uploadFile(mUser.getToken(), file);
+        //uploadFileRepository.uploadFile(mUser.getToken(), file);
+    }
+
+    public String getContentType(Uri uri) {
+        String type = null;
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        try {
+            if (cursor != null) {
+                cursor.moveToFirst();
+                type = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE));
+                cursor.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return type;
     }
 
     public void updateDiary() {

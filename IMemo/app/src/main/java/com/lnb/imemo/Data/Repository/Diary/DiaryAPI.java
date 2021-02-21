@@ -5,6 +5,7 @@ import com.lnb.imemo.Model.Root;
 import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
 import com.lnb.imemo.Data.Repository.Model.ResultDiary;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 import io.reactivex.Flowable;
@@ -20,8 +21,8 @@ import retrofit2.http.Query;
 public interface DiaryAPI {
     @GET("diaries")
     Flowable<Root<ResultDiaries>> getDiaries(@Header("Authorization") String token,
-                                             @Query("query") String query,
-                                             @Query("tag") List<String> tags,
+                                             @Query("q") String query,
+                                             @Query("tag") String tags,
                                              @Query("page") int page,
                                              @Query("pageSize") int pageSize,
                                              @Query("fromDate") String fromDate,

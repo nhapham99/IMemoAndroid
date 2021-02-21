@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/introduce_single_image"
+        android:scaleType="fitXY"/>
+
+
+    <Button
+        android:id="@+id/start_memo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bắt đầu"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/length_30dp"
+        android:fontFamily="@font/roboto_medium"
+        style="@style/TextAppearance.MaterialComponents.Button"
+        android:textColor="@color/white"
+        android:background="@color/blue_light"
+        android:paddingLeft="@dimen/length_10dp"
+        android:paddingRight="@dimen/length_10dp"/>
+
+</RelativeLayout>

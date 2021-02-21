@@ -57,7 +57,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/length_20dp"
-                    android:fontFamily="@font/roboto_medium"
+                    android:fontFamily="@font/roboto_regular"
                     android:text="Cài đặt"
                     android:textColor="@color/black"
                     android:textSize="18sp" />
@@ -87,7 +87,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/length_20dp"
-                    android:fontFamily="@font/roboto_medium"
+                    android:fontFamily="@font/roboto_regular"
                     android:text="Cá nhân"
                     android:textColor="@color/black"
                     android:textSize="18sp" />
@@ -117,7 +117,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/length_20dp"
-                    android:fontFamily="@font/roboto_medium"
+                    android:fontFamily="@font/roboto_regular"
                     android:text="Thẻ của tôi"
                     android:textColor="@color/black"
                     android:textSize="18sp" />
@@ -149,7 +149,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/length_20dp"
-                android:fontFamily="@font/roboto_medium"
+                android:fontFamily="@font/roboto_regular"
                 android:text="Đăng xuất"
                 android:textColor="@color/black"
                 android:textSize="18sp" />

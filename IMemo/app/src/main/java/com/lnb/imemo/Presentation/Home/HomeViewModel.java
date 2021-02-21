@@ -23,6 +23,7 @@ import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
 public class HomeViewModel extends ViewModel {
@@ -41,16 +42,17 @@ public class HomeViewModel extends ViewModel {
     private Observer<ResponseRepo> diaryObservable;
     private Boolean isGetDairyForCreate = false;
     public ArrayList<Tags> listTags = new ArrayList<>();
-    public Calendar filterFromDate;
-    public Calendar filterToDate;
     public ArrayList<String> listFilterTags = new ArrayList<>();
-    public ArrayList<String> filterTimeName = new ArrayList<>();
+    public HashMap<String, String> mIdTagByNameHashMap = new HashMap<>();
+    public HashMap<String, Tags> mTagByNameHashMap = new HashMap<>();
+    public String filterTimeName = "";
+    public ArrayList<String> filterTagName = new ArrayList<>();
     private String tempEmail;
     private String tempId;
 
     protected User mUser;
     protected PersonProfile personProfile;
-    protected static List<Diary> listDiary = new ArrayList<>();
+    protected List<Diary> listDiary = new ArrayList<>();
     private Boolean isUpdateForShare = false;
 
     public HomeViewModel() {
@@ -89,8 +91,15 @@ public class HomeViewModel extends ViewModel {
                               @Nullable String fromDate,
                               @Nullable String toDate,
                               @Nullable String lastId) {
-        Log.d(TAG, "getDiaries: " + mUser.getToken());
-        diaryRepository.getDiaries(mUser.getToken(), query, tags, page, pageSize, fromDate, toDate, lastId);
+        String tagIds = null;
+        if (tags != null) {
+            tagIds = "";
+            for (int i = 0; i < tags.size() - 1; i++) {
+                tagIds = tagIds + tags.get(i) + ",";
+            }
+            tagIds = tagIds + tags.get(tags.size() - 1);
+        }
+        diaryRepository.getDiaries(mUser.getToken(), query, tagIds, page, pageSize, fromDate, toDate, lastId);
     }
 
     protected void createDiary(Diary diary) {

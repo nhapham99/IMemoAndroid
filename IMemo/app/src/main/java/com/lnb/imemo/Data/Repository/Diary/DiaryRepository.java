@@ -48,14 +48,14 @@ public class DiaryRepository {
 
     public void getDiaries(@NonNull String token,
                            @Nullable String query,
-                           @Nullable List<String> tags,
+                           @Nullable String tag,
                            @NonNull int page,
                            @NonNull int pageSize,
                            @Nullable String fromDate,
                            @Nullable String toDate,
                            @Nullable String lastId) {
         LiveData<Root<ResultDiaries>> source = LiveDataReactiveStreams.fromPublisher(
-                diaryAPI.getDiaries(token, query, tags, page, pageSize, fromDate, toDate, lastId)
+                diaryAPI.getDiaries(token, query, tag, page, pageSize, fromDate, toDate, lastId)
                         .onErrorReturn(throwable -> {
                             Log.d(TAG, "apply: " + throwable.getMessage());
                             String message = throwable.getMessage();

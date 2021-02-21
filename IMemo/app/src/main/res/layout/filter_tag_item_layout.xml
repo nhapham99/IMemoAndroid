@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="@dimen/length_25dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/shape_corner"
+    android:orientation="horizontal"
+    android:layout_marginRight="@dimen/length_10dp">
+
+    <ImageView
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:src="@drawable/ic_tag"
+        android:layout_gravity="center_vertical"
+        android:scaleType="fitXY"
+        android:layout_marginLeft="5dp"/>
+
+    <TextView
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/filter_tag"
+        android:fontFamily="@font/roboto_regular"
+        android:text="Chuyến đi"
+        android:textSize="10sp"
+        android:textColor="@color/white"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/length_5dp"/>
+
+    <ImageView
+        android:id="@+id/filter_tag_delete"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:src="@drawable/ic_escape"
+        app:tint="@color/white"
+        android:layout_gravity="center"
+        android:layout_marginRight="5dp"/>
+</LinearLayout>

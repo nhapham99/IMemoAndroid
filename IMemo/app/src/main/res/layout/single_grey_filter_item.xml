@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/filter_name"
+    android:layout_width="120dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/length_10dp"
+    android:fontFamily="@font/roboto_regular"
+    android:paddingTop="@dimen/length_5dp"
+    android:paddingBottom="@dimen/length_5dp"
+    android:singleLine="true"
+    android:text="Sắp đến"
+    android:textAllCaps="false"
+    android:paddingLeft="@dimen/length_10dp"
+    android:textSize="15sp"
+    android:background="@drawable/black_stroke_layout">
+
+</TextView>
+
+
+
+
