@@ -28,8 +28,8 @@ public class NotificationViewModel extends ViewModel {
         subscribeNotificationObserver();
     }
 
-    public static NotificationViewModel getNotificationViewModel() {
-        if (mInstance == null) {
+    public static NotificationViewModel getNotificationViewModel(Boolean isStart) {
+        if (mInstance == null || isStart) {
             mInstance = new NotificationViewModel();
         }
         return mInstance;

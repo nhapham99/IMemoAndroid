@@ -83,5 +83,5 @@ dependencies {
     // color picker
     implementation "com.github.skydoves:colorpickerview:2.2.2"
     // video player
-    implementation 'com.github.tcking:giraffeplayer2:0.1.25-lazyLoad'
+    implementation 'com.google.android.exoplayer:exoplayer:2.13.1'
 }

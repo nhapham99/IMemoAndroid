@@ -15,7 +15,7 @@ public class Diary implements Parcelable {
     private String time;
     private String createdAt;
     private String updatedAt;
-    private List<Resource> resources = new ArrayList<>();
+    private ArrayList<Resource> resources = new ArrayList<>();
     private ArrayList<Tags> tags = new ArrayList<>();
     private List<Link> links = new ArrayList<>();
     private List<String> tagIds = new ArrayList<>();
@@ -34,7 +34,7 @@ public class Diary implements Parcelable {
                  String time,
                  String createdAt,
                  String updatedAt,
-                 List<Resource> resources,
+                 ArrayList<Resource> resources,
                  ArrayList<Tags> tags, List<Link> links) {
         this.id = id;
         this.title = title;
@@ -163,11 +163,11 @@ public class Diary implements Parcelable {
         this.updatedAt = updatedAt;
     }
 
-    public List<Resource> getResources() {
+    public ArrayList<Resource> getResources() {
         return resources;
     }
 
-    public void setResources(List<Resource> resources) {
+    public void setResources(ArrayList<Resource> resources) {
         this.resources = resources;
     }
 

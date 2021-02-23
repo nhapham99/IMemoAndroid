@@ -126,9 +126,9 @@ public class MemoPreviewActivity extends AppCompatActivity {
             for (Resource resource : listResource) {
                 if (resource.getType().contains(Constant.imageType)) {
                     listImageAndVideo.add(resource);
-                } else if (resource.getType().equals(Constant.videoType)) {
+                } else if (resource.getType().contains(Constant.videoType)) {
                     listImageAndVideo.add(resource);
-                } else if (resource.getType().equals(Constant.audioType)) {
+                } else if (resource.getType().contains(Constant.audioType)) {
                     listAudio.add(resource);
                 }
             }

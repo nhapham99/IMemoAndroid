@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/shape_corner"
+    android:backgroundTint="#EFEFEF"
+    android:paddingTop="@dimen/length_10dp"
+    android:paddingBottom="@dimen/length_10dp">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_file"
+        android:layout_marginLeft="@dimen/length_10dp"/>
+
+    <TextView
+        android:id="@+id/file_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="hello.pdf"
+        android:fontFamily="@font/roboto_medium"
+        android:textSize="15sp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"
+        android:singleLine="true"
+        android:textColor="@color/blue_dark"/>
+
+
+
+</LinearLayout>

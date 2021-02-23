@@ -11,8 +11,10 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
+import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
 import com.lnb.imemo.Data.Repository.PreviewLink.PreviewLinkRepository;
 import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
+import com.lnb.imemo.Model.Pagination;
 import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Diary;
@@ -47,23 +49,32 @@ public class HomeViewModel extends ViewModel {
     public HashMap<String, Tags> mTagByNameHashMap = new HashMap<>();
     public String filterTimeName = "";
     public ArrayList<String> filterTagName = new ArrayList<>();
-    private String tempEmail;
-    private String tempId;
+    private static HomeViewModel mInstance;
+    private int totalMemo;
 
     protected User mUser;
     protected PersonProfile personProfile;
-    protected List<Diary> listDiary = new ArrayList<>();
-    private Boolean isUpdateForShare = false;
+    protected ArrayList<Diary> listDiary = new ArrayList<>();
+    private Boolean isUpdateForPublic = false;
 
-    public HomeViewModel() {
+
+    private HomeViewModel() {
         tagsRepository = new TagsRepository();
         diaryRepository = new DiaryRepository();
         previewLinkRepository = new PreviewLinkRepository();
         mUser = User.getUser();
+        Log.d(TAG, "HomeViewModel: " + mUser.toString());
         personProfile = PersonProfile.getInstance();
         Log.d(TAG, "HomeViewModel: " + personProfile.toString());
         subscribeTagAction();
         subscribeDiary();
+    }
+
+    public static HomeViewModel getHomeViewModel(Boolean isStart) {
+        if (mInstance == null || isStart) {
+            mInstance = new HomeViewModel();
+        }
+        return mInstance;
     }
 
     protected void getAllTags() {
@@ -71,7 +82,7 @@ public class HomeViewModel extends ViewModel {
     }
 
     protected void getTagById(String id) {
-        tagsRepository.getTagById(Utils.token, id);
+        tagsRepository.getTagById(mUser.getToken(), id);
     }
 
     protected void getPreviewLink(String url) {
@@ -110,10 +121,16 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.deleteDiary(mUser.getToken(), listDiary.get(diaryPosition).getId());
     }
 
-    public void publicDiary(Diary diary, String email) {
-        isUpdateForShare = true;
-        tempEmail = email;
-        tempId = diary.getId();
+    public void publicDiary(Diary diary) {
+        isUpdateForPublic = true;
+        diary.setStatus("public");
+        diaryRepository.updateDiary(mUser.getToken(), diary);
+    }
+
+
+    public void privateDiary(Diary diary) {
+        isUpdateForPublic = false;
+        diary.setStatus("private");
         diaryRepository.updateDiary(mUser.getToken(), diary);
     }
 
@@ -156,10 +173,14 @@ public class HomeViewModel extends ViewModel {
             public void onChanged(ResponseRepo responseRepo) {
                 String key = responseRepo.getKey();
                 if (key == Constant.GET_DIARIES_KEY) {
+                    ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
                     Log.d(TAG, "onChanged: " + responseRepo.getData());
-                    Pair<Utils.State, List<Diary>> response = (Pair<Utils.State, List<Diary>>) responseRepo.getData();
-                    listDiary = response.second;
-                    getAllMemoLiveData.setValue(response.first);
+                    Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
+                    Pagination pagination = pair.second.getPagination();
+                    totalMemo = pagination.getTotalItems();
+                    response.setData(new Pair<>(pair.first, (ArrayList<Diary>) pair.second.getDiaries()));
+                    response.setKey(Constant.GET_DIARIES_KEY);
+                    viewModelLiveData.setValue(response);
                 } else if (key == Constant.DELETE_DIARY_KEY) {
                     deleteDiaryLiveData.setValue((Utils.State) responseRepo.getData());
                 } else if (key == Constant.CREATE_DIARY_KEY) {
@@ -201,26 +222,25 @@ public class HomeViewModel extends ViewModel {
                     response.setData(state);
                     response.setKey(Constant.SHARE_DIARY);
                     viewModelLiveData.setValue(response);
-                } else if (key == Constant.PUBLIC_DIARY) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    if (state == Utils.State.SUCCESS) {
-                        shareDiary(tempId, tempEmail);
-                    }
                 } else if (key == Constant.UPDATE_DIARY_KEY) {
                     Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
-                    switch (pair.first) {
-                        case SUCCESS:
-                            if (isUpdateForShare) {
-                                shareDiary(tempId, tempEmail);
-                            }
-                            break;
+                    ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                    if (isUpdateForPublic) {
+                        response.setKey("public_diary");
+                    } else {
+                        response.setKey("private_diary");
                     }
+                    response.setData(pair.first);
+                    viewModelLiveData.setValue(response);
                 }
             }
         };
         diaryRepository.observableDiaryRepo().observeForever(diaryObservable);
     }
 
+    public int getTotalMemo() {
+        return totalMemo;
+    }
 
     public MediatorLiveData<ArrayList<Tags>> observableAllTags() {
         return allTagsLiveData;

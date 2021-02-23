@@ -3,12 +3,15 @@ package com.lnb.imemo.Presentation.Home;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.nfc.Tag;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -17,24 +20,29 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
+import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Presentation.Home.RecyclerView.FilterRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.HomeRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.SimpleSectionedRecyclerViewAdapter;
@@ -63,6 +71,7 @@ import static android.app.Activity.RESULT_OK;
 public class HomeFragment extends Fragment implements View.OnClickListener, DrawerLayout.DrawerListener {
     private static final String TAG = "HomeFragment";
     private static HomeFragment mHomeFragment;
+    private Boolean isStart = false;
     // ui
     private RecyclerView homeRecyclerView;
     private SwipeRefreshLayout homeSwipeRefreshLayout;
@@ -73,6 +82,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private LinearLayout filterMemoResetHighLight, filterMemoResetTime, filterMemoResetTag;
     private RecyclerView filterMemoHighLightRecyclerView, filterMemoTimeRecyclerView, filterMemoTagRecyclerView;
     private Button filterButton;
+    private NestedScrollView homeNestedScrollView;
+    private ProgressBar loadMoreProgressBar;
+    private TextView noMoreMemoText;
 
     private CircleImageView userAvatar;
     private ImageView homeFilter;
@@ -91,16 +103,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private final PublishSubject<Pair<String, String>> filterTimeObservable = PublishSubject.create();
     private final PublishSubject<Pair<String, String>> filterTagObservable = PublishSubject.create();
     private String searchKey;
+    private Boolean isLoadMore = false;
+    private Boolean isLoading = false;
 
 
 
-    private HomeFragment() {
-
+    private HomeFragment(Boolean isStart) {
+        this.isStart = isStart;
     }
 
-    public static HomeFragment getHomeFragment() {
-        if (mHomeFragment == null) {
-            mHomeFragment = new HomeFragment();
+    public static HomeFragment getHomeFragment(Boolean isStart) {
+        if (mHomeFragment == null || isStart) {
+            mHomeFragment = new HomeFragment(isStart);
         }
         return mHomeFragment;
     }
@@ -134,9 +148,23 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         filterMemoTimeRecyclerView = view.findViewById(R.id.filter_time_recyclerView);
         filterMemoTagRecyclerView = view.findViewById(R.id.filter_tag_recyclerview);
         filterButton = view.findViewById(R.id.filter_button);
+        homeNestedScrollView = view.findViewById(R.id.nested_scroll);
+        loadMoreProgressBar = view.findViewById(R.id.load_more_progressBar);
+        noMoreMemoText = view.findViewById(R.id.no_more_memo);
+        loadMoreProgressBar.setVisibility(View.GONE);
+        noMoreMemoText.setVisibility(View.GONE);
 
-        viewModel = new HomeViewModel();
-        getAllMemo(null, null, null, null, null);
+
+        viewModel = HomeViewModel.getHomeViewModel(isStart);
+
+        Log.d(TAG, "init: " + viewModel.listDiary.size());
+        if (viewModel.listDiary.size() == 0) {
+            getAllMemo(null, null, null, null, null);
+            subscribeDeleteMemoObservable();
+            subscribeViewModelObservable();
+            subscribeFilterObservable();
+        }
+
         setupFilterView();
         // init var
 
@@ -174,8 +202,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     showShareDialog(adapterAction.second);
                 } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
                     currentChoosedDiaryPosition = adapterAction.second;
+                    Log.d(TAG, "onChanged: " + currentChoosedDiaryPosition);
                     Intent intent = new Intent(getActivity(), UploadActivity.class);
-                    intent.putExtra("diary_edit", viewModel.listDiary.get(adapterAction.second - 1));
+                    intent.putExtra("diary_edit", viewModel.listDiary.get(adapterAction.second));
                     startActivityForResult(intent, UPLOAD_MEMO_CODE);
                 }
             }
@@ -212,6 +241,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         homeSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                viewModel.listDiary = new ArrayList<>();
+                if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                    loadMoreProgressBar.setVisibility(View.GONE);
+                }
+                if (noMoreMemoText.getVisibility() == View.VISIBLE) {
+                    noMoreMemoText.setVisibility(View.GONE);
+                }
                 filterDiary();
             }
         });
@@ -235,11 +271,42 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         // load user avatar
         Glide.with(this).load(viewModel.personProfile.getPicture()).into(userAvatar);
-        viewModel.getAllTags();
-        subscribeMemoObservable();
-        subscribeDeleteMemoObservable();
-        subscribeViewModelObservable();
-        subscribeFilterObservable();
+        if (viewModel.listTags.size() == 0) {
+            viewModel.getAllTags();
+        }
+
+        homeNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (scrollY == v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) {
+                if (viewModel.listDiary.size() < viewModel.getTotalMemo()) {
+                    noMoreMemoText.setVisibility(View.INVISIBLE);
+                    loadMoreProgressBar.setVisibility(View.VISIBLE);
+                    loadMoreProgressBar.bringToFront();
+                    isLoadMore = true;
+                    if (!isLoading) {
+                        filterDiary();
+                    }
+                    isLoading = true;
+                } else {
+                    Log.d(TAG, "init: no more");
+                    isLoadMore = false;
+                    noMoreMemoText.setVisibility(View.VISIBLE);
+                    noMoreMemoText.bringToFront();
+                    if (viewModel.listDiary.size() == 0) {
+                        noMoreMemoText.setText("Không có memo nào!");
+                    } else {
+                        noMoreMemoText.setText("Không còn memo nào!");
+                    }
+                }
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        isStart = false;
     }
 
     @SuppressLint("CheckResult")
@@ -330,20 +397,49 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     }
 
     private void showShareDialog(int position) {
+        Diary diary = viewModel.listDiary.get(position);
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
         View view = getLayoutInflater().inflate(R.layout.share_memo_layout, null);
         dialogBuilder.setView(view);
+
 
         TextView previewMemo = view.findViewById(R.id.preview_memo);
         TextInputLayout email_input = view.findViewById(R.id.input_email);
         Button shareButton = view.findViewById(R.id.share_memo);
         ImageButton dialogEscape = view.findViewById(R.id.share_memo_escape);
+        SwitchMaterial switchShare = view.findViewById(R.id.switch_share);
+        ProgressBar shareProgressBar = view.findViewById(R.id.share_progressBar);
+        shareProgressBar.setVisibility(View.INVISIBLE);
+
+        if (diary.getStatus().equals("private")) {
+            switchShare.setChecked(false);
+            previewMemo.setVisibility(View.GONE);
+            email_input.setVisibility(View.GONE);
+            shareButton.setVisibility(View.GONE);
+        } else if (diary.getStatus().equals("public")) {
+            switchShare.setChecked(true);
+        }
+
+        switchShare.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    viewModel.publicDiary(diary);
+                    shareProgressBar.setVisibility(View.VISIBLE);
+                } else {
+                    viewModel.privateDiary(diary);
+                    shareProgressBar.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+
 
         previewMemo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), MemoPreviewActivity.class);
-                intent.putExtra("preview_diary", viewModel.listDiary.get(position - 1));
+                intent.putExtra("preview_diary", viewModel.listDiary.get(position));
                 intent.putExtra("preview_author_name", viewModel.personProfile.getName());
                 intent.putExtra("from", "home");
                 startActivity(intent);
@@ -353,13 +449,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Diary diary = viewModel.listDiary.get(position);
-                if (diary.getStatus().equals("public")) {
-                    viewModel.shareDiary(diary.getId(), email_input.getEditText().getText().toString());
-                } else {
-                    diary.setStatus("public");
-                    viewModel.publicDiary(diary, email_input.getEditText().getText().toString());
-                }
+                viewModel.shareDiary(diary.getId(), email_input.getEditText().getText().toString());
             }
         });
 
@@ -374,6 +464,51 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         });
 
         alertDialog.show();
+
+        viewModel.getViewModelLiveData().observe(this, new Observer<ResponseRepo>() {
+            @Override
+            public void onChanged(ResponseRepo responseRepo) {
+                String key = responseRepo.getKey();
+                if (key.equals("public_diary")) {
+                    Utils.State state = (Utils.State) responseRepo.getData();
+                    switch (state) {
+                        case SUCCESS:
+                            shareProgressBar.setVisibility(View.INVISIBLE);
+                            previewMemo.setVisibility(View.VISIBLE);
+                            email_input.setVisibility(View.VISIBLE);
+                            shareButton.setVisibility(View.VISIBLE);
+                            break;
+                        case FAILURE:
+                            shareProgressBar.setVisibility(View.INVISIBLE);
+                            Toast.makeText(getContext(), "Chia sẻ memo không thành công!", Toast.LENGTH_SHORT).show();
+                            break;
+                        case NO_INTERNET:
+                            shareProgressBar.setVisibility(View.INVISIBLE);
+                            Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối của bạn!", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+
+                } else if (key.equals("private_diary")) {
+                    Utils.State state = (Utils.State) responseRepo.getData();
+                    switch (state) {
+                        case SUCCESS:
+                            shareProgressBar.setVisibility(View.INVISIBLE);
+                            previewMemo.setVisibility(View.GONE);
+                            email_input.setVisibility(View.GONE);
+                            shareButton.setVisibility(View.GONE);
+                            break;
+                        case FAILURE:
+                            shareProgressBar.setVisibility(View.INVISIBLE);
+                            Toast.makeText(getContext(), "Khóa memo không thành công!", Toast.LENGTH_SHORT).show();
+                            break;
+                        case NO_INTERNET:
+                            shareProgressBar.setVisibility(View.INVISIBLE);
+                            Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối của bạn!", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                }
+            }
+        });
     }
 
 
@@ -427,8 +562,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     adapter.addMemo(diary);
                 }
                 if (data.getParcelableExtra("update_memo") != null) {
+                    Log.d(TAG, "onActivityResult: " + currentChoosedDiaryPosition);
                     Diary diary = data.getParcelableExtra("update_memo");
-                    adapter.updateMemoAt(currentChoosedDiaryPosition - 1, diary);
+                    adapter.updateMemoAt(currentChoosedDiaryPosition, diary);
                 }
             }
         }
@@ -460,29 +596,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         break;
                     case NO_INTERNET:
                         Toast.makeText(getContext(), "Xin kiểm tra lại kết nối của bạn", Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        });
-    }
-
-    private void subscribeMemoObservable() {
-        viewModel.observableGetAllDiary().observe(this, new Observer<Utils.State>() {
-            @Override
-            public void onChanged(Utils.State state) {
-                switch (state) {
-                    case SUCCESS:
-                        Log.d(TAG, "onChanged: success ");
-                        if (homeSwipeRefreshLayout.isRefreshing()) {
-                            homeSwipeRefreshLayout.setRefreshing(false);
-                        }
-                        adapter.updateListMemo((ArrayList<Diary>) viewModel.listDiary);
-                        break;
-                    case FAILURE:
-                        Toast.makeText(getContext(), "Lỗi. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
-                        break;
-                    case NO_INTERNET:
-                        Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -537,6 +650,48 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
                             break;
                     }
+                } else if (key.equals(Constant.GET_DIARIES_KEY)) {
+                    Pair<Utils.State, ArrayList<Diary>> pair = (Pair<Utils.State, ArrayList<Diary>>) responseRepo.getData();
+                    switch (pair.first) {
+                        case SUCCESS:
+                            Log.d(TAG, "onChanged: success ");
+                            if (homeSwipeRefreshLayout.isRefreshing()) {
+                                homeSwipeRefreshLayout.setRefreshing(false);
+                            }
+                            if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                                loadMoreProgressBar.setVisibility(View.GONE);
+                            }
+                            if (isLoadMore) {
+                                Log.d(TAG, "onChanged: insert");
+                                viewModel.listDiary.addAll(pair.second);
+                                adapter.insertListMemo(pair.second);
+                                isLoadMore = false;
+                                isLoading = false;
+                            } else {
+                                Log.d(TAG, "onChanged: update");
+                                viewModel.listDiary = pair.second;
+                                adapter.updateListMemo(viewModel.listDiary);
+                            }
+                            if (viewModel.listDiary.size() == 0) {
+                                noMoreMemoText.setVisibility(View.VISIBLE);
+                                noMoreMemoText.setText("Không có memo nào!");
+                            }
+                            filerMemoByFilter.setText(String.valueOf(viewModel.listDiary.size()));
+                            filterMemoTotal.setText(String.valueOf(viewModel.getTotalMemo()));
+                            break;
+                        case FAILURE:
+                            if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                                loadMoreProgressBar.setVisibility(View.GONE);
+                            }
+                            Toast.makeText(getContext(), "Lỗi. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                            break;
+                        case NO_INTERNET:
+                            if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                                loadMoreProgressBar.setVisibility(View.GONE);
+                            }
+                            Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
                 }
             }
         });
@@ -569,15 +724,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         Log.d(TAG, "filterDiary: " + viewModel.filterTimeName);
         switch (viewModel.filterTimeName) {
             case "Hôm nay":
-                fromDate = simpleDateFormat.format(currentTime.getTime());
+                String fromDateStr = simpleDateFormat.format(currentTime.getTime());
+                fromDate = fromDateStr.split("T")[0] + "T00:00:00." + fromDateStr.split("\\.")[1];
                 toDate = simpleDateFormat.format(currentTime.getTime());
                 timeKey = toDate.split("T")[0];
                 break;
             case "Hôm qua":
                 Calendar yesterday = Calendar.getInstance();
                 yesterday.add(Calendar.DATE, -1);
-                fromDate = simpleDateFormat.format(yesterday.getTime());
-                toDate = simpleDateFormat.format(yesterday.getTime());
+                String yesterdayDateStr = simpleDateFormat.format(yesterday.getTime());
+                fromDate = yesterdayDateStr.split("T")[0] + "T00:00:00." + yesterdayDateStr.split("\\.")[1];
+                toDate = yesterdayDateStr.split("T")[0] + "T23:59:59." + yesterdayDateStr.split("\\.")[1];
                 timeKey = toDate.split("T")[0];
                 break;
             case "1 tuần trước":
@@ -610,23 +767,34 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         Log.d(TAG, "filterDiary: " + searchKey);
         Log.d(TAG, "filterDiary: " + timeKey);
         Log.d(TAG, "filterDiary: " + listTags);
-
-        if (searchKey != null || timeKey != null || listTags.size() != 0) {
+        Log.d(TAG, "filterDiary: " + isLoadMore);
+        Log.d(TAG, "filterDiary: " + fromDate);
+        Log.d(TAG, "filterDiary: " + toDate);
+        String lastId = null;
+        if (viewModel.listDiary.size() > 0 && isLoadMore) {
+            lastId = viewModel.listDiary.get(viewModel.listDiary.size() - 1).getId();
+        }
+        Log.d(TAG, "filterDiary: lastId: " + lastId);
+        if (searchKey != null || timeKey != null || listTags.size() != 0 || isLoadMore) {
             if (tagIds.size() != 0) {
                 Log.d(TAG, "filterDiary: tagSize != 0");
-                getAllMemo(searchKey, tagIds, fromDate, toDate, null);
+                getAllMemo(searchKey, tagIds, fromDate, toDate, lastId);
             } else {
                 Log.d(TAG, "filterDiary: tag size = 0");
-                getAllMemo(searchKey, null, fromDate, toDate, null);
+                getAllMemo(searchKey, null, fromDate, toDate, lastId);
             }
-            adapter.insertFilter(searchKey, timeKey, listTags);
-        } else if (searchKey == null && timeKey == null && listTags.size() == 0) {
+            if (!isLoadMore) {
+                adapter.insertFilter(searchKey, timeKey, listTags);
+            }
+        } else if (searchKey == null && timeKey == null && listTags.size() == 0 && !isLoadMore) {
             Log.d(TAG, "filterDiary: remove all");
             adapter.removeFilter();
-            getAllMemo(null, null, null, null, null);
+            getAllMemo(null, null, null, null, lastId);
+        }
+        if (!isLoadMore) {
+            homeSwipeRefreshLayout.setRefreshing(true);
         }
 
-        homeSwipeRefreshLayout.setRefreshing(true);
     }
 
     @Override
@@ -646,7 +814,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     public void onDrawerStateChanged(int newState) {
         if (newState == DrawerLayout.STATE_SETTLING) {
             Log.d(TAG, "onDrawerOpened: ");
-            filerMemoByFilter.setText(String.valueOf(adapter.getItemCount() - 1));
+            filerMemoByFilter.setText(String.valueOf(viewModel.listDiary.size()));
             viewModel.getAllTags();
         }
     }

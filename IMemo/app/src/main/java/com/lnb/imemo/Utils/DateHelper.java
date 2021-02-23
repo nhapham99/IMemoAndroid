@@ -47,19 +47,20 @@ public class DateHelper {
 
 
     public static String convertDate(String date) {
-        if (date.equals("Monday")) {
+        Log.d(TAG, "convertDate: " + date);
+        if (date.equals("Monday") || date.equals("Thứ Hai")) {
             return "T2";
-        } else if (date.equals("Tuesday")) {
+        } else if (date.equals("Tuesday") || date.equals("Thứ Ba")) {
             return "T3";
-        } else if (date.equals("Wednesday")) {
+        } else if (date.equals("Wednesday") || date.equals("Thứ Tư")) {
             return "T4";
-        } else if (date.equals("Thursday")) {
+        } else if (date.equals("Thursday") || date.equals("Thứ Năm")) {
             return "T5";
-        } else if (date.equals("Friday")) {
+        } else if (date.equals("Friday") || date.equals("Thứ Sáu")) {
             return "T6";
-        } else if (date.equals("Saturday")) {
+        } else if (date.equals("Saturday") || date.equals("Thứ Bảy")) {
             return "T7";
-        } else if (date.equals("Sunday")) {
+        } else if (date.equals("Sunday") || date.equals("Chủ Nhật")) {
             return "CN";
         }
         return "Error";

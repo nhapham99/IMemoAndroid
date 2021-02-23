@@ -12,11 +12,11 @@
         android:icon="@drawable/ic_notification"
         android:title="@null"/>
 
-    <item
-        android:id="@+id/mail"
-        android:enabled="true"
-        android:icon="@drawable/ic_mail"
-        android:title="@null"/>
+<!--    <item-->
+<!--        android:id="@+id/mail"-->
+<!--        android:enabled="true"-->
+<!--        android:icon="@drawable/ic_mail"-->
+<!--        android:title="@null"/>-->
 
     <item
         android:id="@+id/person"

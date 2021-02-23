@@ -21,7 +21,7 @@ import com.makeramen.roundedimageview.RoundedImageView;
 import java.util.ArrayList;
 
 import io.reactivex.subjects.PublishSubject;
-import tcking.github.com.giraffeplayer2.VideoView;
+
 
 public class IntroduceViewPagerAdapter extends RecyclerView.Adapter<IntroduceViewPagerAdapter.ImageAndVideoViewHolder> {
 

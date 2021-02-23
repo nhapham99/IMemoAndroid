@@ -208,15 +208,17 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
             }
         });
         Date dateTime = null;
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        try {
-            dateTime = df.parse(personProfile.getBirthday().split("\\.")[0]);
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if (personProfile.getBirthday() != null) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+            try {
+                dateTime = df.parse(personProfile.getBirthday().split("\\.")[0]);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+            user_dateOfBirth.setText(simpleDateFormat.format(dateTime.getTime()));
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        user_dateOfBirth.setText(simpleDateFormat.format(dateTime.getTime()));
     }
 
     private void pickDate() {

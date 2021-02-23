@@ -156,7 +156,7 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
     private Boolean prepareMediaPlayer(AudioRecyclerViewHolder holder, int position) {
         try {
             String url = listAudio.get(position).getUrl();
-            if (!url.contains(Utils.storeUrl)) {
+            if (!url.contains("https")) {
                 url = Utils.storeUrl + url;
             }
             mediaPlayers.get(position).setDataSource(url);

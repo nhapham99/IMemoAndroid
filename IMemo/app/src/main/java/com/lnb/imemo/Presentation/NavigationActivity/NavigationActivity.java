@@ -19,9 +19,9 @@ public class NavigationActivity extends AppCompatActivity {
     private static final String TAG = "NavigationActivity";
     // ui
     private BottomNavigationView bottomNavigationView;
-    private Fragment homeFragment = HomeFragment.getHomeFragment();
+    private Fragment homeFragment = HomeFragment.getHomeFragment(true);
     private Fragment mailFragment = MailFragment.getMailFragment();
-    private Fragment notificationFragment = NotificationFragment.getNotificationFragment();
+    private Fragment notificationFragment = NotificationFragment.getNotificationFragment(true);
     private PersonFragment personFragment = PersonFragment.getPersonFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +40,9 @@ public class NavigationActivity extends AppCompatActivity {
                     case R.id.home:
                         loadFragment(homeFragment);
                         return true;
-                    case R.id.mail:
-                        loadFragment(mailFragment);
-                        return true;
+//                    case R.id.mail:
+//                        loadFragment(mailFragment);
+//                        return true;
                     case R.id.notification:
                         loadFragment(notificationFragment);
                         return true;

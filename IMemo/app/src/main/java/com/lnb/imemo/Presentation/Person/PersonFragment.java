@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Presentation.Login.LoginActivity;
 import com.lnb.imemo.Presentation.PersonalSetting.PersonalSettingActivity;
 import com.lnb.imemo.Presentation.TagsSetting.TagsSettingActivity;
@@ -28,6 +29,7 @@ public class PersonFragment extends Fragment implements View.OnClickListener {
     private LinearLayout personSetting;
     private LinearLayout tagsSetting;
     private LinearLayout signOut;
+    private User mUser;
 
 
     public static PersonFragment getPersonFragment() {
@@ -59,10 +61,12 @@ public class PersonFragment extends Fragment implements View.OnClickListener {
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
+        mUser = User.getUser();
     }
 
     private void signOut() {
         mGoogleSignInClient.signOut();
+        mUser.clear();
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

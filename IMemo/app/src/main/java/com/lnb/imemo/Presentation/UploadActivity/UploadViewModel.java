@@ -39,7 +39,7 @@ public class UploadViewModel extends ViewModel {
     private Observer<ResponseRepo> uploadObservable;
     private Observer<ResponseRepo> diaryObserver;
     private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
-    private final Diary uploadDiary;
+    private Diary uploadDiary;
     private User mUser;
 
     public UploadViewModel(Context context) {
@@ -53,36 +53,14 @@ public class UploadViewModel extends ViewModel {
     }
 
     protected void uploadFile(Uri uri) {
-//        File originFile = FileUtils.getFile(context, uri);
-//        String path = FileUtils.getPath(context, uri);
-//        Log.d(TAG, "onActivityResult: " + path);
-//        RequestBody filePart = RequestBody.create(MediaType.parse(context.getContentResolver().getType(uri)),
-//                originFile);
-//        MultipartBody.Part file = MultipartBody.Part.createFormData("resource", originFile.getName(), filePart);
         FileMetaData fileMetaData = FileMetaData.getFileMetaData(context, uri);
         try {
             FileRequestBody requestBody = new FileRequestBody(context.getContentResolver().openInputStream(uri), fileMetaData.mimeType);
             MultipartBody.Part file = MultipartBody.Part.createFormData("resource", fileMetaData.displayName, requestBody);
+            uploadFileRepository.uploadFile(mUser.getToken(), file);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        Log.d(TAG, "onActivityResult: " + FileUtils.getPath(context, uri));
-        //uploadFileRepository.uploadFile(mUser.getToken(), file);
-    }
-
-    public String getContentType(Uri uri) {
-        String type = null;
-        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-        try {
-            if (cursor != null) {
-                cursor.moveToFirst();
-                type = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE));
-                cursor.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return type;
     }
 
     public void updateDiary() {
@@ -106,6 +84,8 @@ public class UploadViewModel extends ViewModel {
 
         diaryRepository.observableDiaryRepo().observeForever(diaryObserver);
     }
+
+
 
     private void subscribeUploadObservable() {
         uploadObservable = new Observer<ResponseRepo>() {
@@ -146,6 +126,7 @@ public class UploadViewModel extends ViewModel {
     public Diary getUploadDiary() {
         return uploadDiary;
     }
+
 
     public MediatorLiveData<ResponseRepo> getViewModelObservable() {
         return viewModelLiveData;

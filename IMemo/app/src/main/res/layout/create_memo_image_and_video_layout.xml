@@ -46,21 +46,24 @@
 
 
         <TextView
+            android:layout_weight="1"
             android:id="@+id/create_memo_resource_name"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/length_10dp"
             android:fontFamily="@font/roboto_regular"
             android:text="file_name.pdf"
             android:textColor="@color/black"
-            android:textSize="@dimen/text_16sp" />
+            android:textSize="@dimen/text_16sp"
+            android:singleLine="true" />
 
         <ImageView
             android:id="@+id/create_memo_remove_resource"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/length_20dp"
             android:src="@drawable/ic_remove"
+            android:layout_marginLeft="@dimen/length_20dp"
+            android:layout_marginRight="@dimen/length_10dp"
             app:tint="#999999" />
     </LinearLayout>
 

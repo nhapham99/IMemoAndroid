@@ -21,12 +21,15 @@ import com.lnb.imemo.Utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.subjects.PublishSubject;
+
 public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private ArrayList<Object> listUploadResource = new ArrayList<>();
     private static int TYPE_FILE = 1;
     private static int TYPE_IMAGE_AND_VIDEO = 2;
     private static int TYPE_LINK = 3;
     private Context mContext;
+    private PublishSubject<Integer> uploadRecyclerViewObservable = PublishSubject.create();
 
     @NonNull
     @Override
@@ -49,24 +52,64 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (listUploadResource.get(position) instanceof Resource) {
             Resource resource = (Resource) listUploadResource.get(position);
-            if (resource.getType().equals(Constant.videoType)) {
+            if (resource.getType().contains(Constant.videoType)) {
                 ImageAndVideoViewHolder imageAndVideoViewHolder = (ImageAndVideoViewHolder) holder;
-                Glide.with(mContext).load(resource.getUrl()).into(imageAndVideoViewHolder.imageResource);
+                String url = resource.getUrl();
+                if (!url.contains("https")) {
+                    url = Utils.storeUrl + url;
+                }
+                Glide.with(mContext).load(url).into(imageAndVideoViewHolder.imageResource);
                 imageAndVideoViewHolder.resourceName.setText(resource.getName());
+                imageAndVideoViewHolder.deleteResource.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listUploadResource.remove(position);
+                        notifyItemRemoved(position);
+                        uploadRecyclerViewObservable.onNext(position);
+                    }
+                });
             } else if (resource.getType().contains(Constant.imageType)) {
                 ImageAndVideoViewHolder imageAndVideoViewHolder = (ImageAndVideoViewHolder) holder;
-                Glide.with(mContext).load(resource.getUrl()).into(imageAndVideoViewHolder.imageResource);
+                String url = resource.getUrl();
+                if (!url.contains("https")) {
+                    url = Utils.storeUrl + url;
+                }
+                Glide.with(mContext).load(url).into(imageAndVideoViewHolder.imageResource);
                 imageAndVideoViewHolder.resourceName.setText(resource.getName());
                 imageAndVideoViewHolder.playVideo.setVisibility(View.GONE);
                 imageAndVideoViewHolder.blackLayout.setVisibility(View.GONE);
+                imageAndVideoViewHolder.deleteResource.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listUploadResource.remove(position);
+                        notifyItemRemoved(position);
+                        uploadRecyclerViewObservable.onNext(position);
+                    }
+                });
             } else if (resource.getType().equals(Constant.audioType)) {
                 FileViewHolder fileViewHolder = (FileViewHolder) holder;
                 fileViewHolder.imageResource.setImageResource(R.drawable.ic_file_audio);
                 fileViewHolder.resourceName.setText(resource.getName());
+                fileViewHolder.deleteResource.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listUploadResource.remove(position);
+                        notifyItemRemoved(position);
+                        uploadRecyclerViewObservable.onNext(position);
+                    }
+                });
             } else {
                 FileViewHolder fileViewHolder = (FileViewHolder) holder;
                 fileViewHolder.imageResource.setImageResource(R.drawable.ic_file);
                 fileViewHolder.resourceName.setText(resource.getName());
+                fileViewHolder.deleteResource.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listUploadResource.remove(position);
+                        notifyItemRemoved(position);
+                        uploadRecyclerViewObservable.onNext(position);
+                    }
+                });
             }
         } else if (listUploadResource.get(position) instanceof Link) {
             Link link = (Link) listUploadResource.get(position);
@@ -75,14 +118,26 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
             linkRecyclerViewHolder.linkTitle.setText(link.getTitle().toString());
             linkRecyclerViewHolder.linkDescription.setText(link.getDescription().toString());
             linkRecyclerViewHolder.linkUrl.setText(link.getUrl());
+            linkRecyclerViewHolder.deleteLink.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listUploadResource.remove(position);
+                    notifyItemRemoved(position);
+                    uploadRecyclerViewObservable.onNext(position);
+                }
+            });
         }
+    }
+
+    public PublishSubject<Integer> getUploadRecyclerViewObservable() {
+        return uploadRecyclerViewObservable;
     }
 
     @Override
     public int getItemViewType(int position) {
         if (listUploadResource.get(position) instanceof Resource) {
             Resource resource = (Resource) listUploadResource.get(position);
-            if (resource.getType().equals(Constant.videoType) || resource.getType().contains(Constant.imageType)) {
+            if (resource.getType().contains(Constant.videoType) || resource.getType().contains(Constant.imageType)) {
                 return TYPE_IMAGE_AND_VIDEO;
             } else {
                 return TYPE_FILE;

@@ -41,9 +41,17 @@ public class LinkRecyclerViewAdapter extends RecyclerView.Adapter<LinkRecyclerVi
         if (link.getImage() != null && (link.getImage().toString().contains("https") || link.getImage().toString().contains("http"))) {
             Glide.with(mContext).load(link.getImage().toString()).into(holder.linkImage);
         }
-        holder.linkTitle.setText(link.getTitle().toString());
-        holder.linkDescription.setText(link.getDescription().toString());
-        holder.linkUrl.setText(link.getUrl());
+        if (link.getTitle() != null) {
+            holder.linkTitle.setText(link.getTitle().toString());
+        }
+        if (link.getDescription() != null) {
+            holder.linkDescription.setText(link.getDescription().toString());
+        }
+
+        if (link.getUrl() != null) {
+            holder.linkUrl.setText(link.getUrl());
+        }
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

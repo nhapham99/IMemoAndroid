@@ -3,6 +3,8 @@ package com.lnb.imemo.Presentation.Notification;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,12 +37,16 @@ public class NotificationFragment extends Fragment {
     private NotificationRecyclerViewAdapter notificationRecyclerViewAdapter;
     private NotificationViewModel viewModel;
 
+    private Boolean isStart = false;
 
-    private NotificationFragment() { }
 
-    public static NotificationFragment getNotificationFragment() {
-        if (mNotificationFragment == null) {
-            mNotificationFragment = new NotificationFragment();
+    private NotificationFragment(Boolean isStart) {
+        this.isStart = isStart;
+    }
+
+    public static NotificationFragment getNotificationFragment(Boolean isStart) {
+        if (mNotificationFragment == null || isStart) {
+            mNotificationFragment = new NotificationFragment(isStart);
         }
         return mNotificationFragment;
     }
@@ -71,7 +77,9 @@ public class NotificationFragment extends Fragment {
                 startActivity(intent);
             }
         });
-        viewModel = NotificationViewModel.getNotificationViewModel();
+
+        viewModel = NotificationViewModel.getNotificationViewModel(isStart);
+
         if (notificationRecyclerViewAdapter.getItemCount() == 0) {
             viewModel.getAllNotification();
         }
@@ -101,5 +109,9 @@ public class NotificationFragment extends Fragment {
         });
     }
 
-
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        this.isStart = false;
+    }
 }

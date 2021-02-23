@@ -24,6 +24,7 @@
             app:tint="@color/black" />
 
         <TextView
+            android:layout_weight="1"
             android:id="@+id/create_memo_resource_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -39,6 +40,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_remove"
             android:layout_marginLeft="@dimen/length_20dp"
+            android:layout_marginRight="@dimen/length_10dp"
             app:tint="#999999"/>
 
     </LinearLayout>

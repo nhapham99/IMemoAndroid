@@ -73,10 +73,9 @@ public class DiaryRepository {
         );
 
         diaryRepoLiveData.addSource(source, roots -> {
-            ResponseRepo<Pair<Utils.State, List<Diary>>> response = new ResponseRepo<>();
+            ResponseRepo<Pair<Utils.State, ResultDiaries>> response = new ResponseRepo<>();
             if (roots.getStatusCode() == 0) {
-                List<Diary> diaries = roots.getResult().getDiaries();
-                response.setData(new Pair<>(Utils.State.SUCCESS, diaries));
+                response.setData(new Pair<>(Utils.State.SUCCESS, roots.getResult()));
             } else if (roots.getStatusCode() == -1) {
                 response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
             } else {

@@ -48,4 +48,11 @@ public class User {
     public void setToken(String token) {
         this.token = token;
     }
+
+    public void clear() {
+        mInstance.token = "";
+        mInstance.avatarUrl = "";
+        mInstance.email = "";
+        mInstance.name = "";
+    }
 }

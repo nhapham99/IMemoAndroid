@@ -1,112 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/length_10dp"
     android:layout_marginBottom="@dimen/length_10dp"
-    android:background="@drawable/white_corner"
-    android:orientation="vertical"
     android:elevation="2dp">
 
-    <RelativeLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@null"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingTop="@dimen/length_10dp"
-        android:paddingBottom="@dimen/length_10dp">
+        android:background="@drawable/white_corner"
+        android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="@dimen/length_10dp"
-            android:fontFamily="@font/roboto_bold"
-            android:text="Chia sẻ"
-            android:textColor="@color/black"
-            android:textSize="20sp" />
-
-        <ImageButton
-            android:id="@+id/share_memo_escape"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="@dimen/length_20dp"
-            android:background="@drawable/circle_indicator_selected"
-            android:backgroundTint="#F0F2F5"
-            android:src="@drawable/ic_escape" />
-
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/length_1dp"
-        android:background="#E3E3E3" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/length_10dp">
-
-        <TextView
-            android:id="@+id/preview_memo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginLeft="@dimen/length_10dp"
-            android:layout_marginRight="@dimen/length_10dp"
-            android:drawableLeft="@drawable/ic_eye"
-            android:fontFamily="@font/roboto_regular"
-            android:gravity="center_vertical"
-            android:text=" Xem trước"
-            android:textColor="#666666"
-            android:textSize="15sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/length_10dp"
-            android:fontFamily="@font/roboto_medium"
-            android:text="Chia sẻ với*"
-            android:textSize="15sp" />
-    </RelativeLayout>
-
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/input_email"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/length_10dp"
-        android:layout_marginTop="@dimen/length_5dp"
-        android:layout_marginEnd="@dimen/length_10dp"
-        android:background="@color/white"
-        android:fontFamily="@font/roboto_regular"
-        android:hint="Nhập email">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/username"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@null" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:background="@null"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/length_10dp"
+            android:paddingBottom="@dimen/length_10dp">
 
-    <Button
-        android:id="@+id/share_memo"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/length_50dp"
-        android:layout_marginLeft="@dimen/length_10dp"
-        android:layout_marginTop="@dimen/length_10dp"
-        android:layout_marginRight="@dimen/length_10dp"
-        android:layout_marginBottom="@dimen/length_20dp"
-        android:fontFamily="@font/roboto_bold"
-        android:text="Chia sẻ"
-        android:textAllCaps="false"
-        android:textColor="@color/white" />
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Chia sẻ"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+            <ImageButton
+                android:id="@+id/share_memo_escape"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="@dimen/length_20dp"
+                android:background="@drawable/circle_indicator_selected"
+                android:backgroundTint="#F0F2F5"
+                android:src="@drawable/ic_escape" />
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/length_1dp"
+            android:background="#E3E3E3" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/length_10dp">
+
+            <TextView
+                android:id="@+id/preview_memo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:layout_marginRight="@dimen/length_10dp"
+                android:drawableLeft="@drawable/ic_eye"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center_vertical"
+                android:text=" Xem trước"
+                android:textColor="#666666"
+                android:textSize="15sp"
+                android:layout_centerVertical="true"/>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_share"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:text="Chia sẻ: "/>
+
+        </RelativeLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_email"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/length_10dp"
+            android:layout_marginTop="@dimen/length_5dp"
+            android:layout_marginEnd="@dimen/length_10dp"
+            android:background="@color/white"
+            android:fontFamily="@font/roboto_regular"
+            android:hint="Nhập email">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/share_memo"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/length_50dp"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:layout_marginTop="@dimen/length_10dp"
+            android:layout_marginRight="@dimen/length_10dp"
+            android:layout_marginBottom="@dimen/length_20dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="Chia sẻ"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/share_progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+</RelativeLayout>
 

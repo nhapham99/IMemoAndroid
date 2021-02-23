@@ -12,6 +12,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -46,6 +47,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
 public class UploadActivity extends AppCompatActivity implements View.OnClickListener {
@@ -64,6 +68,8 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     private LinearLayout uploadLinks;
     private Calendar diaryTime = Calendar.getInstance();
     private TagRecyclerViewAdapter tagsAdapter;
+    ArrayList<Object> listObject = new ArrayList<>();
+    private CompositeDisposable disposable = new CompositeDisposable();
 
     // var
     private int GET_FILE_CODE = 1;
@@ -135,6 +141,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         if (getIntent().getStringExtra(Constant.GET_FILE_CODE) != null) {
             Uri uri = Uri.parse(getIntent().getStringExtra(Constant.GET_FILE_CODE));
             viewModel.uploadFile(uri);
+
         } else if (getIntent().getParcelableArrayListExtra(Constant.GET_TAGS_CODE) != null
                 && getIntent().getStringArrayListExtra("arrayTagIds") != null) {
             tagsAdapter = new TagRecyclerViewAdapter(getIntent().getParcelableArrayListExtra(Constant.GET_TAGS_CODE));
@@ -155,8 +162,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             Diary diary = getIntent().getParcelableExtra("diary_edit");
             setupViewForEdit(diary);
         }
-
-
+        subscribeUploadRecyclerViewObservable();
     }
 
     private void setupViewForEdit(Diary diary) {
@@ -172,7 +178,6 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         }
         createMemoTitle.setText(diary.getTitle());
         createMemoContent.setText(diary.getContent());
-        ArrayList<Object> listObject = new ArrayList<>();
         listObject.addAll(diary.getResources());
         listObject.addAll(diary.getLinks());
         resourceAdapter.setData(listObject);
@@ -191,6 +196,33 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         diary.setTagIds(tagIds);
         viewModel.getUploadDiary().setDiary(diary);
         createMemoButton.setText("Cập nhật");
+    }
+
+    private void subscribeUploadRecyclerViewObservable() {
+        resourceAdapter.getUploadRecyclerViewObservable().subscribe(new io.reactivex.Observer<Integer>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+                disposable.add(d);
+            }
+
+            @Override
+            public void onNext(@NonNull Integer position) {
+                Log.d(TAG, "accept: " + position);
+                Resource resource = viewModel.getUploadDiary().getResources().get(position);
+                viewModel.getUploadDiary().getResources().remove(resource);
+                Log.d(TAG, "accept: " + viewModel.getUploadDiary().getResources().toString());
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
     }
 
     private void subscribeViewModelObservable() {
@@ -220,6 +252,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                    }
                } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                    Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
+
                } else if (key == Constant.UPDATE_DIARY_KEY) {
                    Utils.State state = (Utils.State) responseRepo.getData();
                    switch (state) {
@@ -249,10 +282,28 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void subscribeRemoveTag() {
-        tagsAdapter.getRemoveTagObservable().subscribe(new Consumer<Integer>() {
+
+        tagsAdapter.getRemoveTagObservable().subscribe(new io.reactivex.Observer<Integer>() {
             @Override
-            public void accept(Integer position) throws Exception {
-                viewModel.getUploadDiary().getTagIds().remove(position);
+            public void onSubscribe(@NonNull Disposable d) {
+                 disposable.add(d);
+            }
+
+            @Override
+            public void onNext(@NonNull Integer position) {
+                Tags tag = viewModel.getUploadDiary().getTags().get(position);
+                viewModel.getUploadDiary().getTags().remove(tag);
+
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
     }
@@ -295,6 +346,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 Log.d(TAG, "onActivityResult: failure");
             }
         }
+        subscribeUploadRecyclerViewObservable();
     }
 
     private void showDatePicker() {
