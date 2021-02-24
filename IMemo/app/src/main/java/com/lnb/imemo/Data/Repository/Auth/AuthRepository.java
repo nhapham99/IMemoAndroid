@@ -47,6 +47,7 @@ public class AuthRepository {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
                                 Log.d(TAG, "apply: " + throwable.getMessage());
+                                throwable.printStackTrace();
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {

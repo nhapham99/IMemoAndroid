@@ -28,7 +28,7 @@
             android:layout_width="15dp"
             android:layout_height="wrap_content"
             android:id="@+id/pop_down_menu"
-            android:src="@drawable/ic_union"
+            android:src="@drawable/ic_three_dot"
             android:layout_gravity="end"
             android:layout_marginRight="@dimen/length_10dp"/>
 

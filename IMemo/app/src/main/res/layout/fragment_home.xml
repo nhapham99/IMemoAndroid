@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/grey_background"
+    android:background="#C9CCD1"
     tools:context=".Presentation.Home.HomeFragment">
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -40,18 +40,57 @@
                         android:orientation="horizontal">
 
                         <ImageView
-                            android:layout_width="@dimen/length_35dp"
+                            android:layout_width="120dp"
                             android:layout_height="@dimen/length_35dp"
-                            android:src="@drawable/memo_logo" />
+                            android:src="@drawable/ic_memo" />
 
-                        <com.mancj.materialsearchbar.MaterialSearchBar
-                            android:id="@+id/searchBar"
-                            android:layout_width="match_parent"
+<!--                        <com.mancj.materialsearchbar.MaterialSearchBar-->
+<!--                            android:id="@+id/searchBar"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="match_parent"-->
+<!--                            android:layout_marginLeft="@dimen/length_10dp"-->
+<!--                            android:layout_weight="1"-->
+<!--                            app:mt_hint="Tìm kiếm..."-->
+<!--                            app:mt_maxSuggestionsCount="10" />-->
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:layout_marginLeft="@dimen/length_10dp"
+                            android:orientation="horizontal"
                             android:layout_weight="1"
-                            app:mt_hint="Tìm kiếm..."
-                            app:mt_maxSuggestionsCount="10" />
+                            android:layout_marginTop="@dimen/length_5dp"
+                            android:layout_marginBottom="@dimen/length_5dp"
+                            android:layout_marginLeft="@dimen/length_10dp"
+                            android:gravity="center_vertical"
+                            android:background="@drawable/search_background_layout">
+
+                            <EditText
+                                android:id="@+id/search_bar"
+                                android:layout_weight="1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:hint="Tìm kiếm..."
+                                android:gravity="center_vertical"
+                                android:layout_marginLeft="@dimen/length_10dp"
+                                android:background="@null"
+                                android:maxLines="1"
+                                android:layout_marginTop="3dp"
+                                android:layout_marginBottom="3dp"
+                                android:textSize="14sp"
+                                android:imeOptions="actionSearch"
+                                android:inputType="text" />
+
+                            <ImageView
+                                android:id="@+id/search_icon"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/ic_search"
+                                android:layout_marginRight="@dimen/length_10dp"/>
+
+
+                        </LinearLayout>
+
+
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:id="@+id/home_user_avatar"
@@ -59,7 +98,6 @@
                             android:layout_height="@dimen/length_35dp"
                             android:layout_gravity="center"
                             android:layout_marginLeft="@dimen/length_10dp"
-                            android:layout_weight="0"
                             android:src="@drawable/person_icon_top" />
 
                         <ImageView

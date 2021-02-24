@@ -23,11 +23,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -88,8 +91,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
     private CircleImageView userAvatar;
     private ImageView homeFilter;
-    private MaterialSearchBar searchBar;
     private FilterRecyclerViewAdapter highLightFilterAdapter, timeFilterAdapter, tagFilterAdapter;
+    private EditText searchText;
+    private ImageView searchIcon;
+
 
     // var
     private HomeRecyclerViewAdapter adapter;
@@ -137,7 +142,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         homeFilter.setOnClickListener(this);
         drawerLayout = view.findViewById(R.id.drawerLayout);
         drawerLayout.setDrawerListener(this);
-        searchBar = view.findViewById(R.id.searchBar);
         filterMemoTotal = view.findViewById(R.id.filter_memo_total);
         filerMemoByFilter = view.findViewById(R.id.filter_memo_by_filter);
         filterMemoToday = view.findViewById(R.id.filter_memo_today);
@@ -153,6 +157,21 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         noMoreMemoText = view.findViewById(R.id.no_more_memo);
         loadMoreProgressBar.setVisibility(View.GONE);
         noMoreMemoText.setVisibility(View.GONE);
+
+        searchText = view.findViewById(R.id.search_bar);
+        searchIcon = view.findViewById(R.id.search_icon);
+        searchIcon.setOnClickListener(this);
+        searchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    searchKey = searchText.getText().toString();
+                    filterDiary();
+                    searchText.setText("");
+                }
+                return false;
+            }
+        });
 
 
         viewModel = HomeViewModel.getHomeViewModel(isStart);
@@ -252,21 +271,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
         });
 
-        searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
-            @Override
-            public void onSearchStateChanged(boolean enabled) {
-            }
-
-            @Override
-            public void onSearchConfirmed(CharSequence text) {
-                searchKey = text.toString();
-                filterDiary();
-            }
-
-            @Override
-            public void onButtonClicked(int buttonCode) {
-            }
-        });
 
 
         // load user avatar
@@ -704,6 +708,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 drawerLayout.openDrawer(GravityCompat.END);
                 break;
             case R.id.filter_button:
+                filterDiary();
+                break;
+            case R.id.search_icon:
+                searchKey = searchText.getText().toString();
                 filterDiary();
                 break;
         }
