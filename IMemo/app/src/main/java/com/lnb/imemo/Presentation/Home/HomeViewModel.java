@@ -63,9 +63,7 @@ public class HomeViewModel extends ViewModel {
         diaryRepository = new DiaryRepository();
         previewLinkRepository = new PreviewLinkRepository();
         mUser = User.getUser();
-        Log.d(TAG, "HomeViewModel: " + mUser.toString());
         personProfile = PersonProfile.getInstance();
-        Log.d(TAG, "HomeViewModel: " + personProfile.toString());
         subscribeTagAction();
         subscribeDiary();
     }
@@ -174,7 +172,6 @@ public class HomeViewModel extends ViewModel {
                 String key = responseRepo.getKey();
                 if (key == Constant.GET_DIARIES_KEY) {
                     ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
-                    Log.d(TAG, "onChanged: " + responseRepo.getData());
                     Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
                     Pagination pagination = pair.second.getPagination();
                     totalMemo = pagination.getTotalItems();

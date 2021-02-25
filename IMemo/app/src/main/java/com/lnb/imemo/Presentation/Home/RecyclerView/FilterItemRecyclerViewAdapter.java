@@ -41,7 +41,6 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d(TAG, "onCreateViewHolder: " + viewType);
         if (viewType == TYPE_SEARCH) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.filter_search_item_layout, parent, false);
             return new FilterItemSearchViewHolder(view);
@@ -71,18 +70,22 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
 
     private void initForFilterTag(FilterItemTagViewHolder holder, int position) {
         int removePosition = 0;
-        if (time != null) removePosition++;
-        if (searchKey != null) removePosition++;
+        if (time != null) {
+            removePosition++;
+        }
+        if (searchKey != null) {
+            removePosition++;
+        }
+
         Tags tags = listTags.get(position - removePosition);
         holder.tagName.setText(tags.getName());
         holder.itemView.getBackground().setColorFilter(Color.parseColor(tags.getColor()), PorterDuff.Mode.SRC_ATOP);
         int finalRemovePosition = removePosition;
-
         holder.deleteTagFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, "initForFilterTag: " + finalRemovePosition);
                 filterObservable.onNext(new Pair<>("remove_filter_tag", tags.getName()));
-                listTags.remove(position - finalRemovePosition);
                 notifyDataSetChanged();
             }
         });

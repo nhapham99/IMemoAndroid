@@ -37,7 +37,6 @@ public class TagSettingViewModel extends ViewModel {
     }
 
     public void updateTag(Tags tags) {
-        Log.d(TAG, "updateTag: ");
         tagsRepository.updateTags(mUser.getToken(), tags);
     }
 
@@ -58,7 +57,6 @@ public class TagSettingViewModel extends ViewModel {
                     viewModelLiveData.setValue(response);
                 } else if(key == Constant.CREATE_TAG_KEY) {
                     Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
-                    Log.d(TAG, "onChanged: " + pair.first);
                     if (pair.first == Utils.State.SUCCESS) {
                         getTags();
                     }
@@ -67,10 +65,8 @@ public class TagSettingViewModel extends ViewModel {
                     responseRepo.setKey(Constant.CREATE_TAG_KEY);
                     viewModelLiveData.setValue(responseRepo);
                 } else if (key == Constant.UPDATE_TAGS_KEY) {
-                    Log.d(TAG, "onChanged: update tags");
                     Utils.State state = (Utils.State) response.getData();
                     if (state == Utils.State.SUCCESS) {
-                        Log.d(TAG, "onChanged: update tag success");
                         getTags();
                     }
                     ResponseRepo<Utils.State> responseRepo = new ResponseRepo<>();

@@ -37,7 +37,6 @@ class LoginViewModel extends ViewModel {
         mUser.setEmail(account.getEmail());
         mUser.setAvatarUrl(account.getPhotoUrl().toString());
         mUser.setName(account.getDisplayName());
-        Log.d(TAG, "loginWithGoogle: " + account.getIdToken());
         getTokenFromGoogleToken(account.getIdToken());
     }
 

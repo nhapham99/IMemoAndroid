@@ -1,17 +1,17 @@
 package com.lnb.imemo.Data.Repository.Notification;
 
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.LiveDataReactiveStreams;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
+import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.APIClient;
-import com.lnb.imemo.Data.Repository.Diary.DiaryAPI;
 import com.lnb.imemo.Data.Repository.Model.ResultNotification;
 import com.lnb.imemo.Model.Notification;
+import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Root;
 import com.lnb.imemo.Utils.Constant;
@@ -37,27 +37,81 @@ public class NotificationRepository {
     }
 
     public void getAllNotification(String token, int page) {
-        Log.d(TAG, "getAllNotification: ");
         LiveData<ResultNotification> source = LiveDataReactiveStreams.fromPublisher(
                 notificationAPI.getAllNotification(token, page, Constant.pageSize)
-                .onErrorReturn(new Function<Throwable, ResultNotification>() {
-                    @Override
-                    public ResultNotification apply(@NonNull Throwable throwable) throws Exception {
-                        ResultNotification root = new ResultNotification();
-                        return root;
-                    }
-                })
-                .subscribeOn(Schedulers.io())
+                        .onErrorReturn(new Function<Throwable, ResultNotification>() {
+                            @Override
+                            public ResultNotification apply(@NonNull Throwable throwable) throws Exception {
+                                ResultNotification root = new ResultNotification();
+                                return root;
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
         );
 
         notificationLiveData.addSource(source, new Observer<ResultNotification>() {
             @Override
             public void onChanged(ResultNotification resultNotification) {
-                Log.d(TAG, "onChanged: " + resultNotification.toString());
-                List<Notification> listNotification = resultNotification.getNotifications();
-                ResponseRepo<List<Notification>> responseRepo = new ResponseRepo<>();
+                List<Notification<PersonProfile>> listNotification = resultNotification.getNotifications();
+                ResponseRepo<List<Notification<PersonProfile>>> responseRepo = new ResponseRepo<>();
                 responseRepo.setKey(Constant.GET_ALL_NOTIFICATION);
                 responseRepo.setData(listNotification);
+                notificationLiveData.setValue(responseRepo);
+                notificationLiveData.removeSource(source);
+            }
+        });
+    }
+
+    public void getAllNotificationForCount(String token, int page) {
+        LiveData<ResultNotification> source = LiveDataReactiveStreams.fromPublisher(
+                notificationAPI.getAllNotification(token, page, Constant.pageSize)
+                        .onErrorReturn(new Function<Throwable, ResultNotification>() {
+                            @Override
+                            public ResultNotification apply(@NonNull Throwable throwable) throws Exception {
+                                ResultNotification root = new ResultNotification();
+                                return root;
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+        );
+
+        notificationLiveData.addSource(source, new Observer<ResultNotification>() {
+            @Override
+            public void onChanged(ResultNotification resultNotification) {
+                ResponseRepo<ResultNotification> responseRepo = new ResponseRepo<>();
+                responseRepo.setKey(Constant.GET_ALL_NOTIFICATION_FOR_COUNT);
+                responseRepo.setData(resultNotification);
+                notificationLiveData.setValue(responseRepo);
+                notificationLiveData.removeSource(source);
+            }
+        });
+    }
+
+    public void markReadNotification(String token, String notificationId) {
+        LiveData<JsonObject> source = LiveDataReactiveStreams
+                .fromPublisher(notificationAPI.markReadNotification(token, notificationId)
+                        .onErrorReturn(new Function<Throwable, JsonObject>() {
+                            @Override
+                            public JsonObject apply(@NonNull Throwable throwable) throws Exception {
+                                JsonObject jsonObject = new JsonObject();
+                                jsonObject.addProperty("ok", false);
+                                return jsonObject;
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+                );
+
+        notificationLiveData.addSource(source, new Observer<JsonObject>() {
+            @Override
+            public void onChanged(JsonObject jsonObject) {
+                ResponseRepo<Utils.State> responseRepo = new ResponseRepo<>();
+                Log.d(TAG, "onChanged: " + jsonObject.toString());
+                if (jsonObject.get("ok").getAsBoolean()) {
+                    responseRepo.setData(Utils.State.SUCCESS);
+                } else {
+                    responseRepo.setData(Utils.State.FAILURE);
+                }
+                responseRepo.setKey(Constant.MARK_READ_NOTIFICATION);
                 notificationLiveData.setValue(responseRepo);
                 notificationLiveData.removeSource(source);
             }
@@ -67,4 +121,6 @@ public class NotificationRepository {
     public MediatorLiveData<ResponseRepo> getNotificationLiveData() {
         return notificationLiveData;
     }
+
+
 }

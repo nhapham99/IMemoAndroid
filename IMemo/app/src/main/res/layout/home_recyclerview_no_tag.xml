@@ -61,8 +61,7 @@
         style="@style/customTabLayout"
         app:tabSelectedTextColor="@color/blue_light"
         android:layout_marginLeft="@dimen/length_10dp"
-        app:tabMode="scrollable"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
     <androidx.viewpager2.widget.ViewPager2

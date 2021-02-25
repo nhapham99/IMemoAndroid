@@ -153,7 +153,6 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
                     Pair<Utils.State, String> response = responseRepo.getData();
                     switch (response.first) {
                         case SUCCESS:
-                            Log.d(TAG, "onChanged: " + response.second);
                             Glide.with(PersonalSettingActivity.this).load(response.second).into(user_avatar);
                             break;
                         case FAILURE:
@@ -170,7 +169,6 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
     
     private void updateUI() {
         PersonProfile personProfile = viewModel.personProfile;
-        Log.d(TAG, "updateUI: " + personProfile.toString());
         if (personProfile.getPicture() != null) {
             Glide.with(this).load(viewModel.personProfile.getPicture()).into(user_avatar);
         }
@@ -275,7 +273,6 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'sss'Z'");
         simpleDateFormat.setTimeZone(tz);
         String dateOfBirthStr = simpleDateFormat.format(dateOfBirth.getTime());
-        Log.d(TAG, "onDateSet: " + dateOfBirthStr);
         viewModel.newPersonProfile.setBirthday(dateOfBirthStr);
         viewModel.updatePersonProfile();
     }

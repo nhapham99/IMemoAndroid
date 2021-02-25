@@ -2,28 +2,29 @@ package com.lnb.imemo.Data.Repository.Model;
 
 import com.lnb.imemo.Model.Notification;
 import com.lnb.imemo.Model.Pagination;
+import com.lnb.imemo.Model.PersonProfile;
 
 import java.util.List;
 
 public class ResultNotification {
-    private List<Notification> notifications;
+    private List<Notification<PersonProfile>> notifications;
     private int totalHNotSeen;
     private Pagination pagination;
 
     public ResultNotification() {
     }
 
-    public ResultNotification(List<Notification> notifications, int totalHNotSeen, Pagination pagination) {
+    public ResultNotification(List<Notification<PersonProfile>> notifications, int totalHNotSeen, Pagination pagination) {
         this.notifications = notifications;
         this.totalHNotSeen = totalHNotSeen;
         this.pagination = pagination;
     }
 
-    public List<Notification> getNotifications() {
+    public List<Notification<PersonProfile>> getNotifications() {
         return notifications;
     }
 
-    public void setNotifications(List<Notification> notifications) {
+    public void setNotifications(List<Notification<PersonProfile>> notifications) {
         this.notifications = notifications;
     }
 

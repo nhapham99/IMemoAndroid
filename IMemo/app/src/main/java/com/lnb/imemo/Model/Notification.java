@@ -1,9 +1,9 @@
 package com.lnb.imemo.Model;
 
-public class Notification {
+public class Notification<T> {
     private Boolean seen;
     private String id;
-    private PersonProfile user;
+    private T user;
     private String data;
     private String createdAt;
     private String updatedAt;
@@ -11,7 +11,7 @@ public class Notification {
     public Notification() {
     }
 
-    public Notification(Boolean seen, String id, PersonProfile user, String data, String createdAt, String updatedAt) {
+    public Notification(Boolean seen, String id, T user, String data, String createdAt, String updatedAt) {
         this.seen = seen;
         this.id = id;
         this.user = user;
@@ -36,11 +36,11 @@ public class Notification {
         this.id = id;
     }
 
-    public PersonProfile getUser() {
+    public T getUser() {
         return user;
     }
 
-    public void setUser(PersonProfile user) {
+    public void setUser(T user) {
         this.user = user;
     }
 

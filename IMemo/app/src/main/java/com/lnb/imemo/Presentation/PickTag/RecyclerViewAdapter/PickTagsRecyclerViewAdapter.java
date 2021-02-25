@@ -53,7 +53,6 @@ public class PickTagsRecyclerViewAdapter extends RecyclerView.Adapter<PickTagsRe
                     checkedTags.remove(listTags.get(position));
                     holder.tickImage.setVisibility(View.INVISIBLE);
                     listTagsIdListener.onNext(checkedTagsId.size());
-                    Log.d(TAG, "onClick: " + checkedTagsId.size());
                 } else {
                     checkedTagsId.add(listTags.get(position).getId());
                     checkedTags.add(listTags.get(position));

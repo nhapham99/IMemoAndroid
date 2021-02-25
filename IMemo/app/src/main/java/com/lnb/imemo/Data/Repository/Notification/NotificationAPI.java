@@ -8,6 +8,9 @@ import io.reactivex.Flowable;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.PUT;
+import retrofit2.http.Part;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 interface NotificationAPI {
@@ -15,4 +18,7 @@ interface NotificationAPI {
     Flowable<ResultNotification> getAllNotification(@Header("Authorization") String token,
                                                           @Query("page") int page,
                                                           @Query("pageSize") int pageSize);
+    @PUT("notifications/mark-seen/{id}")
+    Flowable<JsonObject> markReadNotification(@Header("Authorization") String token,
+                                              @Path("id") String notificationId);
 }

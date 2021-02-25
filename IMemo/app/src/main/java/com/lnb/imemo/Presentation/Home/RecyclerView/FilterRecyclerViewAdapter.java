@@ -90,7 +90,6 @@ public class FilterRecyclerViewAdapter extends RecyclerView.Adapter<FilterRecycl
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void accept(Pair<String, String> pair) throws Exception {
-                Log.d(TAG, "accept: " + pair.second);
                 if (pair.first == "update_filter") {
                     if (itemChooseHashMap.containsKey(pair.second)) {
                         itemChooseHashMap.replace(pair.second, false);
@@ -122,7 +121,6 @@ public class FilterRecyclerViewAdapter extends RecyclerView.Adapter<FilterRecycl
     }
 
     public void reset() {
-        Log.d(TAG, "reset: ");
         itemChooseHashMap.clear();
         for (String string : listFilter) {
             itemChooseHashMap.put(string, false);

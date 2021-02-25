@@ -3,19 +3,19 @@
     <item
         android:id="@+id/home"
         android:enabled="true"
-        android:icon="@drawable/ic_home"
+        android:icon="@drawable/tab_icon_home"
         android:title="@null" />
 
     <item
         android:id="@+id/notification"
         android:enabled="true"
-        android:icon="@drawable/ic_notification"
+        android:icon="@drawable/tab_icon_notification"
         android:title="@null"/>
 
 <!--    <item-->
 <!--        android:id="@+id/mail"-->
 <!--        android:enabled="true"-->
-<!--        android:icon="@drawable/ic_mail"-->
+<!--                android:icon="@drawable/tab_icon_mail"-->
 <!--        android:title="@null"/>-->
 
     <item

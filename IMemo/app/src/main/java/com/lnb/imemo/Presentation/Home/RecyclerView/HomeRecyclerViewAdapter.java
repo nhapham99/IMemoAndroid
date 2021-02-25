@@ -72,7 +72,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-        Log.d(TAG, "onCreateViewHolder: " + viewType);
         mContext = parent.getContext();
         if (viewType == TYPE_NORMAL) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_item, parent, false);
@@ -127,9 +126,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     }
 
-    private void initViewForFooter() {
-        Log.d(TAG, "initViewForFooter: ");
-    }
 
     private void initViewForHomeFilter(HomeFilterViewHolder holder) {
         if (searchKey != null) {
@@ -214,7 +210,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                 popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        Log.d(TAG, "onMenuItemClick: " + (position));
                         switch (item.getItemId()) {
                             case R.id.pop_down_edit:
                                 actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
@@ -276,7 +271,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
             if (listAudio.size() != 0) {
                 listTabs.add(mContext.getResources().getText(R.string.audio).toString());
-                Log.d(TAG, "onBindViewHolder: " + listAudio.size());
                 listFragments.add(new AudioFragment(listAudio));
             }
 
@@ -428,7 +422,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         ArrayList<Link> listLinks = (ArrayList<Link>) diary.getLinks();
         try {
             for (Resource resource : listResource) {
-                Log.d(TAG, "initViewForHomeItem: " + resource.getType());
                 if (resource.getType().contains(Constant.imageType)) {
                     listImageAndVideo.add(resource);
                 } else if (resource.getType().contains(Constant.videoType)) {
@@ -457,7 +450,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
             if (listAudio.size() != 0) {
                 listTabs.add(mContext.getResources().getText(R.string.audio).toString());
-                Log.d(TAG, "onBindViewHolder: " + listAudio.size());
                 listFragments.add(new AudioFragment(listAudio));
             }
         } catch (Exception e) {
@@ -560,11 +552,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public void updateListMemo(ArrayList<Diary> listDiary) {
-        Log.d(TAG, "updateListMemo: " + listDiary.size());
         this.listMemo = new ArrayList<>();
-        Log.d(TAG, "updateListMemo: " + listDiary.size());
         this.listMemo.addAll(listDiary);
-        Log.d(TAG, "updateListMemo: " + this.listMemo.size());
         notifyDataSetChanged();
     }
 
@@ -574,7 +563,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public void addMemo(Diary diary) {
-        Log.d(TAG, "addMemo: " + diary.toString());
         listMemo.add(0, diary);
         notifyDataSetChanged();
     }
@@ -593,7 +581,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     public void updateMemoAt(int position, Diary diary) {
         listMemo.set(position, diary);
-        Log.d(TAG, "updateMemoAt: " + listMemo.toString());
         notifyItemRangeChanged(position, 2);
     }
 

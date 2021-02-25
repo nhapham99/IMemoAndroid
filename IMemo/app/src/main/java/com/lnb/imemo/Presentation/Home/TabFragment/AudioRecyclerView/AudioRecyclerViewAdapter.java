@@ -94,15 +94,12 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
                     handlers.get(position).removeCallbacks(runnables.get(position));
                     mediaPlayers.get(position).pause();
                     holder.playPause.setImageResource(R.drawable.ic_play);
-                    Log.d(TAG, "onClick: ");
                 } else {
                     if (mediaPlayers.get(position).getDuration() > 0) {
-                        Log.d(TAG, "onClick: loaded");
                         mediaPlayers.get(position).start();
                         holder.playPause.setImageResource(R.drawable.ic_pause);
                         updateSeekBar(holder, position);
                     } else {
-                        Log.d(TAG, "onClick: loading");
                         holder.playPause.setVisibility(View.INVISIBLE);
                         holder.progressBar.setVisibility(View.VISIBLE);
                         Observable<Boolean> loadAudio = Observable.create(new ObservableOnSubscribe<Boolean>() {
@@ -122,7 +119,6 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
 
                             @Override
                             public void onNext(@io.reactivex.annotations.NonNull Boolean isLoaded) {
-                                Log.d(TAG, "accept: " + isLoaded);
                                 if (isLoaded) {
                                     holder.playerSeekBar.setEnabled(true);
                                     holder.playPause.setVisibility(View.VISIBLE);

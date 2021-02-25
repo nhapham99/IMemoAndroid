@@ -57,7 +57,6 @@ public class DiaryRepository {
         LiveData<Root<ResultDiaries>> source = LiveDataReactiveStreams.fromPublisher(
                 diaryAPI.getDiaries(token, query, tag, page, pageSize, fromDate, toDate, lastId)
                         .onErrorReturn(throwable -> {
-                            Log.d(TAG, "apply: " + throwable.getMessage());
                             String message = throwable.getMessage();
                             Root<ResultDiaries> diaryRoot = new Root<>();
                             if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -92,14 +91,12 @@ public class DiaryRepository {
         JsonObject body = new JsonParser().parse(jsonString).getAsJsonObject();
         body.remove("isUploading");
         body.remove("tags");
-        Log.d(TAG, "createDiary: " + body.toString());
 
         LiveData<Root<JsonObject>> source = LiveDataReactiveStreams.fromPublisher(
                 diaryAPI.createDiary(token, body)
                         .onErrorReturn(new Function<Throwable, Root<JsonObject>>() {
                             @Override
                             public Root<JsonObject> apply(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 Root<JsonObject> diaryRoot = new Root<>();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -137,7 +134,7 @@ public class DiaryRepository {
         LiveData<Root<ResultDiary>> source = LiveDataReactiveStreams.fromPublisher(
                 diaryAPI.getDiaryById(token, id)
                         .onErrorReturn(throwable -> {
-                            Log.d(TAG, "apply: " + throwable.getMessage());
+
                             String message = throwable.getMessage();
                             Root<ResultDiary> diaryRoot = new Root<>();
                             if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {

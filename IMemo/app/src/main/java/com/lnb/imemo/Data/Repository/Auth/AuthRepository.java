@@ -46,7 +46,6 @@ public class AuthRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 throwable.printStackTrace();
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
@@ -70,9 +69,7 @@ public class AuthRepository {
                 String token = jsonObject.getAsJsonObject(Constant.RESULT)
                         .get(Constant.TOKEN)
                         .toString();
-                Log.d(TAG, "getTokenFromGoogleToken: " + token);
                 String tokenSub = "Bearer " + token.substring(1, token.length() - 1);
-                Log.d(TAG, "getTokenFromGoogleToken: " + tokenSub);
                 response.setData(new Pair<>(Utils.State.SUCCESS, tokenSub));
             } else if (statusCode == -1) {
                 response.setData(new Pair<>(Utils.State.NO_INTERNET, ""));
@@ -97,7 +94,6 @@ public class AuthRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -142,7 +138,6 @@ public class AuthRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -165,7 +160,6 @@ public class AuthRepository {
                 String token = jsonObject.getAsJsonObject(Constant.RESULT)
                         .get(Constant.TOKEN)
                         .toString();
-                Log.d(TAG, "login: " + token);
                 response.setData(new Pair<>(Utils.State.SUCCESS, token));
             } else if (statusCode == -1) {
                 response.setData(new Pair<>(Utils.State.NO_INTERNET, ""));
@@ -188,7 +182,6 @@ public class AuthRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -229,7 +222,6 @@ public class AuthRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -267,7 +259,6 @@ public class AuthRepository {
                         .onErrorReturn(new Function<Throwable, Root<PersonProfile>>() {
                             @Override
                             public Root<PersonProfile> apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 Root<PersonProfile> personProfile = new Root<>();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -325,7 +316,6 @@ public class AuthRepository {
             body.addProperty("birthday", personProfile.getBirthday());
         }
 
-        Log.d(TAG, "updatePersonProfile: " + body.toString());
         LiveData<Root<JsonObject>> source = LiveDataReactiveStreams
                 .fromPublisher(authAPI.updateUserProfile(token, body)
                         .onErrorReturn(new Function<Throwable, Root<JsonObject>>() {

@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:layout_marginBottom="@dimen/length_10dp"
-    android:background="@color/white">
+    android:background="#e7f3ff">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,19 +15,38 @@
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/user_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginLeft="@dimen/length_10dp"/>
-
-        <TextView
-            android:id="@+id/content_notification"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="Mr.Abc vừa chia sẻ tới bạn một memo của anh ấy cho một người nào đó"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="@dimen/length_10dp"
-            android:gravity="center_vertical"/>
-    </LinearLayout>
+            />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/content_notification"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Mr.Abc vừa chia sẻ tới bạn một memo của anh ấy cho một người nào đó"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:gravity="center_vertical"
+                android:maxLines="2"/>
+
+            <TextView
+                android:id="@+id/time_notification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12h truoc"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:textColor="@color/blue_dark"
+                android:layout_marginTop="@dimen/length_5dp"
+                android:fontFamily="@font/roboto_regular"
+                android:maxLines="1"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"

@@ -85,7 +85,6 @@ class PersonalSettingViewModel extends ViewModel {
                     }
                     personalSettingObservable.setValue(viewModelResponse);
                 } else if (key == Constant.UPDATE_PERSON_PROFILE) {
-                    Log.d(TAG, "onChanged: update person profile");
                     Pair<Utils.State, String> responseRepo = (Pair<Utils.State, String>) response.getData();
                     ResponseRepo<Utils.State> viewModelResponse = new ResponseRepo<>();
                     viewModelResponse.setKey(Constant.UPDATE_PERSON_PROFILE);

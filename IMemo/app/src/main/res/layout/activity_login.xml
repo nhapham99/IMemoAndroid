@@ -13,6 +13,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <ImageView
+            android:id="@+id/ic_memo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_memo"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="@dimen/length_30dp"
+            android:layout_marginStart="@dimen/length_20dp"/>
+
         <TextView
             android:id="@+id/register_label"
             android:layout_width="wrap_content"
@@ -20,10 +30,10 @@
             android:text="@string/login_label"
             android:fontFamily="@font/roboto_bold"
             android:layout_marginStart="@dimen/length_20dp"
-            android:layout_marginTop="@dimen/length_50dp"
             android:textSize="30sp"
             android:textColor="@color/black"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="@dimen/length_10dp"
+            app:layout_constraintTop_toBottomOf="@id/ic_memo"
             app:layout_constraintLeft_toLeftOf="parent"/>
 
         <TextView

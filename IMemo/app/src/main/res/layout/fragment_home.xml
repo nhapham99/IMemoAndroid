@@ -30,28 +30,21 @@
                     android:layout_height="?attr/actionBarSize"
                     android:background="@color/white"
                     android:elevation="0dp"
-                    app:layout_scrollFlags="scroll|enterAlways">
+                    app:layout_scrollFlags="scroll|enterAlways"
+                    >
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="@dimen/length_10dp"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="4dp">
 
                         <ImageView
                             android:layout_width="120dp"
                             android:layout_height="@dimen/length_35dp"
                             android:src="@drawable/ic_memo" />
-
-<!--                        <com.mancj.materialsearchbar.MaterialSearchBar-->
-<!--                            android:id="@+id/searchBar"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="match_parent"-->
-<!--                            android:layout_marginLeft="@dimen/length_10dp"-->
-<!--                            android:layout_weight="1"-->
-<!--                            app:mt_hint="Tìm kiếm..."-->
-<!--                            app:mt_maxSuggestionsCount="10" />-->
 
                         <LinearLayout
                             android:layout_width="wrap_content"

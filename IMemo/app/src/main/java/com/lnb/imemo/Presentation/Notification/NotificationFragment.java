@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,24 +30,30 @@ import com.lnb.imemo.Utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.subjects.PublishSubject;
 
 public class NotificationFragment extends Fragment {
     private static NotificationFragment mNotificationFragment;
     private RecyclerView notificationRecyclerView;
     private NotificationRecyclerViewAdapter notificationRecyclerViewAdapter;
     private NotificationViewModel viewModel;
+    private PublishSubject<Pair<String, Notification>> notificationObservable;
+    private int currentReadNotificationPosition = -1;
+    private static final String TAG = "NotificationFragment";
 
     private Boolean isStart = false;
 
 
-    private NotificationFragment(Boolean isStart) {
+    private NotificationFragment(Boolean isStart, PublishSubject<Pair<String, Notification>> notificationObservable) {
         this.isStart = isStart;
+        this.notificationObservable = notificationObservable;
     }
 
-    public static NotificationFragment getNotificationFragment(Boolean isStart) {
+    public static NotificationFragment getNotificationFragment(Boolean isStart, PublishSubject<Pair<String, Notification>> notificationObservable) {
         if (mNotificationFragment == null || isStart) {
-            mNotificationFragment = new NotificationFragment(isStart);
+            mNotificationFragment = new NotificationFragment(isStart, notificationObservable);
         }
         return mNotificationFragment;
     }
@@ -63,10 +70,19 @@ public class NotificationFragment extends Fragment {
     private void init(View view) {
         notificationRecyclerView = view.findViewById(R.id.notification_recyclerView);
 
-        notificationRecyclerViewAdapter = new NotificationRecyclerViewAdapter();
+        viewModel = NotificationViewModel.getNotificationViewModel(isStart);
+        notificationRecyclerViewAdapter = new NotificationRecyclerViewAdapter((ArrayList<Notification>) viewModel.listNotification);
         notificationRecyclerView.setAdapter(notificationRecyclerViewAdapter);
         notificationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
+        viewModel.getAllNotification();
+        subscribeViewModelObserver();
+        subscribeNotificationObservable();
+        subscribeShowNotification();
+        subscribeMarkReadNotification();
+    }
+
+    private void subscribeShowNotification() {
         notificationRecyclerViewAdapter.getRecyclerViewObserver().subscribe(new Consumer<Pair<Diary, String>>() {
             @Override
             public void accept(Pair<Diary, String> diaryStringPair) throws Exception {
@@ -77,13 +93,60 @@ public class NotificationFragment extends Fragment {
                 startActivity(intent);
             }
         });
+    }
 
-        viewModel = NotificationViewModel.getNotificationViewModel(isStart);
 
-        if (notificationRecyclerViewAdapter.getItemCount() == 0) {
-            viewModel.getAllNotification();
-        }
-        subscribeViewModelObserver();
+    private void subscribeMarkReadNotification() {
+        notificationRecyclerViewAdapter.getMarkReadObserver().subscribe(new io.reactivex.Observer<Pair<String, Integer>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, Integer> pair) {
+                viewModel.markReadNotification(pair.first);
+                currentReadNotificationPosition = pair.second;
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
+
+    private void subscribeNotificationObservable() {
+
+        notificationObservable.subscribe(new io.reactivex.Observer<Pair<String, Notification>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, Notification> pair) {
+                String key = pair.first;
+                if (key.equals("push_noti")) {
+                    notificationRecyclerViewAdapter.addNotification(pair.second);
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
     }
 
     private void subscribeViewModelObserver() {
@@ -91,11 +154,12 @@ public class NotificationFragment extends Fragment {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
                 String key = responseRepo.getKey();
-                if (key == Constant.GET_ALL_NOTIFICATION) {
+                if (key.equals(Constant.GET_ALL_NOTIFICATION)) {
                     Pair<Utils.State, List<Notification>> pair = (Pair<Utils.State, List<Notification>>) responseRepo.getData();
                     switch (pair.first) {
                         case SUCCESS:
-                            notificationRecyclerViewAdapter.setListNotifications((ArrayList<Notification>) pair.second);
+                            viewModel.listNotification = pair.second;
+                            notificationRecyclerViewAdapter.setListNotifications((ArrayList<Notification>) viewModel.listNotification);
                             break;
                         case FAILURE:
                             Toast.makeText(getContext(), "Lỗi. Vui lòng thử lai", Toast.LENGTH_SHORT).show();
@@ -104,6 +168,18 @@ public class NotificationFragment extends Fragment {
                             Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối internet của bạn", Toast.LENGTH_SHORT).show();
                             break;
                     }
+                } else if (key.equals(Constant.MARK_READ_NOTIFICATION)) {
+                    Utils.State state = (Utils.State) responseRepo.getData();
+                    Log.d(TAG, "onChanged: " + state);
+                    switch (state) {
+                        case SUCCESS:
+                            notificationObservable.onNext(new Pair<>("mark_read", new Notification()));
+                            notificationRecyclerViewAdapter.updateItem(currentReadNotificationPosition);
+                            break;
+                        case FAILURE:
+                            break;
+                    }
+
                 }
             }
         });

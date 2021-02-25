@@ -39,7 +39,6 @@ public class PickTagsViewModel extends ViewModel {
             public void onChanged(ResponseRepo response) {
                 if (response.getKey().equals(Constant.GET_ALL_TAGS_KEY)) {
                     Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) response.getData();
-                    Log.d(TAG, "onChanged: " + pair.first);
                     allTagsLiveData.setValue(pair.second);
                 }
             }

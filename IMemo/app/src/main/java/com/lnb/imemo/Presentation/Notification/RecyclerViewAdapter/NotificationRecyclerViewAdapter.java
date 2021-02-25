@@ -1,6 +1,7 @@
 package com.lnb.imemo.Presentation.Notification.RecyclerViewAdapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -35,7 +36,9 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
     private Gson gson = new GsonBuilder().create();
     private Context mContext;
     private PublishSubject<Pair<Diary, String>> recyclerViewObserver = PublishSubject.create();
+    private PublishSubject<Pair<String, Integer>> markReadObserver = PublishSubject.create();
     private ArrayList<Diary> listDiary = new ArrayList<>();
+
 
     public NotificationRecyclerViewAdapter(ArrayList<Notification> listNotifications) {
         this.listNotifications = listNotifications;
@@ -60,10 +63,8 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
     @Override
     public void onBindViewHolder(@NonNull NotificationReyclerViewHolder holder, int position) {
         JsonObject jsonObject = new JsonParser().parse(listNotifications.get(position).getData()).getAsJsonObject();
-        Log.d(TAG, "onBindViewHolder: " + jsonObject.toString());
         JsonObject diaryObject = jsonObject.getAsJsonObject("diary");
         JsonObject user = diaryObject.getAsJsonObject("user");
-        Log.d(TAG, "onBindViewHolder: " + user.toString());
         PersonProfile personProfile = gson.fromJson(user, PersonProfile.class);
         holder.notificationTextView.setText("Bạn được chia sẻ một memo từ " +personProfile.getName());
         Glide.with(mContext).load(personProfile.getPicture()).into(holder.userImage);
@@ -74,8 +75,17 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
             @Override
             public void onClick(View v) {
                 recyclerViewObserver.onNext(new Pair<>(listDiary.get(position), personProfile.getName()));
+                if (!listNotifications.get(position).getSeen()) {
+                    markReadObserver.onNext(new Pair<>(listNotifications.get(position).getId(), position));
+                }
             }
         });
+
+        if (listNotifications.get(position).getSeen()) {
+            holder.itemView.setBackgroundColor(Color.parseColor("#ffffff"));
+        } else {
+            holder.itemView.setBackgroundColor(Color.parseColor("#e7f3ff"));
+        }
     }
 
     @Override
@@ -85,6 +95,20 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
 
     public PublishSubject<Pair<Diary, String>> getRecyclerViewObserver() {
         return recyclerViewObserver;
+    }
+
+    public PublishSubject<Pair<String, Integer>> getMarkReadObserver() {
+        return markReadObserver;
+    }
+
+    public void addNotification(Notification notification) {
+        this.listNotifications.add(0, notification);
+        notifyItemInserted(0);
+    }
+
+    public void updateItem(int currentReadNotificationPosition) {
+        listNotifications.get(currentReadNotificationPosition).setSeen(true);
+        notifyItemChanged(currentReadNotificationPosition);
     }
 
     class NotificationReyclerViewHolder extends RecyclerView.ViewHolder {

@@ -46,7 +46,6 @@ public class TagsRepository {
                         .onErrorReturn(new Function<Throwable, Root<ResultTags>>() {
                             @Override
                             public Root<ResultTags> apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 Root<ResultTags> root = new Root<>();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -65,7 +64,6 @@ public class TagsRepository {
         tagRepoLiveData.addSource(source, new Observer<Root<ResultTags>>() {
             @Override
             public void onChanged(Root<ResultTags> listRoot) {
-                Log.d(TAG, "onChanged: " + listRoot.toString());
                 int statusCode = listRoot.getStatusCode();
                 ResponseRepo<Pair<Utils.State, ArrayList<Tags>>> response = new ResponseRepo<>();
                 if (statusCode == 0) {
@@ -91,7 +89,6 @@ public class TagsRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -135,7 +132,6 @@ public class TagsRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -172,7 +168,6 @@ public class TagsRepository {
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -208,13 +203,11 @@ public class TagsRepository {
         body.addProperty(Constant.NAME, tag.getName());
         body.addProperty(Constant.COLOR_HEX, tag.getColor());
         body.addProperty(Constant.IS_DEFAULT, tag.getIsDefault());
-        Log.d(TAG, "createTags: " + body.toString());
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
                 tagAPI.createTag(token, body)
                         .onErrorReturn(new Function<Throwable, JsonObject>() {
                             @Override
                             public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                Log.d(TAG, "apply: " + throwable.getMessage());
                                 String message = throwable.getMessage();
                                 JsonObject jsonObject = new JsonObject();
                                 if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {

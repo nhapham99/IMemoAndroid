@@ -32,7 +32,6 @@ public class PreviewLinkViewModel extends ViewModel {
         previewLinkObservable = new Observer<ResponseRepo>() {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
-                Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
                 Pair<Utils.State, Link> response = (Pair<Utils.State, Link>) responseRepo.getData();
                 previewLinkLiveData.setValue(response);
             }

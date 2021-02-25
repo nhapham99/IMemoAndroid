@@ -27,13 +27,11 @@ public class LinkFragment extends Fragment {
 
     public LinkFragment(ArrayList<Link> listLinks) {
         this.listLinks = listLinks;
-        Log.d(TAG, "LinkFragment: " + listLinks.size());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView: ");
         View view =  inflater.inflate(R.layout.fragment_link, container, false);
         init(view);
         return view;

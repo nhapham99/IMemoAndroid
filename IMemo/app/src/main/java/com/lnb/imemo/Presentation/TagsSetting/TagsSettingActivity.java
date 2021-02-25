@@ -126,7 +126,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                     Pair<Utils.State, ArrayList<Tags>> response = (Pair<Utils.State, ArrayList<Tags>>) responseRepo.getData();
                     switch (response.first) {
                         case SUCCESS:
-                            Log.d(TAG, "onChanged: get all tag");
                             tagManagerAdapter.updateListTags(response.second);
                             if (progressBar.getVisibility() == View.VISIBLE) {
                                 progressBar.setVisibility(View.GONE);
@@ -149,7 +148,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                             break;
                     }
                 } else if (key == Constant.CREATE_TAG_KEY) {
-                    Log.d(TAG, "onChanged: ");
                     Utils.State state = (Utils.State) responseRepo.getData();
                     switch (state) {
                         case SUCCESS:
@@ -166,7 +164,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                             break;
                     }
                 } else if (key == Constant.UPDATE_TAGS_KEY) {
-                    Log.d(TAG, "onChanged: update tag");
                     Utils.State state = (Utils.State) responseRepo.getData();
                     switch (state) {
                         case SUCCESS:
@@ -182,7 +179,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                             break;
                     }
                 } else if (key == Constant.DELETE_TAG_KEY) {
-                    Log.d(TAG, "onChanged: delete tag");
                     Utils.State state = (Utils.State) responseRepo.getData();
                     switch (state) {
                         case SUCCESS:
@@ -263,7 +259,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                         new ColorEnvelopeListener() {
                             @Override
                             public void onColorSelected(ColorEnvelope envelope, boolean fromUser) {
-                                Log.d(TAG, "onColorSelected: " + envelope);
                                 colorPicker.getBackground().setTint(envelope.getColor());
                                 String hexColor = String.format("#%06X", (0xFFFFFF & envelope.getColor()));
                                 viewModel.newTag.setColor(hexColor);
@@ -290,7 +285,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
             Toast.makeText(this, "Bạn chỉ có thẻ tạo nhiều nhất 10 thẻ mặc định", Toast.LENGTH_SHORT).show();
         } else {
             viewModel.newTag.setName(tagNameTextField.getEditText().getText().toString());
-            Log.d(TAG, "createNewTag: " + isDefaultTagCheckBox.isChecked());
             viewModel.newTag.setIsDefault(isDefaultTagCheckBox.isChecked());
             viewModel.createNewTag();
         }
@@ -304,7 +298,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
             Toast.makeText(this, "Bạn chỉ có thẻ tạo nhiều nhất 10 thẻ mặc định", Toast.LENGTH_SHORT).show();
         } else {
             viewModel.newTag.setName(tagNameTextField.getEditText().getText().toString());
-            Log.d(TAG, "createNewTag: " + isDefaultTagCheckBox.isChecked());
             viewModel.newTag.setIsDefault(isDefaultTagCheckBox.isChecked());
             viewModel.updateTag(viewModel.newTag);
         }
@@ -344,7 +337,6 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.create_tag_button:
                 if (createTagButton.getText().toString().equals("Cập nhật")) {
-                    Log.d(TAG, "onClick: edit");
                     editTag();
                 } else {
                     createNewTag();
