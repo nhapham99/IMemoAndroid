@@ -50,7 +50,9 @@ public class HomeViewModel extends ViewModel {
     public String filterTimeName = "";
     public ArrayList<String> filterTagName = new ArrayList<>();
     private static HomeViewModel mInstance;
+    private Boolean getTotalMemoInStart = true;
     private int totalMemo;
+    private int totalFilterMemo;
 
     protected User mUser;
     protected PersonProfile personProfile;
@@ -174,7 +176,11 @@ public class HomeViewModel extends ViewModel {
                     ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
                     Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
                     Pagination pagination = pair.second.getPagination();
-                    totalMemo = pagination.getTotalItems();
+                    totalFilterMemo = pagination.getTotalItems();
+                    if (getTotalMemoInStart) {
+                        totalMemo = pagination.getTotalItems();
+                        getTotalMemoInStart = false;
+                    }
                     response.setData(new Pair<>(pair.first, (ArrayList<Diary>) pair.second.getDiaries()));
                     response.setKey(Constant.GET_DIARIES_KEY);
                     viewModelLiveData.setValue(response);
@@ -237,6 +243,10 @@ public class HomeViewModel extends ViewModel {
 
     public int getTotalMemo() {
         return totalMemo;
+    }
+
+    public int getTotalFilterMemo() {
+        return totalFilterMemo;
     }
 
     public MediatorLiveData<ArrayList<Tags>> observableAllTags() {

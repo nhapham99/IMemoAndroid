@@ -7,6 +7,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
+import com.lnb.imemo.Data.Repository.Model.ResultNotification;
 import com.lnb.imemo.Data.Repository.Notification.NotificationRepository;
 import com.lnb.imemo.Model.Notification;
 import com.lnb.imemo.Model.PersonProfile;
@@ -22,6 +23,7 @@ public class NotificationViewModel extends ViewModel {
     private static final String TAG = "NotificationViewModel";
     private static NotificationViewModel mInstance;
     private final NotificationRepository notificationRepository;
+    public int totalMemo = 0;
     public int page = 1;
     private final User mUser;
     private final MediatorLiveData<ResponseRepo> viewModelLiveDate = new MediatorLiveData<>();
@@ -44,23 +46,28 @@ public class NotificationViewModel extends ViewModel {
     }
 
     public void getAllNotification() {
-        notificationRepository.getAllNotification(mUser.getToken(), page);
+        Log.d(TAG, "getAllNotification: ");
+        if (listNotification.size() < totalMemo || page == 1) {
+            notificationRepository.getAllNotification(mUser.getToken(), page);
+            page++;
+        }
+
     }
 
     private void subscribeNotificationObserver() {
         notificationObserver = new Observer<ResponseRepo>() {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
-                Log.d(TAG, "onChanged: " + responseRepo);
                 String key = responseRepo.getKey();
                 if (key.equals(Constant.GET_ALL_NOTIFICATION)) {
-                    List<Notification<PersonProfile>> listNotification = (List<Notification<PersonProfile>>) responseRepo.getData();
+                    ResultNotification resultNotification = (ResultNotification) responseRepo.getData();
+                    List<Notification<PersonProfile>> listNotification = resultNotification.getNotifications();
+                    totalMemo = resultNotification.getPagination().getTotalItems();
                     ResponseRepo<Pair<Utils.State, List<Notification<PersonProfile>>>> response = new ResponseRepo<>();
                     response.setData(new Pair<>(Utils.State.SUCCESS, listNotification));
                     response.setKey(Constant.GET_ALL_NOTIFICATION);
                     viewModelLiveDate.setValue(response);
                 } else if (key.equals(Constant.MARK_READ_NOTIFICATION)) {
-                    Log.d(TAG, "onChanged: ");
                     ResponseRepo<Utils.State> response = new ResponseRepo<>();
                     response.setKey(Constant.MARK_READ_NOTIFICATION);
                     response.setData((Utils.State) responseRepo.getData());
@@ -76,7 +83,6 @@ public class NotificationViewModel extends ViewModel {
     }
 
     public void markReadNotification(String notificationId) {
-        Log.d(TAG, "markReadNotification: ");
         notificationRepository.markReadNotification(mUser.getToken(), notificationId);
     }
     @Override

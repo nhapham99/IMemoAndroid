@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +16,7 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.lnb.imemo.Model.Diary;
@@ -42,8 +44,10 @@ public class NotificationFragment extends Fragment {
     private PublishSubject<Pair<String, Notification>> notificationObservable;
     private int currentReadNotificationPosition = -1;
     private static final String TAG = "NotificationFragment";
-
     private Boolean isStart = false;
+    private NestedScrollView nestedScrollView;
+    private ProgressBar progressBar;
+    private Boolean isLoadingMore = false;
 
 
     private NotificationFragment(Boolean isStart, PublishSubject<Pair<String, Notification>> notificationObservable) {
@@ -69,13 +73,33 @@ public class NotificationFragment extends Fragment {
 
     private void init(View view) {
         notificationRecyclerView = view.findViewById(R.id.notification_recyclerView);
+        nestedScrollView = view.findViewById(R.id.nested_scroll);
+        progressBar = view.findViewById(R.id.progressBar);
 
         viewModel = NotificationViewModel.getNotificationViewModel(isStart);
         notificationRecyclerViewAdapter = new NotificationRecyclerViewAdapter((ArrayList<Notification>) viewModel.listNotification);
         notificationRecyclerView.setAdapter(notificationRecyclerViewAdapter);
         notificationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
-        viewModel.getAllNotification();
+        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (scrollY == v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) {
+                    if (viewModel.listNotification.size() < viewModel.totalMemo) {
+                        progressBar.setVisibility(View.VISIBLE);
+                        viewModel.getAllNotification();
+                        isLoadingMore = true;
+                    } else {
+                        progressBar.setVisibility(View.GONE);
+                    }
+
+                }
+            }
+        });
+        if (viewModel.listNotification.size() == 0) {
+            viewModel.getAllNotification();
+        }
+
         subscribeViewModelObserver();
         subscribeNotificationObservable();
         subscribeShowNotification();
@@ -158,13 +182,23 @@ public class NotificationFragment extends Fragment {
                     Pair<Utils.State, List<Notification>> pair = (Pair<Utils.State, List<Notification>>) responseRepo.getData();
                     switch (pair.first) {
                         case SUCCESS:
-                            viewModel.listNotification = pair.second;
+                            if (progressBar.getVisibility() == View.VISIBLE) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                            viewModel.listNotification.addAll(pair.second);
+                            isLoadingMore = false;
                             notificationRecyclerViewAdapter.setListNotifications((ArrayList<Notification>) viewModel.listNotification);
                             break;
                         case FAILURE:
+                            if (progressBar.getVisibility() == View.VISIBLE) {
+                                progressBar.setVisibility(View.GONE);
+                            }
                             Toast.makeText(getContext(), "Lỗi. Vui lòng thử lai", Toast.LENGTH_SHORT).show();
                             break;
                         case NO_INTERNET:
+                            if (progressBar.getVisibility() == View.VISIBLE) {
+                                progressBar.setVisibility(View.GONE);
+                            }
                             Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối internet của bạn", Toast.LENGTH_SHORT).show();
                             break;
                     }

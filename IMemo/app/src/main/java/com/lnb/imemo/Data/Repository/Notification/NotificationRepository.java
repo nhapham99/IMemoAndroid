@@ -52,10 +52,9 @@ public class NotificationRepository {
         notificationLiveData.addSource(source, new Observer<ResultNotification>() {
             @Override
             public void onChanged(ResultNotification resultNotification) {
-                List<Notification<PersonProfile>> listNotification = resultNotification.getNotifications();
-                ResponseRepo<List<Notification<PersonProfile>>> responseRepo = new ResponseRepo<>();
+                ResponseRepo<ResultNotification> responseRepo = new ResponseRepo<>();
                 responseRepo.setKey(Constant.GET_ALL_NOTIFICATION);
-                responseRepo.setData(listNotification);
+                responseRepo.setData(resultNotification);
                 notificationLiveData.setValue(responseRepo);
                 notificationLiveData.removeSource(source);
             }

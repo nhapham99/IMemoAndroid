@@ -39,6 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 import com.lnb.imemo.Model.Diary;
@@ -111,6 +112,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private Boolean isLoadMore = false;
     private Boolean isLoading = false;
 
+    private ShimmerFrameLayout shimerContainer;
+
 
 
     private HomeFragment(Boolean isStart) {
@@ -157,6 +160,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         noMoreMemoText = view.findViewById(R.id.no_more_memo);
         loadMoreProgressBar.setVisibility(View.GONE);
         noMoreMemoText.setVisibility(View.GONE);
+
+        shimerContainer = view.findViewById(R.id.shimmer_container);
+        shimerContainer.startShimmer();
 
         searchText = view.findViewById(R.id.search_bar);
         searchIcon = view.findViewById(R.id.search_icon);
@@ -611,7 +617,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             @Override
             public void onChanged(ResponseRepo responseRepo) {
                 String key = responseRepo.getKey();
-                if (key == Constant.CREATE_DIARY_KEY) {
+                if (key.equals(Constant.CREATE_DIARY_KEY)) {
                     Pair<Utils.State, Diary> pair = (Pair<Utils.State, Diary>) responseRepo.getData();
                     switch (pair.first) {
                         case SUCCESS:
@@ -625,9 +631,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
                             break;
                     }
-                } else if (key == Constant.GET_DIARY_BY_ID_KEY) {
+                } else if (key.equals(Constant.GET_DIARY_BY_ID_KEY)) {
 
-                } else if (key == Constant.GET_ALL_TAGS_KEY) {
+                } else if (key.equals(Constant.GET_ALL_TAGS_KEY)) {
                     Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) responseRepo.getData();
                     switch (pair.first) {
                         case SUCCESS:
@@ -641,7 +647,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             tagFilterAdapter.setData(listTags);
                             break;
                     }
-                } else if (key == Constant.SHARE_DIARY) {
+                } else if (key.equals(Constant.SHARE_DIARY)) {
                     Utils.State state = (Utils.State) responseRepo.getData();
                     switch (state) {
                         case SUCCESS:
@@ -655,6 +661,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             break;
                     }
                 } else if (key.equals(Constant.GET_DIARIES_KEY)) {
+                    shimerContainer.stopShimmer();
+                    shimerContainer.setVisibility(View.GONE);
                     Pair<Utils.State, ArrayList<Diary>> pair = (Pair<Utils.State, ArrayList<Diary>>) responseRepo.getData();
                     switch (pair.first) {
                         case SUCCESS:
@@ -680,7 +688,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                                 noMoreMemoText.setVisibility(View.VISIBLE);
                                 noMoreMemoText.setText("Không có memo nào!");
                             }
-                            filerMemoByFilter.setText(String.valueOf(viewModel.listDiary.size()));
+                            filerMemoByFilter.setText(String.valueOf(viewModel.getTotalFilterMemo()));
                             filterMemoTotal.setText(String.valueOf(viewModel.getTotalMemo()));
                             break;
                         case FAILURE:
@@ -822,7 +830,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     public void onDrawerStateChanged(int newState) {
         if (newState == DrawerLayout.STATE_SETTLING) {
             Log.d(TAG, "onDrawerOpened: ");
-            filerMemoByFilter.setText(String.valueOf(viewModel.listDiary.size()));
+            filerMemoByFilter.setText(String.valueOf(viewModel.getTotalFilterMemo()));
             viewModel.getAllTags();
         }
     }

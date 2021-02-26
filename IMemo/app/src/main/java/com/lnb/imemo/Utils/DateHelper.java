@@ -2,6 +2,8 @@ package com.lnb.imemo.Utils;
 
 import android.util.Log;
 
+import androidx.annotation.LongDef;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,15 +25,42 @@ public class DateHelper {
         }
         df.setTimeZone(TimeZone.getDefault());
         String formatTime = df.format(dateTime);
-        Log.d(TAG, "dateConverter: " + formatTime);
+        Calendar then = Calendar.getInstance();
         try {
-            dateTime = df.parse(formatTime);
+            then.setTime(df.parse(formatTime));
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy | HH:mm");
-        return simpleDateFormat.format(dateTime);
+        return timeAgoInWords(then.getTime());
     }
+
+    public static String timeAgoInWords(Date from) {
+        Date now = new Date();
+        long difference = now.getTime() - from.getTime();
+        long distanceInMin = difference / 60000;
+
+        if ( 0 <= distanceInMin && distanceInMin <= 1 ) {
+            return "Vừa xong";
+        } else if ( 1 <= distanceInMin && distanceInMin <= 45 ) {
+            return distanceInMin + " phút trước";
+        } else if ( 45 <= distanceInMin && distanceInMin <= 89 ) {
+            return "1 giờ trước";
+        } else if ( 90 <= distanceInMin && distanceInMin <= 1439 ) {
+            return (distanceInMin / 60) + " giờ trước";
+        } else if ( 1440 <= distanceInMin && distanceInMin <= 2529 ) {
+            return "1 Ngày trước";
+        } else if ( 2530 <= distanceInMin && distanceInMin <= 43199 ) {
+            return (distanceInMin / 1440) + " ngày trước";
+        } else if ( 43200 <= distanceInMin && distanceInMin <= 86399 ) {
+            return "1 tháng trước";
+        } else if ( 86400 <= distanceInMin && distanceInMin <= 525599 ) {
+            return (distanceInMin / 43200) + " tháng trước";
+        } else {
+            long distanceInYears = distanceInMin / 525600;
+            return "Khoảng " + distanceInYears + " năm trước";
+        }
+    }
+
 
 
     public static String convertDate(String date) {

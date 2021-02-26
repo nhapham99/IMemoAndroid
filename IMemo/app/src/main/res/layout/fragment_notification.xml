@@ -28,12 +28,38 @@
             android:layout_height="@dimen/length_1dp"
             android:background="#E3E3E3"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/notification_recyclerView"
-            android:layout_weight="1"
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nested_scroll"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:overScrollMode="never"/>
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/notification_recyclerView"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:overScrollMode="never"/>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="@dimen/length_30dp"
+                        android:layout_height="@dimen/length_30dp"
+                        android:layout_centerInParent="true"/>
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
 
     </LinearLayout>
 </FrameLayout>
