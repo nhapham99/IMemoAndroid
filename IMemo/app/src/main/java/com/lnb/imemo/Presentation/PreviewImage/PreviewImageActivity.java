@@ -1,40 +1,35 @@
-package com.lnb.imemo.Presentation.Introduce;
+package com.lnb.imemo.Presentation.PreviewImage;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.widget.ImageView;
 
 import com.lnb.imemo.Model.Resource;
+import com.lnb.imemo.Presentation.Introduce.IntroduceViewPagerAdapter;
 import com.lnb.imemo.Presentation.Login.LoginActivity;
-import com.lnb.imemo.Presentation.NavigationActivity.NavigationActivity;
 import com.lnb.imemo.R;
 
 import java.util.ArrayList;
 
-import io.reactivex.functions.Consumer;
 import me.relex.circleindicator.CircleIndicator3;
 
-public class IntroduceActivity extends AppCompatActivity {
-
-    private ViewPager2 viewPager2;
-    private IntroduceViewPagerAdapter adapter;
+public class PreviewImageActivity extends AppCompatActivity {
+    private ViewPager2 viewPager;
     private CircleIndicator3 circleIndicator;
+    private PreviewImageAdapter adapter;
+    private ArrayList<Resource> listResource;
+    private ImageView escapeBtn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_preview_image);
         hideSystemUI();
-        setContentView(R.layout.activity_introduce);
-        if (restorePrefData()) {
-            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }
+        listResource = getIntent().getParcelableArrayListExtra("data");
         initView();
     }
 
@@ -66,31 +61,19 @@ public class IntroduceActivity extends AppCompatActivity {
     }
 
 
-    private Boolean restorePrefData() {
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
-        Boolean isIntroduceOpened = pref.getBoolean("isIntroduceOpened", false);
-        return isIntroduceOpened;
-    }
-
     private void initView() {
-        viewPager2 = findViewById(R.id.introduce_viewPager);
+        viewPager = findViewById(R.id.preview_image_viewPager);
         circleIndicator = findViewById(R.id.circle_indicator);
-        adapter = new IntroduceViewPagerAdapter();
-        viewPager2.setAdapter(adapter);
-        circleIndicator.setViewPager(viewPager2);
+        adapter = new PreviewImageAdapter(listResource);
+        viewPager.setAdapter(adapter);
+        circleIndicator.setViewPager(viewPager);
 
-        adapter.publishSubject.subscribe(aBoolean -> {
-            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-            startActivity(intent);
-            finish();
-            savePrefData();
+        escapeBtn = findViewById(R.id.ic_escape);
+        escapeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
         });
-    }
-
-    private void savePrefData() {
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = pref.edit();
-        editor.putBoolean("isIntroduceOpened", true);
-        editor.commit();
     }
 }

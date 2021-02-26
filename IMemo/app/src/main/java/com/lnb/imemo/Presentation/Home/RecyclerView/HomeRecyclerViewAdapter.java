@@ -40,6 +40,8 @@ import com.lnb.imemo.Utils.DateHelper;
 
 import java.util.ArrayList;
 
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 
@@ -62,6 +64,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     private String timeKey;
     private final MediatorLiveData<Pair<String, Integer>> actionObservable = new MediatorLiveData<>();
     private final PublishSubject<Pair<String, String>> filterObservable = PublishSubject.create();
+    public final PublishSubject<Pair<String, ArrayList<Resource>>> openPreviewImageTrigger = PublishSubject.create();
 
     public HomeRecyclerViewAdapter(ArrayList<Diary> listMemo) {
         filterItemRecyclerViewAdapter = new FilterItemRecyclerViewAdapter();
@@ -261,7 +264,29 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         try {
             if (listImageAndVideo.size() != 0) {
                 listTabs.add(mContext.getResources().getText(R.string.image_and_video).toString());
-                listFragments.add(new ImageFragment(listImageAndVideo));
+                ImageFragment imageFragment = new ImageFragment(listImageAndVideo, mContext);
+                imageFragment.imageFragmentPublish.subscribe(new Observer<Boolean>() {
+                    @Override
+                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(@io.reactivex.annotations.NonNull Boolean aBoolean) {
+                        openPreviewImageTrigger.onNext(new Pair<>("open_image_preview", listImageAndVideo));
+                    }
+
+                    @Override
+                    public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+                listFragments.add(imageFragment);
             }
 
             if (listLinks.size() != 0) {
@@ -303,6 +328,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                 actionObservable.setValue(new Pair<>("share_action", position));
             }
         });
+
     }
 
     private void initViewForHomeNoTabItem(HomeRecyclerViewNoTabHolder holder, int position) {
@@ -440,7 +466,30 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         try {
             if (listImageAndVideo.size() != 0) {
                 listTabs.add(mContext.getResources().getText(R.string.image_and_video).toString());
-                listFragments.add(new ImageFragment(listImageAndVideo));
+                ImageFragment imageFragment = new ImageFragment(listImageAndVideo, mContext);
+                imageFragment.imageFragmentPublish.subscribe(new Observer<Boolean>() {
+                    @Override
+                    public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(@io.reactivex.annotations.NonNull Boolean aBoolean) {
+                        Log.d(TAG, "onNext: clicked");
+                        openPreviewImageTrigger.onNext(new Pair<>("open_image_preview", listImageAndVideo));
+                    }
+
+                    @Override
+                    public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+                listFragments.add(imageFragment);
             }
 
             if (listLinks.size() != 0) {

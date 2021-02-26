@@ -185,8 +185,12 @@ public class NotificationFragment extends Fragment {
                             if (progressBar.getVisibility() == View.VISIBLE) {
                                 progressBar.setVisibility(View.GONE);
                             }
-                            viewModel.listNotification.addAll(pair.second);
-                            isLoadingMore = false;
+                            if (isLoadingMore) {
+                                viewModel.listNotification.addAll(pair.second);
+                                isLoadingMore = false;
+                            } else {
+                                viewModel.listNotification = pair.second;
+                            }
                             notificationRecyclerViewAdapter.setListNotifications((ArrayList<Notification>) viewModel.listNotification);
                             break;
                         case FAILURE:

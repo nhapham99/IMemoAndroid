@@ -134,7 +134,6 @@ public class DiaryRepository {
         LiveData<Root<ResultDiary>> source = LiveDataReactiveStreams.fromPublisher(
                 diaryAPI.getDiaryById(token, id)
                         .onErrorReturn(throwable -> {
-
                             String message = throwable.getMessage();
                             Root<ResultDiary> diaryRoot = new Root<>();
                             if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
@@ -151,6 +150,7 @@ public class DiaryRepository {
 
         diaryRepoLiveData.addSource(source, root -> {
             ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
+            Log.d(TAG, "getDiaryById: " + root);
             if (root.getStatusCode() == 0) {
                 Diary diary = root.getResult().getDiary();
                 response.setData(new Pair<>(Utils.State.SUCCESS, diary));

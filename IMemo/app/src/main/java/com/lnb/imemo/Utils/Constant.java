@@ -3,6 +3,7 @@ package com.lnb.imemo.Utils;
 public class Constant {
     public static final String GET_ALL_NOTIFICATION_FOR_COUNT = "get_all_notification_for_count";
     public static final String MARK_READ_NOTIFICATION = "mark_read_notification";
+    public static final String GET_SHARED_EMAILS = "get_shared_emails";
     public static String PUBLIC_DIARY = "public_diary";
     public static String SHARE_DIARY = "share_diary";
     public static String GET_ALL_NOTIFICATION = "get_all_notification";

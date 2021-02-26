@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#F0F2F5">
+
+    <TextView
+        android:id="@+id/memo_author"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_medium"
+        android:textSize="20sp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/length_10dp"
+        android:textColor="@color/black"
+        android:layout_marginBottom="@dimen/length_20dp"/>
+
+    <include layout="@layout/home_recycler_view_item" />
+
+    <Button
+        android:id="@+id/back_button"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Về trang chủ"
+        android:fontFamily="@font/roboto_medium"
+        android:textAllCaps="false"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginRight="@dimen/length_10dp"/>
+
+</LinearLayout>

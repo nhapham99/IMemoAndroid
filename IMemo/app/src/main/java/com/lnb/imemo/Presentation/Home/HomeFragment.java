@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
 import androidx.core.view.GravityCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -28,12 +29,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +48,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputLayout;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
+import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Model.User;
@@ -52,6 +57,8 @@ import com.lnb.imemo.Presentation.Home.RecyclerView.HomeRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.SimpleSectionedRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.MemoPreview.MemoPreviewActivity;
 import com.lnb.imemo.Presentation.PickTag.PickTagsActivity;
+import com.lnb.imemo.Presentation.PreviewImage.PreviewImageActivity;
+import com.lnb.imemo.Presentation.PreviewImage.PreviewImageAdapter;
 import com.lnb.imemo.Presentation.PreviewLink.PreviewActivity;
 import com.lnb.imemo.Presentation.UploadActivity.UploadActivity;
 import com.lnb.imemo.R;
@@ -66,6 +73,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.PublishSubject;
@@ -76,6 +84,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private static final String TAG = "HomeFragment";
     private static HomeFragment mHomeFragment;
     private Boolean isStart = false;
+    {
+        Log.d(TAG, "instance initializer: " + isStart);
+    }
     // ui
     private RecyclerView homeRecyclerView;
     private SwipeRefreshLayout homeSwipeRefreshLayout;
@@ -111,6 +122,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private String searchKey;
     private Boolean isLoadMore = false;
     private Boolean isLoading = false;
+    private int currentChooseDiaryToShare = -1;
 
     private ShimmerFrameLayout shimerContainer;
 
@@ -118,6 +130,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
     private HomeFragment(Boolean isStart) {
         this.isStart = isStart;
+        viewModel = HomeViewModel.getHomeViewModel(isStart);
     }
 
     public static HomeFragment getHomeFragment(Boolean isStart) {
@@ -160,9 +173,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         noMoreMemoText = view.findViewById(R.id.no_more_memo);
         loadMoreProgressBar.setVisibility(View.GONE);
         noMoreMemoText.setVisibility(View.GONE);
-
         shimerContainer = view.findViewById(R.id.shimmer_container);
-        shimerContainer.startShimmer();
+
 
         searchText = view.findViewById(R.id.search_bar);
         searchIcon = view.findViewById(R.id.search_icon);
@@ -179,8 +191,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
         });
 
+        if (isStart) {
+            Log.d(TAG, "init: " + isStart);
+            shimerContainer.startShimmer();
+            isStart = false;
+        } else {
+            Log.d(TAG, "init: istart false");
+            shimerContainer.stopShimmer();
+            shimerContainer.setVisibility(View.GONE);
+        }
 
-        viewModel = HomeViewModel.getHomeViewModel(isStart);
+
+
 
         Log.d(TAG, "init: " + viewModel.listDiary.size());
         if (viewModel.listDiary.size() == 0) {
@@ -212,8 +234,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             public void onChanged(Pair<String, Integer> adapterAction) {
                 String key = adapterAction.first;
                 if (key.equals(Constant.DELETE_DIARY_KEY)) {
+                    Log.d(TAG, "onChanged: " + adapterAction.second);
                     currentChoosedDiaryPosition = adapterAction.second;
                     viewModel.deleteDiary(adapterAction.second);
+                    viewModel.setTotalMemo(viewModel.getTotalMemo() - 1);
+                    viewModel.setTotalFilterMemo(viewModel.getTotalFilterMemo() - 1);
                 } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                     Intent intent = new Intent(getActivity(), UploadActivity.class);
                     startActivityForResult(intent, UPLOAD_MEMO_CODE);
@@ -224,7 +249,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 } else if (key.equals(Constant.GET_LINKS_CODE)) {
                     startAddLink();
                 } else if (key.equals("share_action")) {
-                    showShareDialog(adapterAction.second);
+                    currentChooseDiaryToShare = adapterAction.second;
+                    viewModel.getSharedEmails();
                 } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
                     currentChoosedDiaryPosition = adapterAction.second;
                     Log.d(TAG, "onChanged: " + currentChoosedDiaryPosition);
@@ -260,6 +286,33 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     searchKey = null;
                     filterDiary();
                     break;
+            }
+        });
+
+        adapter.openPreviewImageTrigger.subscribe(new io.reactivex.Observer<Pair<String, ArrayList<Resource>>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, ArrayList<Resource>> pair) {
+                String key = pair.first;
+                if (key.equals("open_image_preview")) {
+                    Intent intent = new Intent(getActivity(), PreviewImageActivity.class);
+                    intent.putExtra("data", pair.second);
+                    startActivity(intent);
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
 
@@ -402,11 +455,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 tagFilterAdapter.reset();
             }
         });
-
-
     }
 
-    private void showShareDialog(int position) {
+    private void showShareDialog(ArrayList<String> listSharedEmails, int position) {
         Diary diary = viewModel.listDiary.get(position);
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
         View view = getLayoutInflater().inflate(R.layout.share_memo_layout, null);
@@ -414,12 +465,24 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
 
         TextView previewMemo = view.findViewById(R.id.preview_memo);
-        TextInputLayout email_input = view.findViewById(R.id.input_email);
+        AutoCompleteTextView email_input = view.findViewById(R.id.input_email);
+        String[] listEmailArray = new String[listSharedEmails.size()];
+        for (int i = 0; i < listSharedEmails.size(); i++) {
+            listEmailArray[i] = listSharedEmails.get(i).toString();
+        }
+        ArrayAdapter<String> adapterListSharedEmail = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listEmailArray);
+        email_input.setAdapter(adapterListSharedEmail);
+        email_input.setThreshold(2);
+
+
         Button shareButton = view.findViewById(R.id.share_memo);
         ImageButton dialogEscape = view.findViewById(R.id.share_memo_escape);
         SwitchMaterial switchShare = view.findViewById(R.id.switch_share);
         ProgressBar shareProgressBar = view.findViewById(R.id.share_progressBar);
         shareProgressBar.setVisibility(View.INVISIBLE);
+
+
+
 
         if (diary.getStatus().equals("private")) {
             switchShare.setChecked(false);
@@ -435,14 +498,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     viewModel.publicDiary(diary);
-                    shareProgressBar.setVisibility(View.VISIBLE);
                 } else {
                     viewModel.privateDiary(diary);
-                    shareProgressBar.setVisibility(View.VISIBLE);
                 }
+                shareProgressBar.setVisibility(View.VISIBLE);
             }
         });
-
 
 
         previewMemo.setOnClickListener(new View.OnClickListener() {
@@ -456,15 +517,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
         });
 
-        shareButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewModel.shareDiary(diary.getId(), email_input.getEditText().getText().toString());
-            }
-        });
+
 
 
         AlertDialog alertDialog = dialogBuilder.create();
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewModel.shareDiary(diary.getId(), email_input.getText().toString());
+                alertDialog.dismiss();
+            }
+        });
 
         dialogEscape.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -570,11 +634,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     diary.setUploading(true);
                     viewModel.createDiary(diary);
                     adapter.addMemo(diary);
+                    viewModel.setTotalMemo(viewModel.getTotalMemo() + 1);
+                    viewModel.setTotalFilterMemo(viewModel.getTotalFilterMemo() + 1);
                 }
                 if (data.getParcelableExtra("update_memo") != null) {
                     Log.d(TAG, "onActivityResult: " + currentChoosedDiaryPosition);
                     Diary diary = data.getParcelableExtra("update_memo");
                     adapter.updateMemoAt(currentChoosedDiaryPosition, diary);
+                    viewModel.listDiary.set(currentChoosedDiaryPosition, diary);
                 }
             }
         }
@@ -623,6 +690,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         case SUCCESS:
                             adapter.removeAtPosition(0);
                             adapter.addMemo(pair.second);
+                            viewModel.listDiary.add(0, pair.second);
                             break;
                         case NO_INTERNET:
                             Toast.makeText(getContext(), "Lỗi", Toast.LENGTH_SHORT).show();
@@ -651,6 +719,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     Utils.State state = (Utils.State) responseRepo.getData();
                     switch (state) {
                         case SUCCESS:
+
                             Toast.makeText(getContext(), "Chia sẻ thành công", Toast.LENGTH_SHORT).show();
                             break;
                         case FAILURE:
@@ -704,6 +773,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
                             break;
                     }
+                } else if (key.equals(Constant.GET_SHARED_EMAILS)) {
+                    ArrayList<String> listEmail = (ArrayList<String>) responseRepo.getData();
+                    if (listEmail == null) {
+                        listEmail = new ArrayList<>();
+                    }
+                    Log.d(TAG, "onChanged: " + listEmail);
+                    showShareDialog(listEmail, currentChooseDiaryToShare);
                 }
             }
         });
@@ -831,6 +907,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         if (newState == DrawerLayout.STATE_SETTLING) {
             Log.d(TAG, "onDrawerOpened: ");
             filerMemoByFilter.setText(String.valueOf(viewModel.getTotalFilterMemo()));
+            filterMemoTotal.setText(String.valueOf(viewModel.getTotalMemo()));
             viewModel.getAllTags();
         }
     }

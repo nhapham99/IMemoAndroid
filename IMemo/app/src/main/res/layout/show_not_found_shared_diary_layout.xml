@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="@dimen/length_300dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_not_found"
+        android:layout_centerHorizontal="true" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/imageView"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/oops_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã có lỗi!"
+            android:fontFamily="@font/roboto_bold"
+            android:layout_centerHorizontal="true"
+            android:textSize="20sp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Không thể tìm thấy nội dung mà bạn yêu cầu hoặc bạn không có quyền truy cập nội dung này, xin hãy quay lại!"
+            android:layout_below="@id/oops_textView"
+            android:gravity="center"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:layout_marginRight="@dimen/length_10dp"
+            android:layout_marginTop="@dimen/length_5dp"
+            android:fontFamily="@font/roboto_regular"/>
+
+        <Button
+            android:id="@+id/back_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/length_50dp"
+            android:layout_marginLeft="@dimen/length_20dp"
+            android:layout_marginRight="@dimen/length_20dp"
+            android:layout_marginTop="@dimen/length_10dp"
+            android:text="Về trang chủ"
+            android:textAllCaps="false"
+            android:fontFamily="@font/roboto_medium"/>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

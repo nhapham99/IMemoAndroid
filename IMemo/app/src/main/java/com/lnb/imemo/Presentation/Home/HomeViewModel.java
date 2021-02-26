@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.google.gson.JsonObject;
+import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
 import com.lnb.imemo.Data.Repository.PreviewLink.PreviewLinkRepository;
@@ -33,6 +34,7 @@ public class HomeViewModel extends ViewModel {
     private TagsRepository tagsRepository;
     private DiaryRepository diaryRepository;
     private PreviewLinkRepository previewLinkRepository;
+    private AuthRepository authRepository;
     private MediatorLiveData<ArrayList<Tags>> allTagsLiveData = new MediatorLiveData<>();
     private MediatorLiveData<Tags> tagLiveData = new MediatorLiveData<>();
     private MediatorLiveData<Utils.State> updateTagLiveData = new MediatorLiveData<>();
@@ -40,6 +42,7 @@ public class HomeViewModel extends ViewModel {
     private MediatorLiveData<Utils.State> getAllMemoLiveData = new MediatorLiveData<>();
     private MediatorLiveData<Utils.State> deleteDiaryLiveData = new MediatorLiveData<>();
     private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
+    private Observer<ResponseRepo> authObservable;
     private Observer<ResponseRepo> tagsObservable;
     private Observer<ResponseRepo> diaryObservable;
     private Boolean isGetDairyForCreate = false;
@@ -64,10 +67,12 @@ public class HomeViewModel extends ViewModel {
         tagsRepository = new TagsRepository();
         diaryRepository = new DiaryRepository();
         previewLinkRepository = new PreviewLinkRepository();
+        authRepository = new AuthRepository();
         mUser = User.getUser();
         personProfile = PersonProfile.getInstance();
         subscribeTagAction();
         subscribeDiary();
+        subscribeAuthObservable();
     }
 
     public static HomeViewModel getHomeViewModel(Boolean isStart) {
@@ -136,6 +141,27 @@ public class HomeViewModel extends ViewModel {
 
     public void getDiaryById(String id) {
         diaryRepository.getDiaryById(mUser.getToken(), id);
+    }
+
+    public void getSharedEmails() {
+        authRepository.getAllSharedEmails(mUser.getToken());
+    }
+
+    private void subscribeAuthObservable() {
+        authObservable = new Observer<ResponseRepo>() {
+            @Override
+            public void onChanged(ResponseRepo responseRepo) {
+                String key = responseRepo.getKey();
+                if (key.equals(Constant.GET_SHARED_EMAILS)) {
+                    ResponseRepo<ArrayList<String>> response = new ResponseRepo<>();
+                    ArrayList<String> listEmail = (ArrayList<String>) responseRepo.getData();
+                    response.setData(listEmail);
+                    response.setKey(Constant.GET_SHARED_EMAILS);
+                    viewModelLiveData.setValue(response);
+                }
+            }
+        };
+        authRepository.observableAuthRepo().observeForever(authObservable);
     }
 
 
@@ -249,6 +275,14 @@ public class HomeViewModel extends ViewModel {
         return totalFilterMemo;
     }
 
+    public void setTotalMemo(int totalMemo) {
+        this.totalMemo = totalMemo;
+    }
+
+    public void setTotalFilterMemo(int totalFilterMemo) {
+        this.totalFilterMemo = totalFilterMemo;
+    }
+
     public MediatorLiveData<ArrayList<Tags>> observableAllTags() {
         return allTagsLiveData;
     }
@@ -274,8 +308,9 @@ public class HomeViewModel extends ViewModel {
         super.onCleared();
         tagsRepository.observableTagLiveData().removeObserver(tagsObservable);
         diaryRepository.observableDiaryRepo().removeObserver(diaryObservable);
-
+        authRepository.observableAuthRepo().removeObserver(authObservable);
     }
+
 
 
 }

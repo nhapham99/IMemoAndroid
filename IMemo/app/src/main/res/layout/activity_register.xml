@@ -7,276 +7,295 @@
     android:background="@drawable/background"
     tools:context=".Presentation.Register.RegisterActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/ic_memo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_memo"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="@dimen/length_30dp"
-            android:layout_marginStart="@dimen/length_20dp"/>
-
-        <TextView
-            android:id="@+id/register_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/register_label"
-            android:fontFamily="@font/roboto_bold"
-            android:layout_marginStart="@dimen/length_20dp"
-            android:layout_marginTop="@dimen/length_10dp"
-            android:textSize="30sp"
-            android:textColor="@color/black"
-            app:layout_constraintTop_toBottomOf="@id/ic_memo"
-            app:layout_constraintLeft_toLeftOf="parent"/>
-
-        <TextView
-            android:id="@+id/simple_alert"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/simple_alert"
-            app:layout_constraintTop_toBottomOf="@id/register_label"
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginTop="@dimen/length_5dp"
-            android:layout_marginStart="@dimen/length_20dp"
-            android:layout_marginEnd="@dimen/length_50dp"
-            android:lines="2"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintTop_toBottomOf="@id/simple_alert"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_marginTop="@dimen/length_20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Địa chỉ e-mail*"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:fontFamily="@font/roboto_bold"
-                android:textColor="@color/black"/>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/register_email_textfield"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/email"
-                android:background="@color/white"
-                android:layout_marginTop="@dimen/length_5dp"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:layout_marginEnd="@dimen/length_20dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:fontFamily="@font/roboto_regular">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@null"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tên đăng nhập*"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:fontFamily="@font/roboto_bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="@dimen/length_20dp"/>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/register_username_textfield"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:layout_marginEnd="@dimen/length_20dp"
-                android:layout_marginTop="@dimen/length_5dp"
-                android:hint="@string/input_username"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:fontFamily="@font/roboto_regular">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@null" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mật khẩu*"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:fontFamily="@font/roboto_bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="@dimen/length_20dp"/>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/register_password_textfield"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:layout_marginEnd="@dimen/length_20dp"
-                android:layout_marginTop="@dimen/length_5dp"
-                android:hint="@string/password"
-                app:passwordToggleEnabled="true"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:fontFamily="@font/roboto_regular">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@null"
-                    android:inputType="textPassword"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <LinearLayout
-                android:id="@+id/liner_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:layout_marginEnd="@dimen/length_20dp"
-                android:layout_marginTop="@dimen/length_20dp"
-                android:gravity="center_vertical">
-
-                <com.google.android.material.checkbox.MaterialCheckBox
-                    android:layout_weight="0.5"
-                    android:layout_width="@dimen/length_20dp"
-                    android:layout_height="@dimen/length_20dp"
-                    android:id="@+id/checkbox"
-                    android:buttonTint="@color/blue_dark"/>
-
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/privacy_policy"
-                    android:fontFamily="@font/roboto_regular"
-                    android:textColor="@color/grey_dark"/>
-
-                <ImageView
-                    android:layout_weight="1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_error"
-                    android:id="@+id/error_icon"
-                    android:focusable="true"/>
-            </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/register_button"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                app:layout_constraintTop_toBottomOf="@id/liner_layout"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginTop="@dimen/length_20dp"
-                android:text="@string/register"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:layout_marginEnd="@dimen/length_20dp"
-                android:textAllCaps="false"
-                android:fontFamily="@font/roboto_bold">
-            </com.google.android.material.button.MaterialButton>
-
-            <LinearLayout
-                android:id="@+id/rev_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/register_button"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="@dimen/length_10dp">
-
-                <View
-                    android:layout_weight="1"
-                    android:layout_height="@dimen/length_1dp"
-                    android:background="@color/grey_light"
-                    android:layout_width="wrap_content"
-                    android:layout_marginLeft="@dimen/length_20dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Hoặc"
-                    android:paddingStart="@dimen/length_10dp"
-                    android:paddingRight="@dimen/length_10dp"
-                    android:textColor="@color/grey"
-                    android:fontFamily="@font/roboto_regular"
-                    android:textSize="@dimen/text_12sp"/>
-
-                <View
-                    android:layout_weight="1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/length_1dp"
-                    android:background="@color/grey_light"
-                    android:layout_marginRight="@dimen/length_20dp"/>
-
-            </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/register_with_google_button"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginTop="@dimen/length_10dp"
-                android:text="@string/login_with_google"
-                android:layout_marginStart="@dimen/length_20dp"
-                android:layout_marginEnd="@dimen/length_20dp"
-                android:textAllCaps="false"
-                android:drawableLeft="@drawable/google_icon"
-                android:backgroundTint="@color/white"
-                android:textColor="@color/black"
-                android:fontFamily="@font/roboto_medium">
-            </com.google.android.material.button.MaterialButton>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/length_20dp"
-                android:layout_gravity="center">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/have_account"
-                    android:fontFamily="@font/roboto_regular"
-                    android:textColor="@color/grey_dark"/>
-                <TextView
-                    android:id="@+id/login_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/login"
-                    android:layout_marginStart="@dimen/length_5dp"
-                    android:fontFamily="@font/roboto_bold"
-                    android:textColor="@color/blue_light"/>
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <eightbitlab.com.blurview.BlurView
-        android:id="@+id/blurView"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_marginBottom="@dimen/length_10dp"
+        android:overScrollMode="never">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <ProgressBar
-            android:layout_width="@dimen/length_50dp"
-            android:layout_height="@dimen/length_50dp"
-            android:layout_gravity="center"/>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    </eightbitlab.com.blurview.BlurView>
+                <ImageView
+                    android:id="@+id/ic_memo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_memo"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="@dimen/length_30dp"
+                    android:layout_marginStart="@dimen/length_20dp"/>
+
+                <TextView
+                    android:id="@+id/register_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/register_label"
+                    android:fontFamily="@font/roboto_bold"
+                    android:layout_marginStart="@dimen/length_20dp"
+                    android:layout_marginTop="@dimen/length_10dp"
+                    android:textSize="30sp"
+                    android:textColor="@color/black"
+                    app:layout_constraintTop_toBottomOf="@id/ic_memo"
+                    app:layout_constraintLeft_toLeftOf="parent"/>
+
+                <TextView
+                    android:id="@+id/simple_alert"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/simple_alert"
+                    app:layout_constraintTop_toBottomOf="@id/register_label"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginTop="@dimen/length_5dp"
+                    android:layout_marginStart="@dimen/length_20dp"
+                    android:layout_marginEnd="@dimen/length_50dp"
+                    android:lines="2"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintTop_toBottomOf="@id/simple_alert"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginTop="@dimen/length_20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Địa chỉ e-mail*"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/black"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/register_email_textfield"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/email"
+                        android:background="@color/white"
+                        android:layout_marginTop="@dimen/length_5dp"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:layout_marginEnd="@dimen/length_20dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:fontFamily="@font/roboto_regular">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tên đăng nhập*"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="@dimen/length_20dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/register_username_textfield"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:layout_marginEnd="@dimen/length_20dp"
+                        android:layout_marginTop="@dimen/length_5dp"
+                        android:hint="@string/input_username"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:fontFamily="@font/roboto_regular">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mật khẩu*"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="@dimen/length_20dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/register_password_textfield"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/white"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:layout_marginEnd="@dimen/length_20dp"
+                        android:layout_marginTop="@dimen/length_5dp"
+                        android:hint="@string/password"
+                        app:passwordToggleEnabled="true"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:fontFamily="@font/roboto_regular">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:inputType="textPassword"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:id="@+id/liner_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:layout_marginEnd="@dimen/length_20dp"
+                        android:layout_marginTop="@dimen/length_20dp"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:layout_weight="0.5"
+                            android:layout_width="@dimen/length_20dp"
+                            android:layout_height="@dimen/length_20dp"
+                            android:id="@+id/checkbox"
+                            android:buttonTint="@color/blue_dark"/>
+
+                        <TextView
+                            android:layout_weight="1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/privacy_policy"
+                            android:fontFamily="@font/roboto_regular"
+                            android:textColor="@color/grey_dark"/>
+
+                        <ImageView
+                            android:layout_weight="1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_error"
+                            android:id="@+id/error_icon"
+                            android:focusable="true"/>
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/register_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        app:layout_constraintTop_toBottomOf="@id/liner_layout"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        android:layout_marginTop="@dimen/length_20dp"
+                        android:text="@string/register"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:layout_marginEnd="@dimen/length_20dp"
+                        android:textAllCaps="false"
+                        android:fontFamily="@font/roboto_bold">
+                    </com.google.android.material.button.MaterialButton>
+
+                    <LinearLayout
+                        android:id="@+id/rev_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/register_button"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginTop="@dimen/length_10dp">
+
+                        <View
+                            android:layout_weight="1"
+                            android:layout_height="@dimen/length_1dp"
+                            android:background="@color/grey_light"
+                            android:layout_width="wrap_content"
+                            android:layout_marginLeft="@dimen/length_20dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hoặc"
+                            android:paddingStart="@dimen/length_10dp"
+                            android:paddingRight="@dimen/length_10dp"
+                            android:textColor="@color/grey"
+                            android:fontFamily="@font/roboto_regular"
+                            android:textSize="@dimen/text_12sp"/>
+
+                        <View
+                            android:layout_weight="1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/length_1dp"
+                            android:background="@color/grey_light"
+                            android:layout_marginRight="@dimen/length_20dp"/>
+
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/register_with_google_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        android:layout_marginTop="@dimen/length_10dp"
+                        android:text="@string/login_with_google"
+                        android:layout_marginStart="@dimen/length_20dp"
+                        android:layout_marginEnd="@dimen/length_20dp"
+                        android:textAllCaps="false"
+                        android:drawableLeft="@drawable/google_icon"
+                        android:backgroundTint="@color/white"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/roboto_medium">
+                    </com.google.android.material.button.MaterialButton>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/length_20dp"
+                        android:layout_gravity="center">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/have_account"
+                            android:fontFamily="@font/roboto_regular"
+                            android:textColor="@color/grey_dark"/>
+                        <TextView
+                            android:id="@+id/login_textview"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/login"
+                            android:layout_marginStart="@dimen/length_5dp"
+                            android:fontFamily="@font/roboto_bold"
+                            android:textColor="@color/blue_light"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/blurView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ProgressBar
+                    android:layout_width="@dimen/length_50dp"
+                    android:layout_height="@dimen/length_50dp"
+                    android:layout_gravity="center"/>
+
+            </eightbitlab.com.blurview.BlurView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.core.widget.NestedScrollView>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

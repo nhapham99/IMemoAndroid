@@ -6,6 +6,9 @@ import android.provider.MediaStore;
 
 import com.lnb.imemo.Presentation.UploadActivity.UploadActivity;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class Utils {
     public static String GOOGLE_CLIENT_ID = "335058615265-gcce2lv24jgadcjv20oblhlav3s0caik.apps.googleusercontent.com";
     public static String baseUrls = "https://api.imemo.vn/";

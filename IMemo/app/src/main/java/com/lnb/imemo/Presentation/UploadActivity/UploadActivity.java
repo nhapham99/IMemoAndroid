@@ -134,6 +134,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         // init var
         viewModel = new UploadViewModel(this);
         subscribeViewModelObservable();
+
         resourceAdapter = new UploadRecyclerViewAdapter();
         createMemoResourceRecyclerView.setAdapter(resourceAdapter);
         createMemoResourceRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false));
@@ -208,9 +209,10 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             @Override
             public void onNext(@NonNull Integer position) {
                 Log.d(TAG, "accept: " + position);
+                Log.d(TAG, "accept: remove" + viewModel.getUploadDiary().getResources().toString());
                 Resource resource = viewModel.getUploadDiary().getResources().get(position);
                 viewModel.getUploadDiary().getResources().remove(resource);
-                Log.d(TAG, "accept: " + viewModel.getUploadDiary().getResources().toString());
+                resourceAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -241,6 +243,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                                viewModel.getUploadDiary().getLinks().add((Link) object);
                            } else if (object instanceof Resource) {
                                viewModel.getUploadDiary().getResources().add((Resource) object);
+                               Log.d(TAG, "onChanged: " + viewModel.getUploadDiary().getResources().size());
                            }
                            break;
                        case FAILURE:
@@ -282,7 +285,6 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void subscribeRemoveTag() {
-
         tagsAdapter.getRemoveTagObservable().subscribe(new io.reactivex.Observer<Integer>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
@@ -319,6 +321,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             } else {
                 Log.d(TAG, "onActivityResult: failure");
             }
+            //subscribeUploadRecyclerViewObservable();
         } else if (requestCode == GET_TAGS) {
             if (resultCode == RESULT_OK) {
                 Log.d(TAG, "onActivityResult: " + data.getStringArrayListExtra("arrayTagIds").toString());
@@ -329,7 +332,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 createMemoTagsRecyclerView.setLayoutManager(new LinearLayoutManager(UploadActivity.this, LinearLayoutManager.HORIZONTAL, false));
                 viewModel.getUploadDiary().setTagIds(data.getStringArrayListExtra("arrayTagIds"));
                 viewModel.getUploadDiary().setTags(listTags);
-                subscribeRemoveTag();
+                //subscribeRemoveTag();
             } else {
                 Log.d(TAG, "onActivityResult: failure" );
             }
@@ -346,7 +349,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 Log.d(TAG, "onActivityResult: failure");
             }
         }
-        subscribeUploadRecyclerViewObservable();
+
     }
 
     private void showDatePicker() {

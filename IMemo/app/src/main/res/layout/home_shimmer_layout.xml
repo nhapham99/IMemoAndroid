@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:background="@color/white"
     android:layout_marginTop="@dimen/length_10dp"
-    android:layout_marginBottom="@dimen/length_20dp">
+    android:layout_marginBottom="@dimen/length_10dp">
 
     <LinearLayout
         android:layout_width="100dp"
@@ -48,6 +48,7 @@
         android:background="@color/grey"
         android:layout_marginTop="@dimen/length_10dp"
         android:layout_marginLeft="@dimen/length_10dp"
-        android:layout_marginRight="@dimen/length_10dp"/>
+        android:layout_marginRight="@dimen/length_10dp"
+        android:layout_marginBottom="@dimen/length_10dp"/>
 
 </LinearLayout>

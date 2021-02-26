@@ -2,6 +2,7 @@ package com.lnb.imemo.Data.Repository.Auth;
 
 
 import com.google.gson.JsonObject;
+import com.lnb.imemo.Data.Repository.Model.ResultSharedEmails;
 import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.Root;
 
@@ -36,4 +37,7 @@ public interface AuthApi {
 
     @PATCH("auth/me/update")
     Flowable<Root<JsonObject>> updateUserProfile(@Header("Authorization") String token, @Body JsonObject body);
+
+    @GET("auth/shared-emails")
+    Flowable<Root<ResultSharedEmails>> getAllSharedEmails(@Header("Authorization") String token);
 }

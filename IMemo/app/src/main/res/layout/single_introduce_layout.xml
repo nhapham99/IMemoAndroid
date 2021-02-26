@@ -18,7 +18,7 @@
         android:text="Bắt đầu"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/length_30dp"
+        android:layout_marginBottom="@dimen/length_50dp"
         android:fontFamily="@font/roboto_medium"
         style="@style/TextAppearance.MaterialComponents.Button"
         android:textColor="@color/white"

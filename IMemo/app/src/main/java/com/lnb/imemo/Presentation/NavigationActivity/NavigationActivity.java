@@ -3,6 +3,7 @@ package com.lnb.imemo.Presentation.NavigationActivity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 
@@ -49,6 +50,7 @@ public class NavigationActivity extends AppCompatActivity {
     private NavigationViewModel viewModel = new NavigationViewModel();
     private int totalNotSeen = 0;
     private Fragment currentFragment;
+    private Boolean setupStart = true;
     private PublishSubject<Pair<String, Notification>> notificationObservable = PublishSubject.create();
     private Fragment notificationFragment = NotificationFragment.getNotificationFragment(true, notificationObservable);
 
@@ -69,6 +71,7 @@ public class NavigationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_navigation);
         subscribeViewModelObservable();
         init();
+        Log.d(TAG, "onCreate: " + User.getUser().getToken());
         subscribeNotificationObservable();
         mSocket.connect();
         mSocket.emit("user-join", PersonProfile.getInstance().getId());
@@ -139,6 +142,17 @@ public class NavigationActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (!(currentFragment instanceof HomeFragment)) {
+            bottomNavigationView.setSelectedItemId(R.id.home);
+            currentFragment = homeFragment;
+        } else {
+            finish();
+        }
+    }
+
     private void init() {
         loadFragment(homeFragment);
         currentFragment = homeFragment;
@@ -148,16 +162,22 @@ public class NavigationActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.home:
-                        loadFragment(homeFragment);
+                        if (!(currentFragment instanceof HomeFragment)) {
+                            loadFragment(homeFragment);
+                        }
                         return true;
 //                    case R.id.mail:
 //                        loadFragment(mailFragment);
 //                        return true;
                     case R.id.notification:
-                        loadFragment(notificationFragment);
+                        if (!(currentFragment instanceof NotificationFragment)) {
+                            loadFragment(notificationFragment);
+                        }
                         return true;
                     case R.id.person:
-                        loadFragment(personFragment);
+                        if (!(currentFragment instanceof PersonFragment)) {
+                            loadFragment(personFragment);
+                        }
                         return true;
                 }
                 return false;
@@ -171,9 +191,7 @@ public class NavigationActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "run: " + args[0]);
                     String objectStr = args[0].toString();
-                    Log.d(TAG, "run:"  +User.getUser().getToken());
                     Notification<String> notification = gsonBuilder.fromJson(objectStr, Notification.class);
                     if (currentFragment instanceof NotificationFragment) {
                         notificationObservable.onNext(new Pair<>("push_noti", notification));
@@ -212,6 +230,14 @@ public class NavigationActivity extends AppCompatActivity {
         }
         currentFragment = fragment;
         transaction.replace(R.id.fragment_container, fragment);
+
+        FragmentManager fm = getSupportFragmentManager();
+        if (fm.getBackStackEntryCount() > 1) {
+            for (int i = 0; i < fm.getBackStackEntryCount() - 1; i++) {
+                fm.popBackStack();
+            }
+        }
+        transaction.addToBackStack(null);
         transaction.commit();
     }
 }

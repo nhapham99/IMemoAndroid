@@ -84,24 +84,15 @@
         </RelativeLayout>
 
 
-        <com.google.android.material.textfield.TextInputLayout
+        <AutoCompleteTextView
             android:id="@+id/input_email"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/length_10dp"
             android:layout_marginTop="@dimen/length_5dp"
             android:layout_marginEnd="@dimen/length_10dp"
-            android:background="@color/white"
             android:fontFamily="@font/roboto_regular"
-            android:hint="Nhập email">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@null" />
-        </com.google.android.material.textfield.TextInputLayout>
+            android:hint="Nhập email"/>
 
         <Button
             android:id="@+id/share_memo"

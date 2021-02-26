@@ -142,7 +142,7 @@ public class MemoPreviewActivity extends AppCompatActivity {
         try {
             if (listImageAndVideo.size() != 0) {
                 listTabs.add(getResources().getText(R.string.image_and_video).toString());
-                listFragments.add(new ImageFragment(listImageAndVideo));
+                listFragments.add(new ImageFragment(listImageAndVideo, this));
             }
 
             if (listLinks.size() != 0) {
