@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="@color/white"
     android:layout_marginBottom="@dimen/length_20dp"
-    android:elevation="3dp">
+    android:background="@color/white"
+    android:elevation="3dp"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="@dimen/length_10dp">
+        android:layout_marginTop="@dimen/length_10dp"
+        android:orientation="horizontal">
+
         <TextView
             android:id="@+id/memo_title"
-            android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/length_10dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/roboto_medium"
             android:text="Memo title detail here"
             android:textColor="@color/black"
-            android:textSize="18sp"
-            android:fontFamily="@font/roboto_medium"
-            android:layout_marginLeft="@dimen/length_10dp"/>
+            android:textSize="18sp" />
 
         <ImageView
+            android:id="@+id/pop_down_menu"
             android:layout_width="15dp"
             android:layout_height="wrap_content"
-            android:id="@+id/pop_down_menu"
-            android:src="@drawable/ic_three_dot"
             android:layout_gravity="end"
-            android:layout_marginRight="@dimen/length_10dp"/>
+            android:layout_marginRight="@dimen/length_10dp"
+            android:src="@drawable/ic_three_dot" />
 
     </LinearLayout>
 
@@ -39,63 +40,75 @@
         android:id="@+id/memo_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Yesterday at 14:03"
-        android:layout_marginTop="@dimen/length_5dp"
         android:layout_marginLeft="@dimen/length_10dp"
-        android:textSize="@dimen/text_12sp"
+        android:layout_marginTop="@dimen/length_5dp"
+        android:fontFamily="@font/roboto_regular"
+        android:text="Yesterday at 14:03"
         android:textColor="@color/memo_time_color"
-        android:fontFamily="@font/roboto_regular"/>
+        android:textSize="@dimen/text_12sp" />
 
     <TextView
         android:id="@+id/memo_item_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/length_5dp"
         android:layout_marginLeft="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_5dp"
         android:layout_marginRight="@dimen/length_10dp"
+        android:layout_weight="1"
         android:fontFamily="@font/roboto_regular"
-        android:textColor="@color/black" />
+        android:textColor="@color/black"
+        android:soundEffectsEnabled="false"/>
+
+    <TextView
+        android:id="@+id/see_more_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Xem thêm..."
+        android:textSize="13sp"
+        android:layout_marginLeft="@dimen/length_10dp"
+        android:soundEffectsEnabled="false"
+        />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/memo_item_tabLayout"
         style="@style/customTabLayout"
-        app:tabSelectedTextColor="@color/blue_light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/length_10dp"
         app:tabMode="scrollable"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        app:tabSelectedTextColor="@color/blue_light" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/length_10dp"
+        android:background="@color/white"
         android:orientation="horizontal"
         android:paddingTop="@dimen/length_10dp"
-        android:background="@color/white"/>
+        android:paddingBottom="@dimen/length_10dp" />
 
     <LinearLayout
         android:id="@+id/memo_share"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="@dimen/length_10dp"
-        android:layout_marginBottom="@dimen/length_10dp">
+        android:layout_marginBottom="@dimen/length_10dp"
+        android:orientation="horizontal">
 
         <ImageView
             android:layout_width="15dp"
             android:layout_height="15dp"
-            android:src="@drawable/ic_share"/>
+            android:src="@drawable/ic_share" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/share"
-            android:textSize="12sp"
+            android:layout_marginLeft="@dimen/length_5dp"
             android:fontFamily="@font/roboto_regular"
+            android:text="@string/share"
             android:textColor="#66676B"
-            android:layout_marginLeft="@dimen/length_5dp"/>
+            android:textSize="12sp" />
 
     </LinearLayout>
 </LinearLayout>

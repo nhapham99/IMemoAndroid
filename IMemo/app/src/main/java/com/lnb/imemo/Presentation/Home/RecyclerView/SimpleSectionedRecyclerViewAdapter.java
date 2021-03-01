@@ -16,7 +16,7 @@ import java.util.Comparator;
 public class SimpleSectionedRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final Context mContext;
-    private static final int SECTION_TYPE = 0;
+    private static final int SECTION_PIN_TYPE = 0;
 
     private boolean mValid = true;
     private int mSectionResourceId;
@@ -73,10 +73,10 @@ public class SimpleSectionedRecyclerViewAdapter extends RecyclerView.Adapter<Rec
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int typeView) {
-        if (typeView == SECTION_TYPE) {
+        if (typeView == SECTION_PIN_TYPE) {
             final View view = LayoutInflater.from(mContext).inflate(mSectionResourceId, parent, false);
             return new SectionViewHolder(view,mTextResourceId);
-        }else{
+        } else {
             return mBaseAdapter.onCreateViewHolder(parent, typeView -1);
         }
     }
@@ -94,8 +94,8 @@ public class SimpleSectionedRecyclerViewAdapter extends RecyclerView.Adapter<Rec
     @Override
     public int getItemViewType(int position) {
         return isSectionHeaderPosition(position)
-                ? SECTION_TYPE
-                : mBaseAdapter.getItemViewType(sectionedPositionToPosition(position)) +1 ;
+                ? SECTION_PIN_TYPE
+                : mBaseAdapter.getItemViewType(sectionedPositionToPosition(position)) + 1;
     }
 
 

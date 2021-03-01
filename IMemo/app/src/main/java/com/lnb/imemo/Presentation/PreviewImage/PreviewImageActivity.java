@@ -1,6 +1,7 @@
 package com.lnb.imemo.Presentation.PreviewImage;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
@@ -27,6 +28,7 @@ public class PreviewImageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_preview_image);
         hideSystemUI();
         listResource = getIntent().getParcelableArrayListExtra("data");

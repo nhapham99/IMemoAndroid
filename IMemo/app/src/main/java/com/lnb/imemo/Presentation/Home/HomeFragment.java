@@ -84,9 +84,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private static final String TAG = "HomeFragment";
     private static HomeFragment mHomeFragment;
     private Boolean isStart = false;
+
     {
         Log.d(TAG, "instance initializer: " + isStart);
     }
+
     // ui
     private RecyclerView homeRecyclerView;
     private SwipeRefreshLayout homeSwipeRefreshLayout;
@@ -125,7 +127,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private int currentChooseDiaryToShare = -1;
 
     private ShimmerFrameLayout shimerContainer;
-
 
 
     private HomeFragment(Boolean isStart) {
@@ -177,6 +178,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
 
         searchText = view.findViewById(R.id.search_bar);
+        searchText.setFocusable(false);
         searchIcon = view.findViewById(R.id.search_icon);
         searchIcon.setOnClickListener(this);
         searchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -202,8 +204,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         }
 
 
-
-
         Log.d(TAG, "init: " + viewModel.listDiary.size());
         if (viewModel.listDiary.size() == 0) {
             getAllMemo(null, null, null, null, null);
@@ -219,11 +219,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         homeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         homeRecyclerView.setAdapter(adapter);
         List<SimpleSectionedRecyclerViewAdapter.Section> sections = new ArrayList<SimpleSectionedRecyclerViewAdapter.Section>();
-
         //Add your adapter to the sectionAdapter
         SimpleSectionedRecyclerViewAdapter.Section[] dummy = new SimpleSectionedRecyclerViewAdapter.Section[sections.size()];
-        SimpleSectionedRecyclerViewAdapter mSectionedAdapter = new
-                SimpleSectionedRecyclerViewAdapter(getContext(), R.layout.sections, R.id.section_text, adapter);
+        SimpleSectionedRecyclerViewAdapter mSectionedAdapter = new SimpleSectionedRecyclerViewAdapter(getContext(),
+                R.layout.sections,
+                R.id.section_text,
+                adapter);
         mSectionedAdapter.setSections(sections.toArray(dummy));
 
         //Apply this adapter to the RecyclerView
@@ -249,8 +250,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 } else if (key.equals(Constant.GET_LINKS_CODE)) {
                     startAddLink();
                 } else if (key.equals("share_action")) {
-                    currentChooseDiaryToShare = adapterAction.second;
-                    viewModel.getSharedEmails();
+                    showShareDialog(adapterAction.second);
                 } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
                     currentChoosedDiaryPosition = adapterAction.second;
                     Log.d(TAG, "onChanged: " + currentChoosedDiaryPosition);
@@ -329,7 +329,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 filterDiary();
             }
         });
-
 
 
         // load user avatar
@@ -457,7 +456,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         });
     }
 
-    private void showShareDialog(ArrayList<String> listSharedEmails, int position) {
+    private void showShareDialog(int position) {
+        viewModel.getSharedEmails();
+        final ArrayList<String>[] listSharedEmails = new ArrayList[]{new ArrayList<>()};
+
         Diary diary = viewModel.listDiary.get(position);
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
         View view = getLayoutInflater().inflate(R.layout.share_memo_layout, null);
@@ -466,23 +468,24 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         TextView previewMemo = view.findViewById(R.id.preview_memo);
         AutoCompleteTextView email_input = view.findViewById(R.id.input_email);
-        String[] listEmailArray = new String[listSharedEmails.size()];
-        for (int i = 0; i < listSharedEmails.size(); i++) {
-            listEmailArray[i] = listSharedEmails.get(i).toString();
-        }
-        ArrayAdapter<String> adapterListSharedEmail = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, listEmailArray);
-        email_input.setAdapter(adapterListSharedEmail);
-        email_input.setThreshold(2);
-
-
+        viewModel.sharedEmailPublishSubject.subscribe(new Consumer<ArrayList<String>>() {
+            @Override
+            public void accept(ArrayList<String> strings) throws Exception {
+                listSharedEmails[0] = strings;
+                String[] listEmailArray = new String[listSharedEmails[0].size()];
+                for (int i = 0; i < listSharedEmails[0].size(); i++) {
+                    listEmailArray[i] = listSharedEmails[0].get(i).toString();
+                }
+                ArrayAdapter<String> adapterListSharedEmail = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, listEmailArray);
+                email_input.setAdapter(adapterListSharedEmail);
+                email_input.setThreshold(2);
+            }
+        });
         Button shareButton = view.findViewById(R.id.share_memo);
         ImageButton dialogEscape = view.findViewById(R.id.share_memo_escape);
         SwitchMaterial switchShare = view.findViewById(R.id.switch_share);
         ProgressBar shareProgressBar = view.findViewById(R.id.share_progressBar);
         shareProgressBar.setVisibility(View.INVISIBLE);
-
-
-
 
         if (diary.getStatus().equals("private")) {
             switchShare.setChecked(false);
@@ -516,8 +519,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 startActivity(intent);
             }
         });
-
-
 
 
         AlertDialog alertDialog = dialogBuilder.create();
@@ -779,7 +780,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         listEmail = new ArrayList<>();
                     }
                     Log.d(TAG, "onChanged: " + listEmail);
-                    showShareDialog(listEmail, currentChooseDiaryToShare);
+                    //showShareDialog(currentChooseDiaryToShare);
                 }
             }
         });

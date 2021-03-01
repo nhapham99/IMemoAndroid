@@ -24,7 +24,8 @@
         <activity android:name=".Presentation.PickTag.PickTagsActivity" />
         <activity android:name=".Presentation.Register.RegisterActivity" />
         <activity android:name=".Presentation.NavigationActivity.NavigationActivity" />
-        <activity android:name=".Presentation.UploadActivity.UploadActivity" />
+        <activity android:name=".Presentation.UploadActivity.UploadActivity"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".Presentation.Introduce.IntroduceActivity"
             android:theme="@style/SplashTheme">

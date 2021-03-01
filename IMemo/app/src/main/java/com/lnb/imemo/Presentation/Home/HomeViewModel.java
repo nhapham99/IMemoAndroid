@@ -29,6 +29,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
+import io.reactivex.subjects.PublishSubject;
+
 public class HomeViewModel extends ViewModel {
     private static final String TAG = "HomeViewModel";
     private TagsRepository tagsRepository;
@@ -61,6 +63,8 @@ public class HomeViewModel extends ViewModel {
     protected PersonProfile personProfile;
     protected ArrayList<Diary> listDiary = new ArrayList<>();
     private Boolean isUpdateForPublic = false;
+    public ArrayList<String> listSharedEmail = new ArrayList<>();
+    public PublishSubject<ArrayList<String>> sharedEmailPublishSubject = PublishSubject.create();
 
 
     private HomeViewModel() {
@@ -154,10 +158,8 @@ public class HomeViewModel extends ViewModel {
                 String key = responseRepo.getKey();
                 if (key.equals(Constant.GET_SHARED_EMAILS)) {
                     ResponseRepo<ArrayList<String>> response = new ResponseRepo<>();
-                    ArrayList<String> listEmail = (ArrayList<String>) responseRepo.getData();
-                    response.setData(listEmail);
-                    response.setKey(Constant.GET_SHARED_EMAILS);
-                    viewModelLiveData.setValue(response);
+                    listSharedEmail = (ArrayList<String>) responseRepo.getData();
+                    sharedEmailPublishSubject.onNext(listSharedEmail);
                 }
             }
         };

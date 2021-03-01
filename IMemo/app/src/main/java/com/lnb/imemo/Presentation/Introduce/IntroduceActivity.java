@@ -1,6 +1,7 @@
 package com.lnb.imemo.Presentation.Introduce;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
@@ -28,6 +29,7 @@ public class IntroduceActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         hideSystemUI();
         setContentView(R.layout.activity_introduce);
         if (restorePrefData()) {
