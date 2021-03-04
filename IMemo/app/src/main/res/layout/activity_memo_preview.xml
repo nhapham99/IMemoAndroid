@@ -2,10 +2,10 @@
 
 <androidx.core.widget.NestedScrollView android:layout_width="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:overScrollMode="never">
+
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -45,9 +45,11 @@
             android:id="@+id/back_button"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:text="Về trang chủ"
-            android:fontFamily="@font/roboto_bold"
+            android:text="Về Imemo"
+            android:fontFamily="@font/roboto_medium"
             android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="17sp"
             android:layout_marginLeft="@dimen/length_10dp"
             android:layout_marginRight="@dimen/length_10dp"/>
 

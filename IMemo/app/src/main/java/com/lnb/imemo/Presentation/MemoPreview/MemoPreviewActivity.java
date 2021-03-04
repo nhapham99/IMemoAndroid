@@ -3,7 +3,6 @@ package com.lnb.imemo.Presentation.MemoPreview;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,8 +12,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Pair;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -25,10 +22,8 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
-import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.Tags;
-import com.lnb.imemo.Presentation.Home.RecyclerView.HomeRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.TagRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.TabFragment.AudioFragment;
 import com.lnb.imemo.Presentation.Home.TabFragment.ImageFragment;
@@ -48,12 +43,7 @@ public class MemoPreviewActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private ImageView popDownMenu;
-    private TextView memoAuthor;
-    private Button backButton;
     private Diary diary;
-    private String authorName;
-    private LinearLayout share;
-
 
 
     @Override
@@ -74,13 +64,15 @@ public class MemoPreviewActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.view_pager);
         viewPager.setUserInputEnabled(false);
         popDownMenu = findViewById(R.id.pop_down_menu);
-        memoAuthor = findViewById(R.id.memo_author);
-        backButton = findViewById(R.id.back_button);
-        share = findViewById(R.id.memo_share);
+        TextView seeMore = findViewById(R.id.see_more_textView);
+        seeMore.setVisibility(View.GONE);
+        TextView memoAuthor = findViewById(R.id.memo_author);
+        Button backButton = findViewById(R.id.back_button);
+        LinearLayout share = findViewById(R.id.memo_share);
         share.setVisibility(View.GONE);
 
         diary = getIntent().getParcelableExtra("preview_diary");
-        authorName = getIntent().getStringExtra("preview_author_name");
+        String authorName = getIntent().getStringExtra("preview_author_name");
         String from = getIntent().getStringExtra("from");
         if (from.equals("notification")) {
             backButton.setText("Quay lại thông báo");

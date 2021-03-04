@@ -16,11 +16,11 @@ import com.lnb.imemo.Utils.Utils;
 
 public class MemoPreviewViewModel extends ViewModel {
     private static final String TAG = "MemoPreviewViewModel";
-    private DiaryRepository diaryRepository;
+    private final DiaryRepository diaryRepository;
     private Observer<ResponseRepo> diaryObserver;
     private User mUser;
     public Diary diary;
-    private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
 
     public MemoPreviewViewModel() {
         diaryRepository = new DiaryRepository();
@@ -34,28 +34,25 @@ public class MemoPreviewViewModel extends ViewModel {
     }
 
     private void subscribeObservable() {
-        diaryObserver = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key.equals(Constant.GET_DIARY_BY_ID_KEY)) {
-                    Pair<Utils.State, Diary> pair = (Pair<Utils.State, Diary>) responseRepo.getData();
-                    ResponseRepo<Utils.State> response = new ResponseRepo<>();
-                    switch (pair.first) {
-                        case SUCCESS:
-                            diary = pair.second;
-                            response.setData(Utils.State.SUCCESS);
-                            break;
-                        case FAILURE:
-                            response.setData(Utils.State.FAILURE);
-                            break;
-                        case NO_INTERNET:
-                            response.setData(Utils.State.NO_INTERNET);
-                            break;
-                    }
-                    response.setKey(Constant.GET_DIARY_BY_ID_KEY);
-                    viewModelLiveData.setValue(response);
+        diaryObserver = responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.GET_DIARY_BY_ID_KEY)) {
+                Pair<Utils.State, Diary> pair = (Pair<Utils.State, Diary>) responseRepo.getData();
+                ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                switch (pair.first) {
+                    case SUCCESS:
+                        diary = pair.second;
+                        response.setData(Utils.State.SUCCESS);
+                        break;
+                    case FAILURE:
+                        response.setData(Utils.State.FAILURE);
+                        break;
+                    case NO_INTERNET:
+                        response.setData(Utils.State.NO_INTERNET);
+                        break;
                 }
+                response.setKey(Constant.GET_DIARY_BY_ID_KEY);
+                viewModelLiveData.setValue(response);
             }
         };
         diaryRepository.observableDiaryRepo().observeForever(diaryObserver);

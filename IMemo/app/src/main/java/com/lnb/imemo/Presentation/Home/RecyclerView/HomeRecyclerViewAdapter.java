@@ -1,5 +1,6 @@
 package com.lnb.imemo.Presentation.Home.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
 import android.transition.AutoTransition;
@@ -7,7 +8,6 @@ import android.transition.TransitionManager;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -42,12 +42,11 @@ import java.util.ArrayList;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 
 public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final String TAG = "HomeRecyclerViewAdapter";
-    private ArrayList<Diary> listMemo = new ArrayList<>();
+    private ArrayList<Diary> listMemo;
     private Context mContext;
     private final int TYPE_HEADER = 0;
     private final int TYPE_NORMAL = 1;
@@ -58,7 +57,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     private final int TYPE_FILTER = 6;
 
     private Boolean isFilter = false;
-    private FilterItemRecyclerViewAdapter filterItemRecyclerViewAdapter;
+    private final FilterItemRecyclerViewAdapter filterItemRecyclerViewAdapter;
     private ArrayList<Tags> listFilterTags;
     private String searchKey;
     private String timeKey;
@@ -78,22 +77,22 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         mContext = parent.getContext();
         if (viewType == TYPE_NORMAL) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_item, parent, false);
-            return new HomeRecyclerViewHolder(view);
+            return new HomeRecyclerViewHolder(view, actionObservable);
         } else if (viewType == TYPE_FILTER) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.memo_filter_layout, parent, false);
             return new HomeFilterViewHolder(view);
         } else if (viewType == TYPE_UPLOADING) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.uploading_memo_layout, parent, false);
-            return new HomeRecyclerViewHolder(view);
+            return new HomeRecyclerViewHolder(view, actionObservable);
         } else if (viewType == TYPE_NO_TAGS) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recyclerview_no_tag, parent, false);
-            return new HomeRecyclerViewNoTagsHolder(view);
+            return new HomeRecyclerViewNoTagsHolder(view, actionObservable);
         } else if (viewType == TYPE_NO_TAB) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_no_tab_layout, parent, false);
-            return new HomeRecyclerViewNoTabHolder(view);
+            return new HomeRecyclerViewNoTabHolder(view, actionObservable);
         } else if (viewType == TYPE_NO_TAGS_AND_TAB) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_no_tag_and_tab, parent, false);
-            return new HomeRecyclerViewNoTabAndTagHolder(view);
+            return new HomeRecyclerViewNoTabAndTagHolder(view, actionObservable);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_recycler_view_header, parent, false);
             return new HeaderViewHolder(view);
@@ -111,7 +110,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
         if (position == 0) {
             initViewForHeader((HeaderViewHolder) holder, position);
-        } else if (position == 1 && isFilter == true) {
+        } else if (position == 1 && isFilter) {
             initViewForHomeFilter((HomeFilterViewHolder) holder);
         } else if (listMemo.get(position - size).getUploading() != null) {
             initViewForHomeItem((HomeRecyclerViewHolder) holder, position - size);
@@ -124,8 +123,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         } else {
             initViewForHomeItem((HomeRecyclerViewHolder) holder, position - size);
         }
-
-
     }
 
 
@@ -144,95 +141,79 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         holder.filterRecyclerView.setAdapter(filterItemRecyclerViewAdapter);
         holder.filterRecyclerView.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
-        holder.resetFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listFilterTags = null;
-                searchKey = null;
-                timeKey = null;
-                filterItemRecyclerViewAdapter.notifyDataSetChanged();
-                isFilter = false;
-                notifyItemRemoved(1);
-                filterObservable.onNext(new Pair<>("reset_all", null));
-            }
+        holder.resetFilter.setOnClickListener(v -> {
+            listFilterTags = null;
+            searchKey = null;
+            timeKey = null;
+            filterItemRecyclerViewAdapter.notifyDataSetChanged();
+            isFilter = false;
+            notifyItemRemoved(1);
+            filterObservable.onNext(new Pair<>("reset_all", null));
         });
 
-        filterItemRecyclerViewAdapter.getFilterObservable().subscribe(new Consumer<Pair<String, String>>() {
-            @Override
-            public void accept(Pair<String, String> pair) throws Exception {
-                filterObservable.onNext(pair);
-            }
-        });
+        filterItemRecyclerViewAdapter.getFilterObservable().subscribe(pair -> filterObservable.onNext(pair));
     }
 
     private void initViewForHeader(HeaderViewHolder holder, int position) {
-        holder.homeNewMemo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>(Constant.CREATE_DIARY_KEY, null));
-            }
-        });
-        holder.memoUploadFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>(Constant.GET_FILE_CODE, null));
-            }
-        });
+        // star setup click create diary
+        holder.homeNewMemo.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.CREATE_DIARY_KEY, null)));
+        // end setup click create diary
 
-        holder.memoUploadTag.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>(Constant.GET_TAGS_CODE, null));
-            }
-        });
+        // start setup click pick file
+        holder.memoUploadFile.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.GET_FILE_CODE, null)));
+        // end setup click pick file
 
-        holder.memoUpLoadLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>(Constant.GET_LINKS_CODE, null));
-            }
-        });
+        // start setup pick tags
+        holder.memoUploadTag.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.GET_TAGS_CODE, null)));
+        // end setup pick tags
+
+        // start setup pick link
+        holder.memoUpLoadLink.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.GET_LINKS_CODE, null)));
+        // end setup pick link
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void initViewForHomeNoTagItem(HomeRecyclerViewNoTagsHolder holder, int position) {
         Diary diary = listMemo.get(position);
         // setup views
 
+        // start set diary title
         holder.title.setText(diary.getTitle());
-        // uploading == null => uploaded
+        // end set diary title
+
+        // start handle is diary uploading
         if (diary.getUploading() == null) {
             holder.time.setText(DateHelper.dateConverter(diary.getCreatedAt()));
         }
-        holder.popDownMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-                popupMenu.inflate(R.menu.pop_down_menu);
-                popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.pop_down_edit:
-                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
-                                break;
-                            case R.id.pop_down_pin:
-                                break;
-                            case R.id.pop_down_delete:
-                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
-                                break;
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
-            }
+        // end handle is diary uploading
+
+        // start handle pop down menu
+        holder.popDownMenu.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+            popupMenu.inflate(R.menu.pop_down_menu);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.pop_down_edit:
+                        actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                        break;
+                    case R.id.pop_down_pin:
+                        break;
+                    case R.id.pop_down_delete:
+                        actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                        break;
+                }
+                return false;
+            });
+            popupMenu.show();
         });
+        // end handle pop down menu
 
-
+        // start set content
         holder.setText(diary.getContent());
-        holder.ExpandCollapse(holder.content, holder.itemView);
-        //holder.content.setText(diary.getContent());
+        holder.ExpandCollapse(holder.content, holder.itemView, position);
+        // end set content
 
+        // start set resource tab view
         ArrayList<Resource> listResource = (ArrayList<Resource>) diary.getResources();
         ArrayList<Resource> listImageAndVideo = new ArrayList<>();
         ArrayList<Resource> listAudio = new ArrayList<>();
@@ -304,67 +285,57 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             e.printStackTrace();
         }
 
-
         try {
             MemoTabAdapter adapter = new MemoTabAdapter(((FragmentActivity) mContext));
             adapter.setData(listTabs, listFragments);
             holder.viewPager.setAdapter(adapter);
-            new TabLayoutMediator(holder.tabLayout, holder.viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
-                @Override
-                public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                    tab.setText(listTabs.get(position));
-                }
-            }).attach();
+            new TabLayoutMediator(holder.tabLayout, holder.viewPager, (tab, position1) -> tab.setText(listTabs.get(position1))).attach();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // end setup resource tab view
 
-        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>("share_action", position));
-            }
-        });
-
+        // start setup share memo
+        holder.shareMemo.setOnClickListener(v -> actionObservable.setValue(new Pair<>("share_action", position)));
+        // end setup share memo
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void initViewForHomeNoTabItem(HomeRecyclerViewNoTabHolder holder, int position) {
         Diary diary = listMemo.get(position);
-        // setup views
-
+        //start setup diary title
         holder.title.setText(diary.getTitle());
-        // uploading == null => uploaded
+        // end setup diary title
+
+        // start setup diary is uploading
         if (diary.getUploading() == null) {
             holder.time.setText(DateHelper.dateConverter(diary.getCreatedAt()));
         }
+        // end setup diary is uploading
 
-        holder.popDownMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-                popupMenu.inflate(R.menu.pop_down_menu);
-                popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.pop_down_edit:
-                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
-                                break;
-                            case R.id.pop_down_pin:
-                                break;
-                            case R.id.pop_down_delete:
-                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
-                                break;
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
-            }
+        // start setup pop down menu
+        holder.popDownMenu.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+            popupMenu.inflate(R.menu.pop_down_menu);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.pop_down_edit:
+                        actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                        break;
+                    case R.id.pop_down_pin:
+                        break;
+                    case R.id.pop_down_delete:
+                        actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                        break;
+                }
+                return false;
+            });
+            popupMenu.show();
         });
+        // end setup pop down menu
 
 
-        // if diary tags is null remove view
+        // start setup resource view
         try {
             ArrayList<Tags> listTags = diary.getTags();
             holder.tags.setAdapter(new TagRecyclerViewAdapter(listTags));
@@ -373,60 +344,50 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             Log.d(TAG, "initViewForHomeItem: " + e.getMessage());
         }
 
-//        if (diary.getContent() == null) {
-//            holder.content.setVisibility(View.GONE);
-//        } else {
-//            holder.content.setText(diary.getContent());
-//        }
         holder.setText(diary.getContent());
-        holder.ExpandCollapse(holder.content, holder.itemView);
+        holder.ExpandCollapse(holder.content, holder.itemView, position);
 
-        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>("share_action", position));
-            }
-        });
+        holder.shareMemo.setOnClickListener(v -> actionObservable.setValue(new Pair<>("share_action", position)));
 
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void initViewForHomeItem(HomeRecyclerViewHolder holder, int position) {
         Diary diary = listMemo.get(position);
-        // setup views
 
+        // start setup diary title
         holder.title.setText(diary.getTitle());
-        // uploading == null => uploaded
+        // end setup diary title
+
+        // start setup is diary uploading
         if (diary.getUploading() == null) {
             holder.time.setText(DateHelper.dateConverter(diary.getCreatedAt()));
         }
+        // end setup is diary uploading
 
-        holder.popDownMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-                popupMenu.inflate(R.menu.pop_down_menu);
-                popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.pop_down_edit:
-                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
-                                break;
-                            case R.id.pop_down_pin:
-                                break;
-                            case R.id.pop_down_delete:
-                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
-                                break;
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
-            }
+
+        // start setup pop down menu
+        holder.popDownMenu.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+            popupMenu.inflate(R.menu.pop_down_menu);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.pop_down_edit:
+                        actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                        break;
+                    case R.id.pop_down_pin:
+                        break;
+                    case R.id.pop_down_delete:
+                        actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                        break;
+                }
+                return false;
+            });
+            popupMenu.show();
         });
+        // end setup pop down menu
 
-
-        // if diary tags is null remove view
+        // start setup tags
         if (diary.getTags().size() == 0) {
             holder.tags.setVisibility(View.GONE);
         } else {
@@ -434,15 +395,14 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             holder.tags.setAdapter(new TagRecyclerViewAdapter(listTags));
             holder.tags.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
         }
+        // end setup tags
 
-//        if (diary.getContent() == null) {
-//            holder.content.setVisibility(View.GONE);
-//        } else {
-//            holder.content.setText(diary.getContent());
-//        }
+        // start setup content
         holder.setText(diary.getContent());
-        holder.ExpandCollapse(holder.content, holder.itemView);
+        holder.ExpandCollapse(holder.content, holder.itemView, position);
+        // end setup content
 
+        // start setup resource tab view
         ArrayList<Resource> listResource = (ArrayList<Resource>) diary.getResources();
         ArrayList<Resource> listImageAndVideo = new ArrayList<>();
         ArrayList<Resource> listAudio = new ArrayList<>();
@@ -514,74 +474,57 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         MemoTabAdapter adapter = new MemoTabAdapter(((FragmentActivity) mContext));
         adapter.setData(listTabs, listFragments);
         holder.viewPager.setAdapter(adapter);
+        new TabLayoutMediator(holder.tabLayout, holder.viewPager, (tab, position1) -> tab.setText(listTabs.get(position1))).attach();
+        // end setup resource tab view
 
-        new TabLayoutMediator(holder.tabLayout, holder.viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                tab.setText(listTabs.get(position));
-            }
-        }).attach();
-
-        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>("share_action", position));
-            }
-        });
-
+        // start setup share memo
+        holder.shareMemo.setOnClickListener(v -> actionObservable.setValue(new Pair<>("share_action", position)));
+        // end setup share memo
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void initViewForHomeNoTabAndTagItem(HomeRecyclerViewNoTabAndTagHolder holder, int position) {
         Diary diary = listMemo.get(position);
-        // setup views
 
+        // start setup diary title
         holder.title.setText(diary.getTitle());
-        // uploading == null => uploaded
+        // end setup diary title
+
+        // start setup diary is uploading
         if (diary.getUploading() == null) {
             holder.time.setText(DateHelper.dateConverter(diary.getCreatedAt()));
         }
+        // end setup diary is uploading
 
-        holder.popDownMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-                popupMenu.inflate(R.menu.pop_down_menu);
-                popupMenu.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.pop_down_edit:
-                                actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
-                                break;
-                            case R.id.pop_down_pin:
-                                break;
-                            case R.id.pop_down_delete:
-                                actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
-                                break;
-                        }
-                        return false;
-                    }
-                });
-                popupMenu.show();
-            }
+        // start setup pop down menu
+        holder.popDownMenu.setOnClickListener(v -> {
+            PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+            popupMenu.inflate(R.menu.pop_down_menu);
+            popupMenu.setOnMenuItemClickListener(item -> {
+                switch (item.getItemId()) {
+                    case R.id.pop_down_edit:
+                        actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                        break;
+                    case R.id.pop_down_pin:
+                        break;
+                    case R.id.pop_down_delete:
+                        actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                        break;
+                }
+                return false;
+            });
+            popupMenu.show();
         });
+        // end setup pop down menu
 
-
-//        if (diary.getContent() == null) {
-//            holder.content.setVisibility(View.GONE);
-//        } else {
-//            holder.content.setText(diary.getContent());
-//        }
-
+        // start setup diary content
         holder.setText(diary.getContent());
-        holder.ExpandCollapse(holder.content, holder.itemView);
+        holder.ExpandCollapse(holder.content, holder.itemView, position);
+        // end setup diary content
 
-        holder.shareMemo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionObservable.setValue(new Pair<>("share_action", position));
-            }
-        });
+        // start setup share memo
+        holder.shareMemo.setOnClickListener(v -> actionObservable.setValue(new Pair<>("share_action", position)));
+        // end setup share memo
     }
 
     public PublishSubject<Pair<String, String>> getFilterObservable() {
@@ -662,7 +605,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         if (position == 0) {
             return TYPE_HEADER;
-        } else if (position == 1 && isFilter == true) {
+        } else if (position == 1 && isFilter) {
             return TYPE_FILTER;
         } else if (listMemo.get(position - size).getUploading() != null) {
             return TYPE_UPLOADING;
@@ -693,8 +636,9 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         LinearLayout shareMemo;
         Boolean isExpanded = true;
         TextView seeMore;
+        MediatorLiveData<Pair<String, Integer>> adapterAction;
 
-        public HomeRecyclerViewHolder(@NonNull View itemView) {
+        public HomeRecyclerViewHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction) {
             super(itemView);
             title = itemView.findViewById(R.id.memo_title);
             time = itemView.findViewById(R.id.memo_time);
@@ -706,12 +650,14 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMore = itemView.findViewById(R.id.see_more_textView);
+            this.adapterAction = adapterAction;
         }
 
         private void Ellipsize(boolean activate, TextView textView) {
             if (activate) {
                 textView.setMaxLines(3);
                 textView.setEllipsize(TextUtils.TruncateAt.END);
+                seeMore.setVisibility(View.VISIBLE);
             } else {
                 textView.setSingleLine(false);
                 textView.setEllipsize(null);
@@ -724,36 +670,31 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
+                seeMore.setVisibility(View.GONE);
             } else {
                 content.setText(text);
-                if (text.length() - 150 > 0) {
-                    Ellipsize(true, content);
-                } else {
-                    Ellipsize(false, content);
-                }
+                Ellipsize(text.length() > 150 || text.split("\r\n|\r|\n").length > 3, content);
             }
         }
 
-        private void ExpandCollapse(final TextView textView, final View view) {
-
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-//                    if (isExpanded) {
-//                        TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
-//                        Ellipsize(false, textView);
-//                    } else {
-//                        TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
-//                        Ellipsize(true, textView);
-//                    }
-                    if (isExpanded) {
+        private void ExpandCollapse(final TextView textView, final View view, int position) {
+            view.setOnClickListener(v -> {
+                if (isExpanded) {
+                    String text = textView.getText().toString();
+                    int numberOfLine = text.split("\r\n|\r|\n").length;
+                    if (textView.getText().toString().length() > 10000 || numberOfLine > 30) {
+                        adapterAction.setValue(new Pair<>("to_preview_memo", position));
+                    } else {
                         TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
                         Ellipsize(false, textView);
+                        isExpanded = !isExpanded;
                     }
+                } else {
+                    TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
+                    Ellipsize(true, textView);
                     isExpanded = !isExpanded;
                 }
             });
-
         }
     }
 
@@ -776,20 +717,23 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         LinearLayout shareMemo;
         Boolean isExpanded = true;
         TextView seeMore;
+        MediatorLiveData<Pair<String, Integer>> adapterAction;
 
-        public HomeRecyclerViewNoTabAndTagHolder(@NonNull View itemView) {
+        public HomeRecyclerViewNoTabAndTagHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction) {
             super(itemView);
             title = itemView.findViewById(R.id.memo_title);
             time = itemView.findViewById(R.id.memo_time);
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMore = itemView.findViewById(R.id.see_more_textView);
+            this.adapterAction = adapterAction;
         }
 
         private void Ellipsize(boolean activate, TextView textView) {
             if (activate) {
                 textView.setMaxLines(3);
                 textView.setEllipsize(TextUtils.TruncateAt.END);
+                seeMore.setVisibility(View.VISIBLE);
             } else {
                 textView.setSingleLine(false);
                 textView.setEllipsize(null);
@@ -802,29 +746,31 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
+                seeMore.setVisibility(View.GONE);
             } else {
                 content.setText(text);
-                if (text.length() - 150 > 0) {
-                    Ellipsize(true, content);
-                } else {
-                    Ellipsize(false, content);
-                }
+                Ellipsize(text.length() > 150 || text.split("\r\n|\r|\n").length > 3, content);
             }
         }
 
-        private void ExpandCollapse(final TextView textView, final View view) {
-
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (isExpanded) {
+        private void ExpandCollapse(final TextView textView, final View view, int position) {
+            view.setOnClickListener(v -> {
+                if (isExpanded) {
+                    String text = textView.getText().toString();
+                    int numberOfLine = text.split("\r\n|\r|\n").length;
+                    if (textView.getText().toString().length() > 10000 || numberOfLine > 30) {
+                        adapterAction.setValue(new Pair<>("to_preview_memo", position));
+                    } else {
                         TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
                         Ellipsize(false, textView);
+                        isExpanded = !isExpanded;
                     }
+                } else {
+                    TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
+                    Ellipsize(true, textView);
                     isExpanded = !isExpanded;
                 }
             });
-
         }
     }
 
@@ -837,8 +783,9 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         LinearLayout shareMemo;
         Boolean isExpanded = true;
         TextView seeMore;
+        MediatorLiveData<Pair<String, Integer>> adapterAction;
 
-        public HomeRecyclerViewNoTabHolder(@NonNull View itemView) {
+        public HomeRecyclerViewNoTabHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction) {
             super(itemView);
             title = itemView.findViewById(R.id.memo_title);
             time = itemView.findViewById(R.id.memo_time);
@@ -846,12 +793,14 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMore = itemView.findViewById(R.id.see_more_textView);
+            this.adapterAction = adapterAction;
         }
 
         private void Ellipsize(boolean activate, TextView textView) {
             if (activate) {
                 textView.setMaxLines(3);
                 textView.setEllipsize(TextUtils.TruncateAt.END);
+                seeMore.setVisibility(View.VISIBLE);
             } else {
                 textView.setSingleLine(false);
                 textView.setEllipsize(null);
@@ -864,29 +813,31 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
+                seeMore.setVisibility(View.GONE);
             } else {
                 content.setText(text);
-                if (text.length() - 150 > 0) {
-                    Ellipsize(true, content);
-                } else {
-                    Ellipsize(false, content);
-                }
+                Ellipsize(text.length() > 150 || text.split("\r\n|\r|\n").length > 3, content);
             }
         }
 
-        private void ExpandCollapse(final TextView textView, final View view) {
-
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (isExpanded) {
+        private void ExpandCollapse(final TextView textView, final View view, int position) {
+            view.setOnClickListener(v -> {
+                if (isExpanded) {
+                    String text = textView.getText().toString();
+                    int numberOfLine = text.split("\r\n|\r|\n").length;
+                    if (textView.getText().toString().length() > 10000 || numberOfLine > 30) {
+                        adapterAction.setValue(new Pair<>("to_preview_memo", position));
+                    } else {
                         TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
                         Ellipsize(false, textView);
+                        isExpanded = !isExpanded;
                     }
+                } else {
+                    TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
+                    Ellipsize(true, textView);
                     isExpanded = !isExpanded;
                 }
             });
-
         }
     }
 
@@ -900,8 +851,10 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         LinearLayout shareMemo;
         TextView seeMoreTextView;
         Boolean isExpanded = true;
+        MediatorLiveData<Pair<String, Integer>> adapterAction;
 
-        public HomeRecyclerViewNoTagsHolder(@NonNull View itemView) {
+
+        public HomeRecyclerViewNoTagsHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction) {
             super(itemView);
             title = itemView.findViewById(R.id.memo_title);
             time = itemView.findViewById(R.id.memo_time);
@@ -912,12 +865,14 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMoreTextView = itemView.findViewById(R.id.see_more_textView);
+            this.adapterAction = adapterAction;
         }
 
         private void Ellipsize(boolean activate, TextView textView) {
             if (activate) {
                 textView.setMaxLines(3);
                 textView.setEllipsize(TextUtils.TruncateAt.END);
+                seeMoreTextView.setVisibility(View.VISIBLE);
             } else {
                 textView.setSingleLine(false);
                 textView.setEllipsize(null);
@@ -930,36 +885,31 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
+                seeMoreTextView.setVisibility(View.GONE);
             } else {
                 content.setText(text);
-                if (text.length() - 150 > 0) {
-                    Ellipsize(true, content);
-                } else {
-                    Ellipsize(false, content);
-                }
+                Ellipsize(text.length() > 150 || text.split("\r\n|\r|\n").length > 3, content);
             }
         }
 
-        private void ExpandCollapse(final TextView textView, final View view) {
-
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-//                    if (isExpanded) {
-//                        TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
-//                        Ellipsize(false, textView);
-//                    } else {
-//                        TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
-//                        Ellipsize(true, textView);
-//                    }
-                    if (isExpanded) {
+        private void ExpandCollapse(final TextView textView, final View view, int position) {
+            view.setOnClickListener(v -> {
+                if (isExpanded) {
+                    String text = textView.getText().toString();
+                    int numberOfLine = text.split("\r\n|\r|\n").length;
+                    if (textView.getText().toString().length() > 10000 || numberOfLine > 30) {
+                        adapterAction.setValue(new Pair<>("to_preview_memo", position));
+                    } else {
                         TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
                         Ellipsize(false, textView);
+                        isExpanded = !isExpanded;
                     }
+                } else {
+                    TransitionManager.beginDelayedTransition((ViewGroup) view.getRootView(), new AutoTransition());
+                    Ellipsize(true, textView);
                     isExpanded = !isExpanded;
                 }
             });
-
         }
     }
 

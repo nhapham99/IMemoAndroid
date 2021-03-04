@@ -13,9 +13,10 @@
             <corners
                 android:radius="@dimen/length_20dp">
             </corners>
+
             <stroke
                 android:width="@dimen/length_1dp"
-                android:color="#747474">
+                android:color="#C9CCD1">
 
             </stroke>
         </shape>
