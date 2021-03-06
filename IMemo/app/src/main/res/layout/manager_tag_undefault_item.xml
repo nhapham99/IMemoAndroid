@@ -14,7 +14,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:background="@drawable/circle_indicator_selected"
-        android:layout_marginLeft="@dimen/length_20dp"
+        android:layout_marginStart="@dimen/length_20dp"
         android:layout_gravity="center_vertical"/>
 
     <TextView
@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:text="Mặc định"
         android:layout_gravity="center_vertical"
-        android:layout_marginLeft="@dimen/length_20dp"
+        android:layout_marginStart="@dimen/length_20dp"
         android:background="@drawable/blue_stroke_layout"
         android:paddingLeft="@dimen/length_10dp"
         android:paddingRight="@dimen/length_10dp"
@@ -33,9 +33,8 @@
     <TextView
         android:layout_weight="1"
         android:id="@+id/tag_name"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Tình yêu"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="@dimen/length_20dp"
         android:paddingLeft="@dimen/length_10dp"

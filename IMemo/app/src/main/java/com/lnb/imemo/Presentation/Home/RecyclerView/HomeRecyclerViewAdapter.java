@@ -251,6 +251,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
                     @Override
                     public void onNext(@io.reactivex.annotations.NonNull Boolean aBoolean) {
+                        Log.d(TAG, "onNext: ");
                         openPreviewImageTrigger.onNext(new Pair<>("open_image_preview", listImageAndVideo));
                     }
 
@@ -650,6 +651,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMore = itemView.findViewById(R.id.see_more_textView);
+            content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
         }
 
@@ -666,7 +668,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         void setText(String text) {
-            content = itemView.findViewById(R.id.memo_item_content);
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
@@ -678,8 +679,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         private void ExpandCollapse(final TextView textView, final View view, int position) {
-            view.setOnClickListener(v -> {
-                if (isExpanded) {
+            textView.setOnClickListener(v -> {
+                if (isExpanded && textView.getVisibility() == View.VISIBLE) {
                     String text = textView.getText().toString();
                     int numberOfLine = text.split("\r\n|\r|\n").length;
                     if (textView.getText().toString().length() > 10000 || numberOfLine > 30) {
@@ -726,6 +727,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMore = itemView.findViewById(R.id.see_more_textView);
+            content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
         }
 
@@ -742,7 +744,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         void setText(String text) {
-            content = itemView.findViewById(R.id.memo_item_content);
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
@@ -754,8 +755,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         private void ExpandCollapse(final TextView textView, final View view, int position) {
-            view.setOnClickListener(v -> {
-                if (isExpanded) {
+            textView.setOnClickListener(v -> {
+                if (isExpanded && textView.getVisibility() == View.VISIBLE) {
                     String text = textView.getText().toString();
                     int numberOfLine = text.split("\r\n|\r|\n").length;
                     if (textView.getText().toString().length() > 10000 || numberOfLine > 30) {
@@ -793,6 +794,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMore = itemView.findViewById(R.id.see_more_textView);
+            content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
         }
 
@@ -809,7 +811,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         void setText(String text) {
-            content = itemView.findViewById(R.id.memo_item_content);
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
@@ -821,7 +822,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         private void ExpandCollapse(final TextView textView, final View view, int position) {
-            view.setOnClickListener(v -> {
+            textView.setOnClickListener(v -> {
                 if (isExpanded) {
                     String text = textView.getText().toString();
                     int numberOfLine = text.split("\r\n|\r|\n").length;
@@ -865,6 +866,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             popDownMenu = itemView.findViewById(R.id.pop_down_menu);
             shareMemo = itemView.findViewById(R.id.memo_share);
             seeMoreTextView = itemView.findViewById(R.id.see_more_textView);
+            content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
         }
 
@@ -881,7 +883,6 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         void setText(String text) {
-            content = itemView.findViewById(R.id.memo_item_content);
             content.setSoundEffectsEnabled(false);
             if (text == null) {
                 content.setVisibility(View.GONE);
@@ -893,7 +894,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         private void ExpandCollapse(final TextView textView, final View view, int position) {
-            view.setOnClickListener(v -> {
+            textView.setOnClickListener(v -> {
                 if (isExpanded) {
                     String text = textView.getText().toString();
                     int numberOfLine = text.split("\r\n|\r|\n").length;

@@ -68,8 +68,6 @@ public class PreviewImageActivity extends AppCompatActivity {
         circleIndicator = findViewById(R.id.circle_indicator);
         adapter = new PreviewImageAdapter(listResource);
         viewPager.setAdapter(adapter);
-        circleIndicator.setViewPager(viewPager);
-
         escapeBtn = findViewById(R.id.ic_escape);
         escapeBtn.setOnClickListener(new View.OnClickListener() {
             @Override

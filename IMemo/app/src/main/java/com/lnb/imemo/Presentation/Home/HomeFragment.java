@@ -96,8 +96,24 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private final int GET_TAGS = 2;
     private final int GET_PREVIEW_LINK = 3;
     private final int UPLOAD_MEMO_CODE = 4;
-    private final PublishSubject<Pair<String, String>> filterTimeObservable = PublishSubject.create();
-    private final PublishSubject<Pair<String, String>> filterTagObservable = PublishSubject.create();
+    private PublishSubject<Pair<String, String>> filterTimeObservable;
+    {
+        if (filterTimeObservable == null) {
+            filterTimeObservable = PublishSubject.create();
+        }
+    }
+    private PublishSubject<Pair<String, String>> filterTagObservable;
+    {
+        if (filterTagObservable == null) {
+            filterTagObservable = PublishSubject.create();
+        }
+    }
+    private PublishSubject<Pair<String, String>> filterHighLightObservable;
+    {
+        if (filterHighLightObservable == null) {
+            filterHighLightObservable = PublishSubject.create();
+        }
+    }
     private String searchKey;
     private Boolean isLoadMore = false;
     private Boolean isLoading = false;
@@ -375,10 +391,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         filterButton.setOnClickListener(this);
 
         ArrayList<String> listHighLightFilterItem = new ArrayList<>();
-        listHighLightFilterItem.add("Sắp tới");
-        FilterRecyclerViewAdapter highLightFilterAdapter = new FilterRecyclerViewAdapter(listHighLightFilterItem, filterTimeObservable);
+        listHighLightFilterItem.add("Đã ghim");
+        FilterRecyclerViewAdapter highLightFilterAdapter = new FilterRecyclerViewAdapter(listHighLightFilterItem, filterHighLightObservable);
         filterMemoHighLightRecyclerView.setAdapter(highLightFilterAdapter);
         filterMemoHighLightRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+
+        filterMemoResetHighLight.setOnClickListener(v -> {
+            if (listHighLightFilterItem.contains(viewModel.filterTimeName)) {
+                filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                viewModel.filterTimeName = "";
+            }
+        });
 
 
         ArrayList<String> listTimeFilterItem = new ArrayList<>();
@@ -396,13 +419,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         tagFilterAdapter.setListChoosed(viewModel.filterTagName);
         filterMemoTagRecyclerView.setAdapter(tagFilterAdapter);
         filterMemoTagRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-
-        filterMemoResetHighLight.setOnClickListener(v -> {
-            if (listHighLightFilterItem.contains(viewModel.filterTimeName)) {
-                filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
-                viewModel.filterTimeName = "";
-            }
-        });
 
         filterMemoResetTime.setOnClickListener(v -> {
             if (listTimeFilterItem.contains(viewModel.filterTimeName)) {
@@ -832,17 +848,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     }
 
     @Override
-    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-    }
+    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
 
     @Override
-    public void onDrawerOpened(@NonNull View drawerView) {
-    }
+    public void onDrawerOpened(@NonNull View drawerView) {}
 
     @Override
-    public void onDrawerClosed(@NonNull View drawerView) {
-
-    }
+    public void onDrawerClosed(@NonNull View drawerView) {}
 
     @Override
     public void onDrawerStateChanged(int newState) {
@@ -850,7 +862,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             Log.d(TAG, "onDrawerOpened: ");
             filerMemoByFilter.setText(String.valueOf(viewModel.getTotalFilterMemo()));
             filterMemoTotal.setText(String.valueOf(viewModel.getTotalMemo()));
-            viewModel.getAllTags();
         }
     }
 }

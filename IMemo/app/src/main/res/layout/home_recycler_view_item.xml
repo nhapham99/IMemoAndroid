@@ -68,7 +68,7 @@
         android:fontFamily="@font/roboto_regular"
         android:textColor="@color/black"
         android:soundEffectsEnabled="false"
-        />
+        android:autoLink="web"/>
 
 
     <TextView
@@ -98,7 +98,7 @@
         android:background="@color/white"
         android:orientation="horizontal"
         android:paddingTop="@dimen/length_10dp"
-        android:paddingBottom="@dimen/length_10dp" />
+        android:paddingBottom="@dimen/length_10dp"/>
 
     <LinearLayout
         android:id="@+id/memo_share"

@@ -133,7 +133,7 @@ public class FilterRecyclerViewAdapter extends RecyclerView.Adapter<FilterRecycl
         return listFilter.size();
     }
 
-    class FilterRecyclerViewHolder extends RecyclerView.ViewHolder {
+    static class FilterRecyclerViewHolder extends RecyclerView.ViewHolder {
         TextView filterName;
         public FilterRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);

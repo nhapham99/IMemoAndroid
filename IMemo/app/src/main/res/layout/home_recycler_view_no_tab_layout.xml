@@ -65,7 +65,7 @@
         android:fontFamily="@font/roboto_regular"
         android:textColor="@color/black"
         android:soundEffectsEnabled="false"
-        />
+        android:autoLink="web"/>
 
     <TextView
         android:id="@+id/see_more_textView"

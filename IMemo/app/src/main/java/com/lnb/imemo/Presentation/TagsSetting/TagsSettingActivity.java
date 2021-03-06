@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -17,6 +18,7 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -41,9 +43,6 @@ import io.reactivex.functions.Consumer;
 
 public class TagsSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private RecyclerView managerTagRecyclerView;
-    private ImageButton backButton;
-    private TextView addTagButton;
     private TextInputLayout tagNameTextField;
     private View colorPicker;
     private MaterialCheckBox isDefaultTagCheckBox;
@@ -68,36 +67,29 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void init() {
-        managerTagRecyclerView = findViewById(R.id.manager_tag_recyclerView);
-        backButton = findViewById(R.id.back_button);
+        RecyclerView managerTagRecyclerView = findViewById(R.id.manager_tag_recyclerView);
+        ImageButton backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(this);
-        addTagButton = findViewById(R.id.add_tag_button);
+        TextView addTagButton = findViewById(R.id.add_tag_button);
         addTagButton.setOnClickListener(this);
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                viewModel.getTags();
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> viewModel.getTags());
 
         tagManagerAdapter = new TagManagerRecyclerViewAdapter();
         managerTagRecyclerView.setAdapter(tagManagerAdapter);
         managerTagRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         viewModel = new TagSettingViewModel();
         viewModel.getTags();
-        tagManagerAdapter.getManagerTagOptionListener().subscribe(new Consumer<Integer>() {
-            @Override
-            public void accept(Integer position) throws Exception {
-                currentPositionTagChoose = position;
-                showBottomDialog();
-            }
+        tagManagerAdapter.getManagerTagOptionListener().subscribe(position -> {
+            currentPositionTagChoose = position;
+            showBottomDialog();
         });
         subscribeGetAllTagsObservable();
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void showBottomDialog() {
         bottomSheetDialog = new BottomSheetDialog(this);
         View view = LayoutInflater.from(this).inflate(R.layout.manager_tag_bottom_dialog_layout, null);
@@ -108,10 +100,8 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
         TextView deleteTag = view.findViewById(R.id.manager_tag_delete);
         if (tagManagerAdapter.getListTags().get(currentPositionTagChoose).getIsDefault()) {
             managerDefaultTag.setText("Bỏ mặc định");
-            managerDefaultTag.setCompoundDrawablesWithIntrinsicBounds(getDrawable(R.drawable.ic_undefault), null, null, null);
         } else {
             managerDefaultTag.setText("Đặt làm mặc định");
-            managerDefaultTag.setCompoundDrawablesWithIntrinsicBounds(getDrawable(R.drawable.ic_checked), null, null, null);
         }
         managerDefaultTag.setOnClickListener(this);
         editTag.setOnClickListener(this);
@@ -120,88 +110,85 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void subscribeGetAllTagsObservable() {
-        viewModel.getViewModelLiveData().observe(this, new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key == Constant.GET_ALL_TAGS_KEY) {
-                    Pair<Utils.State, ArrayList<Tags>> response = (Pair<Utils.State, ArrayList<Tags>>) responseRepo.getData();
-                    switch (response.first) {
-                        case SUCCESS:
-                            tagManagerAdapter.updateListTags(response.second);
-                            if (progressBar.getVisibility() == View.VISIBLE) {
-                                progressBar.setVisibility(View.GONE);
-                            }
-                            if (swipeRefreshLayout.isRefreshing()) {
-                                swipeRefreshLayout.setRefreshing(false);
-                            }
-                            break;
-                        case FAILURE:
-                            if (progressBar.getVisibility() == View.VISIBLE) {
-                                progressBar.setVisibility(View.GONE);
-                            }
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
-                            break;
-                        case NO_INTERNET:
-                            if (progressBar.getVisibility() == View.VISIBLE) {
-                                progressBar.setVisibility(View.GONE);
-                            }
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                } else if (key == Constant.CREATE_TAG_KEY) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    switch (state) {
-                        case SUCCESS:
+        viewModel.getViewModelLiveData().observe(this, responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.GET_ALL_TAGS_KEY)) {
+                Pair<Utils.State, ArrayList<Tags>> response = (Pair<Utils.State, ArrayList<Tags>>) responseRepo.getData();
+                switch (response.first) {
+                    case SUCCESS:
+                        tagManagerAdapter.updateListTags(response.second);
+                        if (progressBar.getVisibility() == View.VISIBLE) {
                             progressBar.setVisibility(View.GONE);
-                            Toast.makeText(TagsSettingActivity.this, "Thêm thẻ thành công", Toast.LENGTH_SHORT).show();
-                            break;
-                        case FAILURE:
+                        }
+                        if (swipeRefreshLayout.isRefreshing()) {
+                            swipeRefreshLayout.setRefreshing(false);
+                        }
+                        break;
+                    case FAILURE:
+                        if (progressBar.getVisibility() == View.VISIBLE) {
                             progressBar.setVisibility(View.GONE);
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
-                            break;
-                        case NO_INTERNET:
+                        }
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        if (progressBar.getVisibility() == View.VISIBLE) {
                             progressBar.setVisibility(View.GONE);
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                } else if (key == Constant.UPDATE_TAGS_KEY) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    switch (state) {
-                        case SUCCESS:
-                            Toast.makeText(TagsSettingActivity.this, "Cập nhật thẻ thành công", Toast.LENGTH_SHORT).show();
-                            break;
-                        case FAILURE:
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
-                            break;
-                        case NO_INTERNET:
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                } else if (key == Constant.DELETE_TAG_KEY) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    switch (state) {
-                        case SUCCESS:
-                            Toast.makeText(TagsSettingActivity.this, "Xóa thẻ thành công", Toast.LENGTH_SHORT).show();
-                            break;
-                        case FAILURE:
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
-                            break;
-                        case NO_INTERNET:
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
+                        }
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            } else if (key.equals(Constant.CREATE_TAG_KEY)) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(TagsSettingActivity.this, "Thêm thẻ thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case FAILURE:
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            } else if (key.equals(Constant.UPDATE_TAGS_KEY)) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        Toast.makeText(TagsSettingActivity.this, "Cập nhật thẻ thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case FAILURE:
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            } else if (key.equals(Constant.DELETE_TAG_KEY)) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        Toast.makeText(TagsSettingActivity.this, "Xóa thẻ thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case FAILURE:
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(TagsSettingActivity.this, "Lỗi Internet", Toast.LENGTH_SHORT).show();
+                        break;
                 }
             }
         });
     }
 
     private void showCreateTag() {
-        viewModel.newTag.resetTag();
+        TagSettingViewModel.newTag.resetTag();
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.create_new_tag_layout, null);
         dialogBuilder.setView(view);
@@ -209,23 +196,19 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
         tagNameTextField = view.findViewById(R.id.input_tag_name_textfield);
         colorPicker = view.findViewById(R.id.create_tag_color_picker);
         isDefaultTagCheckBox = view.findViewById(R.id.create_tag_is_default_tag);
+        listenIsDefaultTagCheckBox();
         createTagButton = view.findViewById(R.id.create_tag_button);
         ImageButton dialogEscape = view.findViewById(R.id.add_tag_escape);
 
         colorPicker.setOnClickListener(this);
         createTagButton.setOnClickListener(this);
         alertDialog = dialogBuilder.create();
-        dialogEscape.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                alertDialog.dismiss();
-            }
-        });
+        dialogEscape.setOnClickListener(v -> alertDialog.dismiss());
         alertDialog.show();
     }
 
     private void showEditTag(Tags tag) {
-        viewModel.newTag = tag;
+        TagSettingViewModel.newTag = tag;
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.create_new_tag_layout, null);
         dialogBuilder.setView(view);
@@ -240,17 +223,22 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
         tagNameTextField.getEditText().setText(tag.getName());
         colorPicker.getBackground().setColorFilter(Color.parseColor(tag.getColor()), PorterDuff.Mode.SRC_ATOP);
         isDefaultTagCheckBox.setChecked(tag.getIsDefault());
+        listenIsDefaultTagCheckBox();
 
         colorPicker.setOnClickListener(this);
         createTagButton.setOnClickListener(this);
         alertDialog = dialogBuilder.create();
-        dialogEscape.setOnClickListener(new View.OnClickListener() {
+        dialogEscape.setOnClickListener(v -> alertDialog.dismiss());
+        alertDialog.show();
+    }
+
+    private void listenIsDefaultTagCheckBox() {
+        isDefaultTagCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                alertDialog.dismiss();
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                TagSettingViewModel.newTag.setIsDefault(isChecked);
             }
         });
-        alertDialog.show();
     }
 
     private void showColorPicker() {
@@ -258,24 +246,16 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                 .setTitle("ColorPicker Dialog")
                 .setPreferenceName("MyColorPickerDialog")
                 .setPositiveButton("Ok",
-                        new ColorEnvelopeListener() {
-                            @Override
-                            public void onColorSelected(ColorEnvelope envelope, boolean fromUser) {
-                                colorPicker.getBackground().setTint(envelope.getColor());
-                                String hexColor = String.format("#%06X", (0xFFFFFF & envelope.getColor()));
-                                viewModel.newTag.setColor(hexColor);
-                            }
+                        (ColorEnvelopeListener) (envelope, fromUser) -> {
+                            colorPicker.getBackground().setTint(envelope.getColor());
+                            String hexColor = String.format("#%06X", (0xFFFFFF & envelope.getColor()));
+                            TagSettingViewModel.newTag.setColor(hexColor);
                         })
                 .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.dismiss();
-                            }
-                        })
+                        (dialogInterface, i) -> dialogInterface.dismiss())
                 .attachAlphaSlideBar(true) // the default value is true.
                 .attachBrightnessSlideBar(true)  // the default value is true.
-                .setBottomSpace(12) // set a bottom space between the last slidebar and buttons.
+                .setBottomSpace(12)// set a bottom space between the last slidebar and buttons.
                 .show();
     }
 
@@ -286,8 +266,7 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
         } else if (tagManagerAdapter.getListDefaultTags().size() >= 10) {
             Toast.makeText(this, "Bạn chỉ có thẻ tạo nhiều nhất 10 thẻ mặc định", Toast.LENGTH_SHORT).show();
         } else {
-            viewModel.newTag.setName(tagNameTextField.getEditText().getText().toString());
-            viewModel.newTag.setIsDefault(isDefaultTagCheckBox.isChecked());
+            TagSettingViewModel.newTag.setName(tagNameTextField.getEditText().getText().toString());
             viewModel.createNewTag();
         }
     }
@@ -299,9 +278,8 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
         } else if (tagManagerAdapter.getListDefaultTags().size() >= 10) {
             Toast.makeText(this, "Bạn chỉ có thẻ tạo nhiều nhất 10 thẻ mặc định", Toast.LENGTH_SHORT).show();
         } else {
-            viewModel.newTag.setName(tagNameTextField.getEditText().getText().toString());
-            viewModel.newTag.setIsDefault(isDefaultTagCheckBox.isChecked());
-            viewModel.updateTag(viewModel.newTag);
+            TagSettingViewModel.newTag.setName(tagNameTextField.getEditText().getText().toString());
+            viewModel.updateTag(TagSettingViewModel.newTag);
         }
     }
 
@@ -328,6 +306,7 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
     }
 
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -340,8 +319,10 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
             case R.id.create_tag_button:
                 if (createTagButton.getText().toString().equals("Cập nhật")) {
                     editTag();
+                    alertDialog.dismiss();
                 } else {
                     createNewTag();
+                    alertDialog.dismiss();
                 }
                 break;
             case R.id.create_tag_color_picker:

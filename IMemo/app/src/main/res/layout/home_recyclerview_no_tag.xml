@@ -57,7 +57,8 @@
         android:layout_weight="1"
         android:fontFamily="@font/roboto_regular"
         android:textColor="@color/black"
-        android:soundEffectsEnabled="false"/>
+        android:soundEffectsEnabled="false"
+        android:autoLink="web"/>
 
     <TextView
         android:id="@+id/see_more_textView"

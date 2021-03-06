@@ -2,14 +2,15 @@ package com.lnb.imemo.Presentation.Home.TabFragment.ImageAndVideoAdapter;
 
 import android.content.Context;
 
+import android.util.Log;
+import android.util.Pair;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -20,17 +21,23 @@ import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 import com.makeramen.roundedimageview.RoundedImageView;
 import java.util.ArrayList;
-import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.subjects.PublishSubject;
 
 
 public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAndVideoViewPagerAdapter.ImageAndVideoViewHolder> {
-    private ArrayList<Resource> listImage;
+    private final ArrayList<Resource> listImage;
     private Context mContext;
+    private PublishSubject<Pair<String, Object>> imageAndVideoViewPagerObservable;
     private static final String TAG = "ImageAndVideoViewPagerA";
-    private CompositeDisposable disposable = new CompositeDisposable();
+
+
     public ImageAndVideoViewPagerAdapter(ArrayList<Resource> listImage) {
         this.listImage = listImage;
+        if (imageAndVideoViewPagerObservable == null) {
+            imageAndVideoViewPagerObservable = PublishSubject.create();
+        }
     }
+
 
     @NonNull
     @Override
@@ -45,59 +52,62 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
         try {
             if (listImage.get(position).getType().contains(Constant.imageType)) {
                 holder.videoPlayer.setVisibility(View.GONE);
-                holder.blackLayout.setVisibility(View.GONE);
-                holder.playIcon.setVisibility(View.GONE);
                 String urlImage = listImage.get(position).getUrl();
                 if (!urlImage.contains("https")) {
                     urlImage = Utils.storeUrl + urlImage;
                 }
                 Glide.with(mContext).load(urlImage).into(holder.imageView);
+                holder.imageView.setOnClickListener(view -> {
+                    imageAndVideoViewPagerObservable.onNext(new Pair<>("image_clicked", position));
+                    Log.d(TAG, "onBindViewHolder: click image");
+                });
             } else {
                 String urlVideo = listImage.get(position).getUrl();
                 if (!urlVideo.contains("https")) {
                     urlVideo = Utils.storeUrl + urlVideo;
                 }
-                Glide.with(mContext)
-                        .load(urlVideo)
-                        .into(holder.imageView);
+                holder.imageView.setVisibility(View.GONE);
                 SimpleExoPlayer player = new SimpleExoPlayer.Builder(mContext).build();
                 holder.videoPlayer.setPlayer(player);
+                holder.videoPlayer.setOnTouchListener(new View.OnTouchListener() {
+                    final GestureDetector detector = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
+                        @Override
+                        public boolean onDoubleTap(MotionEvent e) {
+                            imageAndVideoViewPagerObservable.onNext(new Pair<>("image_clicked", position));
+                            return super.onDoubleTap(e);
+                        }
+                    });
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        detector.onTouchEvent(event);
+                        return false;
+                    }
+                });
                 MediaItem mediaItem = MediaItem.fromUri(urlVideo);
                 player.prepare();
                 player.setMediaItem(mediaItem);
-                holder.playIcon.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        holder.playIcon.setVisibility(View.GONE);
-                        holder.blackLayout.setVisibility(View.GONE);
-                        holder.imageView.setVisibility(View.GONE);
-                        player.play();
-                    }
-                });
-
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public PublishSubject<Pair<String, Object>> getImageAndVideoViewPagerObservable() {
+        return imageAndVideoViewPagerObservable;
+    }
 
     @Override
     public int getItemCount() {
         return listImage.size();
     }
 
-    class ImageAndVideoViewHolder extends RecyclerView.ViewHolder {
+    static class ImageAndVideoViewHolder extends RecyclerView.ViewHolder {
         RoundedImageView imageView;
         PlayerView videoPlayer;
-        ImageView playIcon;
-        View blackLayout;
         public ImageAndVideoViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.memo_single_image);
             videoPlayer = itemView.findViewById(R.id.video_view);
-            playIcon = itemView.findViewById(R.id.playVideo);
-            blackLayout = itemView.findViewById(R.id.blackLayout);
         }
     }
 }

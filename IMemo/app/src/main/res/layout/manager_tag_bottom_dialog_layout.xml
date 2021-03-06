@@ -7,38 +7,37 @@
     android:padding="10dp"
     android:orientation="vertical">
 
-
     <TextView
         android:id="@+id/manager_tag_default"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_checked"
         android:drawablePadding="15dp"
         android:gravity="center_vertical"
         android:padding="15dp"
         android:text="Đặt làm mặc định"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto_regular"/>
 
     <TextView
         android:id="@+id/manager_tag_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_edit2"
         android:drawablePadding="15dp"
         android:gravity="center_vertical"
         android:padding="15dp"
         android:text="Chỉnh sửa"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto_regular"/>
 
     <TextView
         android:id="@+id/manager_tag_delete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_delete2"
         android:drawablePadding="15dp"
         android:gravity="center_vertical"
         android:padding="15dp"
         android:text="Xóa"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto_regular"/>
 
 </LinearLayout>

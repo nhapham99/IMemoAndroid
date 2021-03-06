@@ -160,7 +160,7 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
         notifyDataSetChanged();
     }
 
-    class FilterItemTimeViewHolder extends RecyclerView.ViewHolder {
+    static class FilterItemTimeViewHolder extends RecyclerView.ViewHolder {
         TextView timeName;
         ImageView deleteTimeFilter;
         public FilterItemTimeViewHolder(@NonNull View itemView) {
@@ -170,7 +170,7 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
         }
     }
 
-    class FilterItemTagViewHolder extends RecyclerView.ViewHolder {
+    static class FilterItemTagViewHolder extends RecyclerView.ViewHolder {
         TextView tagName;
         ImageView deleteTagFilter;
         public FilterItemTagViewHolder(@NonNull View itemView) {
@@ -180,7 +180,7 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
         }
     }
 
-    class FilterItemSearchViewHolder extends RecyclerView.ViewHolder {
+    static class FilterItemSearchViewHolder extends RecyclerView.ViewHolder {
         TextView searchName;
         ImageView deleteSearchFilter;
         public FilterItemSearchViewHolder(@NonNull View itemView) {

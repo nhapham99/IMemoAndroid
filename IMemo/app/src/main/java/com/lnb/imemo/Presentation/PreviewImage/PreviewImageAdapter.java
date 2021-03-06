@@ -34,7 +34,7 @@ public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapte
     @NonNull
     @Override
     public PreviewImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.single_image_in_viewpager, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_detail_image_layout, parent, false);
         mContext = parent.getContext();
         return new PreviewImageViewHolder(view);
     }
