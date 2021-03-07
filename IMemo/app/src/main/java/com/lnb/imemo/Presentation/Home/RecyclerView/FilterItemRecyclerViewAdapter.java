@@ -24,29 +24,36 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
     private String searchKey;
     private String time;
     private ArrayList<Tags> listTags;
+    private String highLightKey;
     private final int TYPE_SEARCH = 0;
     private final int TYPE_TIME = 1;
     private final int TYPE_TAG = 2;
+    private final int TYPE_HIGH_LIGHT = 3;
     private static final String TAG = "FilterItemRecyclerViewA";
     private PublishSubject<Pair<String, String>> filterObservable = PublishSubject.create();
 
     public FilterItemRecyclerViewAdapter() {}
 
-    public FilterItemRecyclerViewAdapter(String searchKey, String time, ArrayList<Tags> listTags) {
+    public FilterItemRecyclerViewAdapter(String searchKey, String time, ArrayList<Tags> listTags, String highLightKey) {
         this.searchKey = searchKey;
         this.time = time;
         this.listTags = listTags;
+        this.highLightKey = highLightKey;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Log.d(TAG, "onCreateViewHolder: " + viewType);
         if (viewType == TYPE_SEARCH) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.filter_search_item_layout, parent, false);
             return new FilterItemSearchViewHolder(view);
         } else if (viewType == TYPE_TIME) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.filter_time_item_layout, parent, false);
             return new FilterItemTimeViewHolder(view);
+        } else if (viewType == TYPE_HIGH_LIGHT) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.filter_high_light_item_layout, parent, false);
+            return new FilterItemHighLightViewHolder(view);
         } else {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.filter_tag_item_layout, parent, false);
             return new FilterItemTagViewHolder(view);
@@ -55,17 +62,34 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        int timeKeyPosition = 1;
+        int highLightPosition = 1;
         if (searchKey == null) {
-            timeKeyPosition = 0;
+            highLightPosition = 0;
         }
+
+        int timeKeyPosition = 2;
+        if (searchKey == null && highLightKey == null) {
+            timeKeyPosition = 0;
+        } else if (highLightPosition == 0) {
+            timeKeyPosition = 1;
+        }
+
         if (position == 0 && searchKey != null) {
             initForFilterSearch((FilterItemSearchViewHolder) holder);
         } else if (position == timeKeyPosition && time != null) {
             initForFilterTime((FilterItemTimeViewHolder) holder);
+        } else if (position == highLightPosition && highLightKey != null) {
+            initForFilterHighLigt((FilterItemHighLightViewHolder) holder);
         } else {
             initForFilterTag((FilterItemTagViewHolder) holder, position);
         }
+    }
+
+    private void initForFilterHighLigt(FilterItemHighLightViewHolder holder) {
+        holder.highLightName.setText(highLightKey);
+        holder.deleteHighLightFilter.setOnClickListener(view -> {
+            filterObservable.onNext(new Pair<>("remove_filter_high_light", highLightKey));
+        });
     }
 
     private void initForFilterTag(FilterItemTagViewHolder holder, int position) {
@@ -77,17 +101,18 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
             removePosition++;
         }
 
+        if (highLightKey != null) {
+            removePosition++;
+        }
+
         Tags tags = listTags.get(position - removePosition);
         holder.tagName.setText(tags.getName());
         holder.itemView.getBackground().setColorFilter(Color.parseColor(tags.getColor()), PorterDuff.Mode.SRC_ATOP);
         int finalRemovePosition = removePosition;
-        holder.deleteTagFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "initForFilterTag: " + finalRemovePosition);
-                filterObservable.onNext(new Pair<>("remove_filter_tag", tags.getName()));
-                notifyDataSetChanged();
-            }
+        holder.deleteTagFilter.setOnClickListener(v -> {
+            Log.d(TAG, "initForFilterTag: " + finalRemovePosition);
+            filterObservable.onNext(new Pair<>("remove_filter_tag", tags.getName()));
+            notifyDataSetChanged();
         });
 
     }
@@ -123,6 +148,7 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
         int size = listTags.size();
         if (searchKey != null) size++;
         if (time != null) size++;
+        if (highLightKey != null) size++;
         return size;
     }
 
@@ -132,14 +158,24 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
 
     @Override
     public int getItemViewType(int position) {
-        int timeKeyPosition = 1;
+        int highLightPosition = 1;
         if (searchKey == null) {
-            timeKeyPosition = 0;
+            highLightPosition = 0;
         }
+
+        int timeKeyPosition = 2;
+        if (searchKey == null && highLightKey == null) {
+            timeKeyPosition = 0;
+        } else if (highLightPosition == 0) {
+            timeKeyPosition = 1;
+        }
+
         if (position == 0 && searchKey != null) {
             return TYPE_SEARCH;
         } else if (position == timeKeyPosition && time != null) {
             return TYPE_TIME;
+        } else if (position == highLightPosition && highLightKey != null) {
+            return TYPE_HIGH_LIGHT;
         } else {
             return TYPE_TAG;
         }
@@ -157,6 +193,11 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
 
     public void setListTags(ArrayList<Tags> listTags) {
         this.listTags = listTags;
+        notifyDataSetChanged();
+    }
+
+    public void setHighLightKey(String highLightKey) {
+        this.highLightKey = highLightKey;
         notifyDataSetChanged();
     }
 
@@ -187,6 +228,16 @@ public class FilterItemRecyclerViewAdapter extends RecyclerView.Adapter<Recycler
             super(itemView);
             searchName = itemView.findViewById(R.id.filter_search);
             deleteSearchFilter = itemView.findViewById(R.id.filter_search_delete);
+        }
+    }
+
+    static class FilterItemHighLightViewHolder extends RecyclerView.ViewHolder {
+        TextView highLightName;
+        ImageView deleteHighLightFilter;
+        public FilterItemHighLightViewHolder(@NonNull View itemView) {
+            super(itemView);
+            highLightName = itemView.findViewById(R.id.filter_high_light);
+            deleteHighLightFilter = itemView.findViewById(R.id.filter_high_light_delete);
         }
     }
 }

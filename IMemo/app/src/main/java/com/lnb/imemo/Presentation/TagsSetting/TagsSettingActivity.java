@@ -29,6 +29,7 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.TextInputLayout;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
+import com.lnb.imemo.Presentation.Person.PersonFragment;
 import com.lnb.imemo.Presentation.TagsSetting.RecyclerViewAdapter.TagManagerRecyclerViewAdapter;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
@@ -40,6 +41,7 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import java.util.ArrayList;
 
 import io.reactivex.functions.Consumer;
+import io.reactivex.subjects.PublishSubject;
 
 public class TagsSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -57,6 +59,12 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
     private TagManagerRecyclerViewAdapter tagManagerAdapter;
     private TagSettingViewModel viewModel;
     private int currentPositionTagChoose = 0;
+    private PublishSubject<Pair<String, Object>> centerObserver;
+    {
+        if (centerObserver == null) {
+            centerObserver = PersonFragment.getCenterObserver();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +150,7 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                 switch (state) {
                     case SUCCESS:
                         progressBar.setVisibility(View.GONE);
+                        centerObserver.onNext(new Pair<>("refresh_tag", true));
                         Toast.makeText(TagsSettingActivity.this, "Thêm thẻ thành công", Toast.LENGTH_SHORT).show();
                         break;
                     case FAILURE:
@@ -157,6 +166,7 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                 Utils.State state = (Utils.State) responseRepo.getData();
                 switch (state) {
                     case SUCCESS:
+                        centerObserver.onNext(new Pair<>("refresh_tag", true));
                         Toast.makeText(TagsSettingActivity.this, "Cập nhật thẻ thành công", Toast.LENGTH_SHORT).show();
                         break;
                     case FAILURE:
@@ -172,6 +182,7 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                 Utils.State state = (Utils.State) responseRepo.getData();
                 switch (state) {
                     case SUCCESS:
+                        centerObserver.onNext(new Pair<>("refresh_tag", true));
                         Toast.makeText(TagsSettingActivity.this, "Xóa thẻ thành công", Toast.LENGTH_SHORT).show();
                         break;
                     case FAILURE:

@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,21 +21,25 @@ import com.lnb.imemo.Presentation.TagsSetting.TagsSettingActivity;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Utils;
 
+import io.reactivex.subjects.PublishSubject;
+
 public class PersonFragment extends Fragment implements View.OnClickListener {
 
     private static PersonFragment mPersonFragment;
     private GoogleSignInClient mGoogleSignInClient;
-    private PersonFragment() {}
-
+    private static PublishSubject<Pair<String, Object>> centerObserver;
     private LinearLayout personSetting;
     private LinearLayout tagsSetting;
     private LinearLayout signOut;
     private User mUser;
 
+    public PersonFragment() {
+    }
 
-    public static PersonFragment getPersonFragment() {
+    public static PersonFragment getPersonFragment(PublishSubject<Pair<String, Object>> centerObservable) {
         if (mPersonFragment == null) {
             mPersonFragment = new PersonFragment();
+            centerObserver = centerObservable;
         }
         return mPersonFragment;
     }
@@ -62,6 +67,10 @@ public class PersonFragment extends Fragment implements View.OnClickListener {
 
         mGoogleSignInClient = GoogleSignIn.getClient(getActivity(), gso);
         mUser = User.getUser();
+    }
+
+    public static PublishSubject<Pair<String, Object>> getCenterObserver() {
+        return centerObserver;
     }
 
     private void signOut() {

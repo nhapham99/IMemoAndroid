@@ -27,7 +27,8 @@ public interface DiaryAPI {
                                              @Query("pageSize") int pageSize,
                                              @Query("fromDate") String fromDate,
                                              @Query("toDate") String toDate,
-                                             @Query("lastId") String lastId
+                                             @Query("lastId") String lastId,
+                                             @Query("pinned") Boolean pinned
     );
 
     @PATCH("diaries/{id}")

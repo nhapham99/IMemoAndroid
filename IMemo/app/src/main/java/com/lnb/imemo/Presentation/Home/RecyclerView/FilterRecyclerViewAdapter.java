@@ -124,8 +124,9 @@ public class FilterRecyclerViewAdapter extends RecyclerView.Adapter<FilterRecycl
         itemChooseHashMap.clear();
         for (String string : listFilter) {
             itemChooseHashMap.put(string, false);
+            int index = listFilter.indexOf(string);
+            notifyItemChanged(index);
         }
-        notifyItemRangeChanged(0, listFilter.size());
     }
 
     @Override

@@ -53,9 +53,10 @@ public class DiaryRepository {
                            @NonNull int pageSize,
                            @Nullable String fromDate,
                            @Nullable String toDate,
-                           @Nullable String lastId) {
+                           @Nullable String lastId,
+                           @Nullable Boolean pinned) {
         LiveData<Root<ResultDiaries>> source = LiveDataReactiveStreams.fromPublisher(
-                diaryAPI.getDiaries(token, query, tag, page, pageSize, fromDate, toDate, lastId)
+                diaryAPI.getDiaries(token, query, tag, page, pageSize, fromDate, toDate, lastId, pinned)
                         .onErrorReturn(throwable -> {
                             String message = throwable.getMessage();
                             Root<ResultDiaries> diaryRoot = new Root<>();

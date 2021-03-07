@@ -61,6 +61,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     private ArrayList<Tags> listFilterTags;
     private String searchKey;
     private String timeKey;
+    private String highLightKey;
     private final MediatorLiveData<Pair<String, Integer>> actionObservable = new MediatorLiveData<>();
     private final PublishSubject<Pair<String, String>> filterObservable = PublishSubject.create();
     public final PublishSubject<Pair<String, ArrayList<Resource>>> openPreviewImageTrigger = PublishSubject.create();
@@ -190,13 +191,22 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start handle pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu);
+            if (diary.getPinned()) {
+                popupMenu.inflate(R.menu.pop_down_menu_unpin);
+            } else {
+                popupMenu.inflate(R.menu.pop_down_menu_pin);
+            }
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
                         actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                         break;
                     case R.id.pop_down_pin:
+                        if (diary.getPinned()) {
+                            actionObservable.setValue(new Pair<>("unpin_diary", position));
+                        } else {
+                            actionObservable.setValue(new Pair<>("pin_diary", position));
+                        }
                         break;
                     case R.id.pop_down_delete:
                         actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -317,7 +327,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu);
+            popupMenu.inflate(R.menu.pop_down_menu_pin);
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
@@ -370,7 +380,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu);
+            popupMenu.inflate(R.menu.pop_down_menu_pin);
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
@@ -500,7 +510,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu);
+            popupMenu.inflate(R.menu.pop_down_menu_pin);
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
@@ -581,13 +591,15 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         notifyItemRangeChanged(position, 2);
     }
 
-    public void insertFilter(String searchKey, String timeKey, ArrayList<Tags> listFilterTags) {
+    public void insertFilter(String searchKey, String timeKey, ArrayList<Tags> listFilterTags, String highLightKey) {
         this.searchKey = searchKey;
         this.timeKey = timeKey;
         this.listFilterTags = listFilterTags;
+        this.highLightKey = highLightKey;
         filterItemRecyclerViewAdapter.setTime(timeKey);
         filterItemRecyclerViewAdapter.setSearchKey(searchKey);
         filterItemRecyclerViewAdapter.setListTags(listFilterTags);
+        filterItemRecyclerViewAdapter.setHighLightKey(highLightKey);
         if (!isFilter) {
             notifyItemInserted(1);
             isFilter = true;

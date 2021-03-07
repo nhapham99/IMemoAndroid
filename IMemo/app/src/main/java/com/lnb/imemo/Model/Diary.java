@@ -20,6 +20,7 @@ public class Diary implements Parcelable {
     private List<Link> links = new ArrayList<>();
     private List<String> tagIds = new ArrayList<>();
     private Boolean isUploading;
+    private Boolean pinned;
 
 
 
@@ -35,7 +36,8 @@ public class Diary implements Parcelable {
                  String createdAt,
                  String updatedAt,
                  ArrayList<Resource> resources,
-                 ArrayList<Tags> tags, List<Link> links) {
+                 ArrayList<Tags> tags, List<Link> links,
+                 Boolean pinned) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -47,7 +49,9 @@ public class Diary implements Parcelable {
         this.resources = resources;
         this.tags = tags;
         this.links = links;
+        this.pinned = pinned;
     }
+
 
     protected Diary(Parcel in) {
         id = in.readString();
@@ -61,6 +65,10 @@ public class Diary implements Parcelable {
         tags = in.createTypedArrayList(Tags.CREATOR);
         links = in.createTypedArrayList(Link.CREATOR);
         tagIds = in.createStringArrayList();
+        byte tmpIsUploading = in.readByte();
+        isUploading = tmpIsUploading == 0 ? null : tmpIsUploading == 1;
+        byte tmpPinned = in.readByte();
+        pinned = tmpPinned == 0 ? null : tmpPinned == 1;
     }
 
     @Override
@@ -76,6 +84,8 @@ public class Diary implements Parcelable {
         dest.writeTypedList(tags);
         dest.writeTypedList(links);
         dest.writeStringList(tagIds);
+        dest.writeByte((byte) (isUploading == null ? 0 : isUploading ? 1 : 2));
+        dest.writeByte((byte) (pinned == null ? 0 : pinned ? 1 : 2));
     }
 
     @Override
@@ -201,6 +211,14 @@ public class Diary implements Parcelable {
 
     public void setUploading(Boolean uploading) {
         isUploading = uploading;
+    }
+
+    public Boolean getPinned() {
+        return pinned;
+    }
+
+    public void setPinned(Boolean pinned) {
+        this.pinned = pinned;
     }
 
     public void setDiary(Diary diary) {

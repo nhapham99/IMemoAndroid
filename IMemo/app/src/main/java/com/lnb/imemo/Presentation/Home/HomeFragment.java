@@ -58,6 +58,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
@@ -96,6 +97,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private final int GET_TAGS = 2;
     private final int GET_PREVIEW_LINK = 3;
     private final int UPLOAD_MEMO_CODE = 4;
+    private PublishSubject<Pair<String, Object>> centerObserver;
     private PublishSubject<Pair<String, String>> filterTimeObservable;
     {
         if (filterTimeObservable == null) {
@@ -117,19 +119,26 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private String searchKey;
     private Boolean isLoadMore = false;
     private Boolean isLoading = false;
-    private final int currentChooseDiaryToShare = -1;
-
+    String highLightKey = null;
+    private CompositeDisposable disposable;
+    {
+        if (disposable == null) {
+            disposable = new CompositeDisposable();
+        }
+    }
     private ShimmerFrameLayout shimerContainer;
+    private int currentPinDiary = -1;
 
 
-    private HomeFragment(Boolean isStart) {
+    private HomeFragment(Boolean isStart, PublishSubject<Pair<String, Object>> centerObservable ) {
         this.isStart = isStart;
         viewModel = HomeViewModel.getHomeViewModel(isStart);
+        this.centerObserver = centerObservable;
     }
 
-    public static HomeFragment getHomeFragment(Boolean isStart) {
+    public static HomeFragment getHomeFragment(Boolean isStart, PublishSubject<Pair<String, Object>> centerObservable) {
         if (mHomeFragment == null || isStart) {
-            mHomeFragment = new HomeFragment(isStart);
+            mHomeFragment = new HomeFragment(isStart, centerObservable);
         }
         return mHomeFragment;
     }
@@ -170,9 +179,32 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         noMoreMemoText.setVisibility(View.GONE);
         shimerContainer = view.findViewById(R.id.shimmer_container);
 
+        centerObserver.subscribe(new io.reactivex.Observer<Pair<String, Object>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
+            }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, Object> pair) {
+                String key = pair.first;
+                if (key.equals("refresh_tag")) {
+                    Log.d(TAG, "onNext: ");
+                    viewModel.getAllTags();
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {}
+        });
+
 
         searchText = view.findViewById(R.id.search_bar);
-        searchText.setFocusable(false);
         ImageView searchIcon = view.findViewById(R.id.search_icon);
         searchIcon.setOnClickListener(this);
         searchText.setOnEditorActionListener((v, actionId, event) -> {
@@ -197,7 +229,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         Log.d(TAG, "init: " + viewModel.listDiary.size());
         if (viewModel.listDiary.size() == 0) {
-            getAllMemo(null, null, null, null, null);
+            getAllMemo(null, null, null, null, null, null);
             subscribeDeleteMemoObservable();
             subscribeViewModelObservable();
             subscribeFilterObservable();
@@ -252,6 +284,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 intent.putExtra("preview_author_name", viewModel.personProfile.getName());
                 intent.putExtra("from", "home");
                 startActivity(intent);
+            } else if (key.equals("pin_diary")) {
+                viewModel.pinDiary(adapterAction.second);
+            } else if (key.equals("unpin_diary")) {
+                viewModel.unpinDiary(adapterAction.second);
+                currentPinDiary = adapterAction.second;
             }
         });
 
@@ -269,14 +306,24 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     break;
                 case "remove_filter_tag":
                     Log.d(TAG, "onChanged: " + pair.second);
+                    filterTagObservable.onNext(new Pair<>("update_filter", pair.second));
                     viewModel.filterTagName.remove(pair.second);
                     Log.d(TAG, "onChanged: " + viewModel.filterTagName);
+                    filterDiary();
+                    break;
+                case "remove_filter_high_light":
+                    Log.d(TAG, "init: remove filter high light");
+                    filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
+                    viewModel.filterHighLight = "";
+                    highLightKey = null;
                     filterDiary();
                     break;
                 case "reset_all":
                     viewModel.filterTagName.clear();
                     filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
                     viewModel.filterTimeName = "";
+                    filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
+                    viewModel.filterHighLight = "";
                     searchKey = null;
                     filterDiary();
                     break;
@@ -285,7 +332,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         adapter.openPreviewImageTrigger.subscribe(new io.reactivex.Observer<Pair<String, ArrayList<Resource>>>() {
             @Override
-            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {}
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {disposable.add(d);}
 
             @Override
             public void onNext(@io.reactivex.annotations.NonNull Pair<String, ArrayList<Resource>> pair) {
@@ -299,13 +346,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
             @Override
             public void onError(@io.reactivex.annotations.NonNull Throwable e) {
-
+                e.printStackTrace();
             }
 
             @Override
-            public void onComplete() {
-
-            }
+            public void onComplete() {}
         });
 
         homeSwipeRefreshLayout.setOnRefreshListener(() -> {
@@ -328,7 +373,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         homeNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
             if (scrollY == v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) {
-                if (viewModel.listDiary.size() < viewModel.getTotalMemo()) {
+                if (viewModel.listDiary.size() < viewModel.getTotalFilterMemo()) {
                     noMoreMemoText.setVisibility(View.INVISIBLE);
                     loadMoreProgressBar.setVisibility(View.VISIBLE);
                     loadMoreProgressBar.bringToFront();
@@ -362,27 +407,84 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
     @SuppressLint("CheckResult")
     private void subscribeFilterObservable() {
-        filterTimeObservable.subscribe((Pair<String, String> pair) -> {
-            Log.d(TAG, "accept: " + pair.toString());
-            if (pair.first.equals("add_filter")) {
-                String currentFilter = viewModel.filterTimeName;
-                viewModel.filterTimeName = pair.second;
-                Log.d(TAG, "accept: current " + currentFilter + "new: " + pair.second);
-                if (!currentFilter.equals("")) {
-                    filterTimeObservable.onNext(new Pair<>("update_filter", currentFilter));
-                }
-            } else if (pair.first.equals("remove_filter")) {
-                viewModel.filterTimeName = "";
+
+        filterTimeObservable.subscribe(new io.reactivex.Observer<Pair<String, String>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
             }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, String> pair) {
+                Log.d(TAG, "accept: " + pair.toString());
+                if (pair.first.equals("add_filter")) {
+                    String currentFilter = viewModel.filterTimeName;
+                    viewModel.filterTimeName = pair.second;
+                    Log.d(TAG, "accept: current " + currentFilter + "new: " + pair.second);
+                    if (!currentFilter.equals("")) {
+                        filterTimeObservable.onNext(new Pair<>("update_filter", currentFilter));
+                    }
+                } else if (pair.first.equals("remove_filter")) {
+                    viewModel.filterTimeName = "";
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {}
         });
 
-
-        filterTagObservable.subscribe(pair -> {
-            if (pair.first == "add_filter") {
-                viewModel.filterTagName.add(pair.second);
-            } else if (pair.first == "remove_filter") {
-                viewModel.filterTagName.remove(pair.second);
+        filterTagObservable.subscribe(new io.reactivex.Observer<Pair<String, String>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
             }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, String> pair) {
+                if (pair.first.equals("add_filter")) {
+                    viewModel.filterTagName.add(pair.second);
+                } else if (pair.first.equals("remove_filter")) {
+                    viewModel.filterTagName.remove(pair.second);
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {}
+        });
+
+        filterHighLightObservable.subscribe(new io.reactivex.Observer<Pair<String, String>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
+            }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, String> pair) {
+                String key = pair.first;
+                if (key.equals("add_filter")) {
+                    viewModel.filterHighLight = pair.second;
+                } else if (key.equals("remove_filter")) {
+                    viewModel.filterHighLight = "";
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {}
         });
     }
 
@@ -397,8 +499,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         filterMemoHighLightRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
 
         filterMemoResetHighLight.setOnClickListener(v -> {
-            if (listHighLightFilterItem.contains(viewModel.filterTimeName)) {
-                filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+            if (listHighLightFilterItem.contains(viewModel.filterHighLight)) {
+                Log.d(TAG, "setupFilterView: reset filter high light");
+                filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
                 viewModel.filterTimeName = "";
             }
         });
@@ -571,6 +674,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             startActivityForResult(intent, UPLOAD_MEMO_CODE);
         } else if (requestCode == GET_TAGS) {
             if (resultCode == RESULT_OK) {
+                assert data != null;
                 intent.putExtra(Constant.GET_TAGS_CODE, data.getParcelableArrayListExtra("arrayTag"));
                 intent.putExtra("arrayTagIds", data.getStringArrayListExtra("arrayTagIds"));
                 Log.d(TAG, "onActivityResult: " + data.getStringArrayListExtra("arrayTagIds"));
@@ -580,6 +684,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             startActivityForResult(intent, UPLOAD_MEMO_CODE);
         } else if (requestCode == GET_PREVIEW_LINK) {
             if (resultCode == RESULT_OK) {
+                assert data != null;
                 intent.putExtra(Constant.GET_LINKS_CODE, (Link) data.getParcelableExtra("previewLink"));
             } else {
                 Log.d(TAG, "onActivityResult: failure");
@@ -587,8 +692,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             startActivityForResult(intent, UPLOAD_MEMO_CODE);
         } else if (requestCode == UPLOAD_MEMO_CODE) {
             if (resultCode == RESULT_OK) {
+                assert data != null;
                 if (data.getParcelableExtra("create_memo") != null) {
                     Diary diary = data.getParcelableExtra("create_memo");
+                    assert diary != null;
                     diary.setUploading(true);
                     viewModel.createDiary(diary);
                     adapter.addMemo(diary);
@@ -605,7 +712,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         }
     }
 
-    private void getAllMemo(String query, ArrayList<String> tagIds, String fromDate, String toDate, String lastId) {
+    private void getAllMemo(String query, ArrayList<String> tagIds, String fromDate, String toDate, String lastId, Boolean pinned) {
         int pageNumber = 1;
         viewModel.getDiaries(query,
                 tagIds,
@@ -613,7 +720,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 Constant.pageSize,
                 fromDate,
                 toDate,
-                lastId
+                lastId,
+                pinned
         );
     }
 
@@ -665,9 +773,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         viewModel.listTags = pair.second;
                         ArrayList<String> listTags = new ArrayList<>();
                         for (Tags tags : pair.second) {
-                            listTags.add(tags.getName());
-                            viewModel.mIdTagByNameHashMap.put(tags.getName(), tags.getId());
-                            viewModel.mTagByNameHashMap.put(tags.getName(), tags);
+                            if (tags.getIsDefault()) {
+                                listTags.add(tags.getName());
+                                viewModel.mIdTagByNameHashMap.put(tags.getName(), tags.getId());
+                                viewModel.mTagByNameHashMap.put(tags.getName(), tags);
+                            }
                         }
                         tagFilterAdapter.setData(listTags);
                         break;
@@ -736,7 +846,37 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     listEmail = new ArrayList<>();
                 }
                 Log.d(TAG, "onChanged: " + listEmail);
-                //showShareDialog(currentChooseDiaryToShare);
+            } else if (key.equals("pin_diary")) {
+                Log.d(TAG, "subscribeViewModelObservable: pin diary");
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        Toast.makeText(getActivity(), "Ghim memo thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case FAILURE:
+                        Toast.makeText(getActivity(), "Ghim memo không thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối của bạn!", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            } else if (key.equals("unpin_diary")) {
+                Log.d(TAG, "subscribeViewModelObservable: unpin diary");
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        if (highLightKey != null && highLightKey.equals("Đã ghim")) {
+                            adapter.removeAtPosition(currentPinDiary);
+                        }
+                        Toast.makeText(getActivity(), "Gỡ ghim memo thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case FAILURE:
+                        Toast.makeText(getActivity(), "Gỡ ghim memo không thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối của bạn!", Toast.LENGTH_SHORT).show();
+                        break;
+                }
             }
         });
     }
@@ -760,6 +900,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
     @SuppressLint("SimpleDateFormat")
     private void filterDiary() {
+        Boolean isPined = null;
+        if (viewModel.filterHighLight.equals("Đã ghim")) {
+            isPined = true;
+            highLightKey = "Đã ghim";
+        }
+        Log.d(TAG, "filterDiary: " + isPined);
         ArrayList<String> tagIds = new ArrayList<>();
         ArrayList<Tags> listTags = new ArrayList<>();
         for (String tagName : viewModel.filterTagName) {
@@ -825,21 +971,22 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             lastId = viewModel.listDiary.get(viewModel.listDiary.size() - 1).getId();
         }
         Log.d(TAG, "filterDiary: lastId: " + lastId);
-        if (searchKey != null || timeKey != null || listTags.size() != 0 || isLoadMore) {
+        if (searchKey != null || timeKey != null || listTags.size() != 0 || isLoadMore || isPined != null) {
             if (tagIds.size() != 0) {
                 Log.d(TAG, "filterDiary: tagSize != 0");
-                getAllMemo(searchKey, tagIds, fromDate, toDate, lastId);
+                getAllMemo(searchKey, tagIds, fromDate, toDate, lastId, isPined);
             } else {
                 Log.d(TAG, "filterDiary: tag size = 0");
-                getAllMemo(searchKey, null, fromDate, toDate, lastId);
+                getAllMemo(searchKey, null, fromDate, toDate, lastId, isPined);
             }
             if (!isLoadMore) {
-                adapter.insertFilter(searchKey, timeKey, listTags);
+                adapter.insertFilter(searchKey, timeKey, listTags, highLightKey);
             }
-        } else if (searchKey == null && timeKey == null && listTags.size() == 0 && !isLoadMore) {
+        } else {
+            listTags.size();
             Log.d(TAG, "filterDiary: remove all");
             adapter.removeFilter();
-            getAllMemo(null, null, null, null, lastId);
+            getAllMemo(null, null, null, null, lastId, isPined);
         }
         if (!isLoadMore) {
             homeSwipeRefreshLayout.setRefreshing(true);

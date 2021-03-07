@@ -49,13 +49,13 @@ public class TagSettingViewModel extends ViewModel {
             @Override
             public void onChanged(ResponseRepo response) {
                 String key = response.getKey();
-                if (key == Constant.GET_ALL_TAGS_KEY) {
+                if (key.equals(Constant.GET_ALL_TAGS_KEY)) {
                     ResponseRepo<Pair<Utils.State, ArrayList<Tags>>> responseRepo = new ResponseRepo<>();
                     responseRepo.setKey(Constant.GET_ALL_TAGS_KEY);
                     Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) response.getData();
                     response.setData(pair);
                     viewModelLiveData.setValue(response);
-                } else if(key == Constant.CREATE_TAG_KEY) {
+                } else if(key.equals(Constant.CREATE_TAG_KEY)) {
                     Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
                     if (pair.first == Utils.State.SUCCESS) {
                         getTags();
@@ -64,7 +64,7 @@ public class TagSettingViewModel extends ViewModel {
                     responseRepo.setData(pair.first);
                     responseRepo.setKey(Constant.CREATE_TAG_KEY);
                     viewModelLiveData.setValue(responseRepo);
-                } else if (key == Constant.UPDATE_TAGS_KEY) {
+                } else if (key.equals(Constant.UPDATE_TAGS_KEY)) {
                     Utils.State state = (Utils.State) response.getData();
                     if (state == Utils.State.SUCCESS) {
                         getTags();
@@ -73,7 +73,7 @@ public class TagSettingViewModel extends ViewModel {
                     responseRepo.setKey(Constant.UPDATE_TAGS_KEY);
                     responseRepo.setData(state);
                     viewModelLiveData.setValue(responseRepo);
-                } else if (key == Constant.DELETE_TAG_KEY) {
+                } else if (key.equals(Constant.DELETE_TAG_KEY)) {
                     Utils.State state = (Utils.State) response.getData();
                     if (state == Utils.State.SUCCESS) {
                         getTags();

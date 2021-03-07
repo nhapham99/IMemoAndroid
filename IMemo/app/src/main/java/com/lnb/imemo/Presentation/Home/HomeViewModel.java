@@ -33,17 +33,17 @@ import io.reactivex.subjects.PublishSubject;
 
 public class HomeViewModel extends ViewModel {
     private static final String TAG = "HomeViewModel";
-    private TagsRepository tagsRepository;
-    private DiaryRepository diaryRepository;
-    private PreviewLinkRepository previewLinkRepository;
-    private AuthRepository authRepository;
-    private MediatorLiveData<ArrayList<Tags>> allTagsLiveData = new MediatorLiveData<>();
-    private MediatorLiveData<Tags> tagLiveData = new MediatorLiveData<>();
-    private MediatorLiveData<Utils.State> updateTagLiveData = new MediatorLiveData<>();
-    private MediatorLiveData<Utils.State> deleteTagLiveData = new MediatorLiveData<>();
-    private MediatorLiveData<Utils.State> getAllMemoLiveData = new MediatorLiveData<>();
-    private MediatorLiveData<Utils.State> deleteDiaryLiveData = new MediatorLiveData<>();
-    private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
+    private final TagsRepository tagsRepository;
+    private final DiaryRepository diaryRepository;
+    private final PreviewLinkRepository previewLinkRepository;
+    private final AuthRepository authRepository;
+    private final MediatorLiveData<ArrayList<Tags>> allTagsLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<Tags> tagLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<Utils.State> updateTagLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<Utils.State> deleteTagLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<Utils.State> getAllMemoLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<Utils.State> deleteDiaryLiveData = new MediatorLiveData<>();
+    private final MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
     private Observer<ResponseRepo> authObservable;
     private Observer<ResponseRepo> tagsObservable;
     private Observer<ResponseRepo> diaryObservable;
@@ -53,6 +53,7 @@ public class HomeViewModel extends ViewModel {
     public HashMap<String, String> mIdTagByNameHashMap = new HashMap<>();
     public HashMap<String, Tags> mTagByNameHashMap = new HashMap<>();
     public String filterTimeName = "";
+    public String filterHighLight = "";
     public ArrayList<String> filterTagName = new ArrayList<>();
     private static HomeViewModel mInstance;
     private Boolean getTotalMemoInStart = true;
@@ -62,9 +63,10 @@ public class HomeViewModel extends ViewModel {
     protected User mUser;
     protected PersonProfile personProfile;
     protected ArrayList<Diary> listDiary = new ArrayList<>();
-    private Boolean isUpdateForPublic = false;
+    private Boolean isUpdateForPublic = null;
     public ArrayList<String> listSharedEmail = new ArrayList<>();
     public PublishSubject<ArrayList<String>> sharedEmailPublishSubject = PublishSubject.create();
+    private Boolean isUpdateForPinMemo = null;
 
 
     private HomeViewModel() {
@@ -110,7 +112,8 @@ public class HomeViewModel extends ViewModel {
                               @NonNull int pageSize,
                               @Nullable String fromDate,
                               @Nullable String toDate,
-                              @Nullable String lastId) {
+                              @Nullable String lastId,
+                              @Nullable Boolean pinned) {
         String tagIds = null;
         if (tags != null) {
             tagIds = "";
@@ -119,7 +122,7 @@ public class HomeViewModel extends ViewModel {
             }
             tagIds = tagIds + tags.get(tags.size() - 1);
         }
-        diaryRepository.getDiaries(mUser.getToken(), query, tagIds, page, pageSize, fromDate, toDate, lastId);
+        diaryRepository.getDiaries(mUser.getToken(), query, tagIds, page, pageSize, fromDate, toDate, lastId, pinned);
     }
 
     protected void createDiary(Diary diary) {
@@ -136,12 +139,27 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.updateDiary(mUser.getToken(), diary);
     }
 
-
     public void privateDiary(Diary diary) {
         isUpdateForPublic = false;
         diary.setStatus("private");
         diaryRepository.updateDiary(mUser.getToken(), diary);
     }
+
+    public void pinDiary(int position) {
+        isUpdateForPinMemo = true;
+        Diary diary = listDiary.get(position);
+        diary.setPinned(true);
+        diaryRepository.updateDiary(mUser.getToken(), diary);
+    }
+
+    public void unpinDiary(int position) {
+        isUpdateForPinMemo = false;
+        Diary diary = listDiary.get(position);
+        diary.setPinned(false);
+        diaryRepository.updateDiary(mUser.getToken(), diary);
+    }
+
+
 
     public void getDiaryById(String id) {
         diaryRepository.getDiaryById(mUser.getToken(), id);
@@ -168,28 +186,25 @@ public class HomeViewModel extends ViewModel {
 
 
     private void subscribeTagAction() {
-        tagsObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo response) {
-                if (response.getKey().equals(Constant.GET_ALL_TAGS_KEY)) {
-                    Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) response.getData();
-                    ResponseRepo<Pair<Utils.State, ArrayList<Tags>>> responseRepo = new ResponseRepo<>();
-                    responseRepo.setKey(Constant.GET_ALL_TAGS_KEY);
-                    responseRepo.setData(pair);
-                    viewModelLiveData.setValue(responseRepo);
-                } else if (response.getKey().equals(Constant.GET_TAGS_BY_ID_KEY)) {
-                    Pair<Utils.State, Tags> pair = (Pair<Utils.State, Tags>) response.getData();
-                    Log.d(TAG, "onChanged: " + pair.first);
-                    tagLiveData.setValue(pair.second);
-                } else if (response.getKey().equals(Constant.UPDATE_TAGS_KEY)) {
-                    updateTagLiveData.setValue((Utils.State) response.getData());
-                } else if (response.getKey().equals(Constant.DELETE_TAG_KEY)) {
-                    deleteTagLiveData.setValue((Utils.State) response.getData());
-                } else if (response.getKey().equals(Constant.CREATE_TAG_KEY)) {
-                    Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
-                    Log.d(TAG, "onChanged: " + pair.first);
-                    Log.d(TAG, "onChanged: " + pair.second);
-                }
+        tagsObservable = response -> {
+            if (response.getKey().equals(Constant.GET_ALL_TAGS_KEY)) {
+                Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) response.getData();
+                ResponseRepo<Pair<Utils.State, ArrayList<Tags>>> responseRepo = new ResponseRepo<>();
+                responseRepo.setKey(Constant.GET_ALL_TAGS_KEY);
+                responseRepo.setData(pair);
+                viewModelLiveData.setValue(responseRepo);
+            } else if (response.getKey().equals(Constant.GET_TAGS_BY_ID_KEY)) {
+                Pair<Utils.State, Tags> pair = (Pair<Utils.State, Tags>) response.getData();
+                Log.d(TAG, "onChanged: " + pair.first);
+                tagLiveData.setValue(pair.second);
+            } else if (response.getKey().equals(Constant.UPDATE_TAGS_KEY)) {
+                updateTagLiveData.setValue((Utils.State) response.getData());
+            } else if (response.getKey().equals(Constant.DELETE_TAG_KEY)) {
+                deleteTagLiveData.setValue((Utils.State) response.getData());
+            } else if (response.getKey().equals(Constant.CREATE_TAG_KEY)) {
+                Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
+                Log.d(TAG, "onChanged: " + pair.first);
+                Log.d(TAG, "onChanged: " + pair.second);
             }
         };
         tagsRepository.observableTagLiveData().observeForever(tagsObservable);
@@ -200,7 +215,7 @@ public class HomeViewModel extends ViewModel {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
                 String key = responseRepo.getKey();
-                if (key == Constant.GET_DIARIES_KEY) {
+                if (key.equals(Constant.GET_DIARIES_KEY)) {
                     ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
                     Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
                     Pagination pagination = pair.second.getPagination();
@@ -212,9 +227,9 @@ public class HomeViewModel extends ViewModel {
                     response.setData(new Pair<>(pair.first, (ArrayList<Diary>) pair.second.getDiaries()));
                     response.setKey(Constant.GET_DIARIES_KEY);
                     viewModelLiveData.setValue(response);
-                } else if (key == Constant.DELETE_DIARY_KEY) {
+                } else if (key.equals(Constant.DELETE_DIARY_KEY)) {
                     deleteDiaryLiveData.setValue((Utils.State) responseRepo.getData());
-                } else if (key == Constant.CREATE_DIARY_KEY) {
+                } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                     Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
                     ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
                     switch (pair.first) {
@@ -235,7 +250,7 @@ public class HomeViewModel extends ViewModel {
                             viewModelLiveData.setValue(response);
                             break;
                     }
-                } else if (key == Constant.GET_DIARY_BY_ID_KEY) {
+                } else if (key.equals(Constant.GET_DIARY_BY_ID_KEY)) {
                     Pair<Utils.State, Diary> pair = (Pair<Utils.State, Diary>) responseRepo.getData();
                     ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
                     response.setKey(Constant.GET_DIARY_BY_ID_KEY);
@@ -247,19 +262,29 @@ public class HomeViewModel extends ViewModel {
                     }
                     response.setData(pair);
                     viewModelLiveData.setValue(response);
-                } else if (key == Constant.SHARE_DIARY) {
+                } else if (key.equals(Constant.SHARE_DIARY)) {
                     Utils.State state = (Utils.State) responseRepo.getData();
                     ResponseRepo<Utils.State> response = new ResponseRepo<>();
                     response.setData(state);
                     response.setKey(Constant.SHARE_DIARY);
                     viewModelLiveData.setValue(response);
-                } else if (key == Constant.UPDATE_DIARY_KEY) {
+                } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
                     Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
                     ResponseRepo<Utils.State> response = new ResponseRepo<>();
-                    if (isUpdateForPublic) {
-                        response.setKey("public_diary");
-                    } else {
-                        response.setKey("private_diary");
+                    if (isUpdateForPublic != null) {
+                        if (isUpdateForPublic) {
+                            response.setKey("public_diary");
+                        } else {
+                            response.setKey("private_diary");
+                        }
+                    }
+
+                    if (isUpdateForPinMemo != null) {
+                        if (isUpdateForPinMemo) {
+                            response.setKey("pin_diary");
+                        } else {
+                            response.setKey("unpin_diary");
+                        }
                     }
                     response.setData(pair.first);
                     viewModelLiveData.setValue(response);

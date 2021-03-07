@@ -50,14 +50,18 @@ public class NotificationFragment extends Fragment {
     private Boolean isLoadingMore = false;
 
 
-    private NotificationFragment(Boolean isStart, PublishSubject<Pair<String, Notification>> notificationObservable) {
+    private NotificationFragment(Boolean isStart,
+                                 PublishSubject<Pair<String, Notification>> notificationObservable,
+                                 PublishSubject<Pair<String, Object>> centerObserver) {
         this.isStart = isStart;
         this.notificationObservable = notificationObservable;
     }
 
-    public static NotificationFragment getNotificationFragment(Boolean isStart, PublishSubject<Pair<String, Notification>> notificationObservable) {
+    public static NotificationFragment getNotificationFragment(Boolean isStart,
+                                                               PublishSubject<Pair<String, Notification>> notificationObservable,
+                                                               PublishSubject<Pair<String, Object>> centerObservable) {
         if (mNotificationFragment == null || isStart) {
-            mNotificationFragment = new NotificationFragment(isStart, notificationObservable);
+            mNotificationFragment = new NotificationFragment(isStart, notificationObservable, centerObservable);
         }
         return mNotificationFragment;
     }

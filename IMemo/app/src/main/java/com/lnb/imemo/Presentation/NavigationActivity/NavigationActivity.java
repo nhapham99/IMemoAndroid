@@ -42,18 +42,26 @@ import io.reactivex.subjects.PublishSubject;
 
 public class NavigationActivity extends AppCompatActivity {
     private static final String TAG = "NavigationActivity";
-    // ui
+    private PublishSubject<Pair<String, Object>> centerObservable;
+    {
+        if (centerObservable == null) {
+            centerObservable = PublishSubject.create();
+        }
+    }
+
+
     private BottomNavigationView bottomNavigationView;
-    private Fragment homeFragment = HomeFragment.getHomeFragment(true);
+    private Fragment homeFragment = HomeFragment.getHomeFragment(true, centerObservable);
     private Fragment mailFragment = MailFragment.getMailFragment();
-    private PersonFragment personFragment = PersonFragment.getPersonFragment();
+    private PersonFragment personFragment = PersonFragment.getPersonFragment(centerObservable);
     private Gson gsonBuilder = new GsonBuilder().create();
     private NavigationViewModel viewModel = new NavigationViewModel();
     private int totalNotSeen = 0;
     private Fragment currentFragment;
     private Boolean setupStart = true;
     private PublishSubject<Pair<String, Notification>> notificationObservable = PublishSubject.create();
-    private Fragment notificationFragment = NotificationFragment.getNotificationFragment(true, notificationObservable);
+    private Fragment notificationFragment = NotificationFragment.getNotificationFragment(true, notificationObservable, centerObservable);
+
 
 
     public static Socket mSocket;
