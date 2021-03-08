@@ -16,8 +16,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.lnb.imemo.Data.APIClient;
+import com.lnb.imemo.Data.Repository.Model.ResultSharedUser;
+import com.lnb.imemo.Data.Repository.Model.SharedUser;
 import com.lnb.imemo.Model.ResponseRepo;
-import com.lnb.imemo.Model.Root;
+import com.lnb.imemo.Data.Repository.Model.Root;
 import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
 import com.lnb.imemo.Data.Repository.Model.ResultDiary;
 import com.lnb.imemo.Model.Diary;
@@ -251,6 +253,45 @@ public class DiaryRepository {
                 diaryRepoLiveData.removeSource(source);
             }
         });
+    }
+
+    public void getSharedUser(@NonNull String token, @NonNull String id) {
+        LiveData<Root<ResultSharedUser>> source = LiveDataReactiveStreams.fromPublisher(
+                diaryAPI.getSharedUser(token, id)
+                        .onErrorReturn(throwable -> {
+                            Log.d(TAG, "apply: " + throwable.getMessage());
+                            String message = throwable.getMessage();
+                            Root<ResultSharedUser> root = new Root<>();
+                            if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                root.setStatusCode(409);
+                            } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                root.setStatusCode(-1);
+                            } else {
+                                root.setStatusCode(-2);
+                            }
+                            return root;
+                        })
+                        .subscribeOn(Schedulers.io())
+        );
+
+        diaryRepoLiveData.addSource(source, new Observer<Root<ResultSharedUser>>() {
+            @Override
+            public void onChanged(Root<ResultSharedUser> root) {
+                ResponseRepo<Pair<Utils.State, List<SharedUser>>> response = new ResponseRepo<>();
+                Log.d(TAG, "onChanged: " + root.toString());
+                if (root.getStatusCode() == 0) {
+                    response.setData(new Pair<>(Utils.State.SUCCESS, root.getResult().getUsers()));
+                } else if (root.getStatusCode() == -1) {
+                    response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                } else {
+                    response.setData(new Pair<>(Utils.State.FAILURE, null));
+                }
+                response.setKey(Constant.GET_SHARED_USERS);
+                diaryRepoLiveData.setValue(response);
+                diaryRepoLiveData.removeSource(source);
+            }
+        });
+
     }
 
     public void publicDiary(@NonNull String token, @NonNull String id) {

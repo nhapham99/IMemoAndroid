@@ -28,6 +28,7 @@ public class Constant {
     public static String UPDATE_PERSON_PROFILE = "update_person_profile";
     public static String UPDATE_IMAGE_PERSON_PROFILE = "update_image_person_profile";
     public static String GET_DIARIES_SHARED_WITH_ME = "get_diaries_shared_with_me";
+    public static String GET_SHARED_USERS ="get_shared_users";
 
     public static String ID = "id";
     public static String ID_TOKEN = "idToken";

@@ -1,4 +1,4 @@
-package com.lnb.imemo.Model;
+package com.lnb.imemo.Data.Repository.Model;
 
 public class Root<T> {
     private T result;

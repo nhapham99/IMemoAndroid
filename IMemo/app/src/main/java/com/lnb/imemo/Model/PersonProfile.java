@@ -11,6 +11,7 @@ public class PersonProfile {
     private String picture;
     private String gender;
     private String birthday;
+
     private static PersonProfile mInstance;
 
     private PersonProfile() {

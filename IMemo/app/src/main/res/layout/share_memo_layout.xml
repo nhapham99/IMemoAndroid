@@ -70,9 +70,9 @@
                 android:fontFamily="@font/roboto_regular"
                 android:gravity="center_vertical"
                 android:text=" Xem trước"
-                android:textColor="#666666"
-                android:textSize="15sp"
-                android:layout_centerVertical="true"/>
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:layout_centerVertical="true" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                 android:id="@+id/switch_share"
@@ -93,6 +93,88 @@
             android:layout_marginEnd="@dimen/length_10dp"
             android:fontFamily="@font/roboto_regular"
             android:hint="Nhập email"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            android:id="@+id/sharedUserAvatarArea"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đã chia sẻ: "
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/length_10dp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/roboto_regular"
+                android:textSize="14sp"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/sharedUserAvatar1"
+                android:layout_width="@dimen/length_30dp"
+                android:layout_height="@dimen/length_30dp"
+                android:src="@mipmap/ic_launcher"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/length_5dp"
+                android:visibility="gone"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/sharedUserAvatar2"
+                android:layout_width="@dimen/length_30dp"
+                android:layout_height="@dimen/length_30dp"
+                android:src="@mipmap/ic_launcher"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/length_5dp"
+                android:visibility="gone"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/sharedUserAvatar3"
+                android:layout_width="@dimen/length_30dp"
+                android:layout_height="@dimen/length_30dp"
+                android:src="@mipmap/ic_launcher"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/length_5dp"
+                android:visibility="gone"/>
+
+            <RelativeLayout
+                android:layout_width="@dimen/length_30dp"
+                android:layout_height="@dimen/length_30dp"
+                android:layout_gravity="center_vertical"
+                android:gravity="center"
+                android:layout_marginStart="@dimen/length_5dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/sharedUserAvatarMore"
+                    android:layout_width="@dimen/length_30dp"
+                    android:layout_height="@dimen/length_30dp"
+                    android:src="@mipmap/ic_launcher"
+                    android:visibility="gone"/>
+                <View
+                    android:id="@+id/sharedUserAvatarBlackLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/circle_indicator_selected"
+                    android:backgroundTint="@color/black"
+                    android:alpha="0.6"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/sharedUserAvatarMoreTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="+1"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/roboto_regular"
+                    android:gravity="center"
+                    android:visibility="gone"/>
+
+
+            </RelativeLayout>
+
+
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/share_memo"

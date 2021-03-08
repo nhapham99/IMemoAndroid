@@ -1,5 +1,6 @@
 package com.lnb.imemo.Presentation.Notification.RecyclerViewAdapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
@@ -43,8 +44,18 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
     private ArrayList<Notification> listNotifications = new ArrayList<>();
     private Gson gson = new GsonBuilder().create();
     private Context mContext;
-    private PublishSubject<Pair<Diary, String>> recyclerViewObserver = PublishSubject.create();
-    private PublishSubject<Pair<String, Integer>> markReadObserver = PublishSubject.create();
+    private PublishSubject<Pair<Diary, String>> recyclerViewObserver;
+    {
+        if (recyclerViewObserver == null) {
+            recyclerViewObserver = PublishSubject.create();
+        }
+    }
+    private PublishSubject<Pair<String, Integer>> markReadObserver;
+    {
+        if (markReadObserver == null) {
+            markReadObserver = PublishSubject.create();
+        }
+    }
     private ArrayList<Diary> listDiary = new ArrayList<>();
 
 
@@ -68,6 +79,7 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
         return new NotificationReyclerViewHolder(view);
     }
 
+    @SuppressLint("CheckResult")
     @Override
     public void onBindViewHolder(@NonNull NotificationReyclerViewHolder holder, int position) {
         JsonObject jsonObject = new JsonParser().parse(listNotifications.get(position).getData()).getAsJsonObject();
@@ -105,8 +117,10 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
 
     @Override
     public int getItemCount() {
-        return listNotifications.size();
+        return Math.min(listNotifications.size(), 30);
     }
+
+
 
     public PublishSubject<Pair<Diary, String>> getRecyclerViewObserver() {
         return recyclerViewObserver;
@@ -118,6 +132,9 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
 
     public void addNotification(Notification notification) {
         this.listNotifications.add(0, notification);
+        if (listNotifications.size() > 30) {
+            listNotifications.remove(listNotifications.size() - 1);
+        }
         notifyItemInserted(0);
     }
 

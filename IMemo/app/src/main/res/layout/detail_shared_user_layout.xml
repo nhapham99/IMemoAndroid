@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/length_10dp"
+    android:layout_marginBottom="@dimen/length_10dp"
+    android:elevation="2dp">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/white_corner"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/length_10dp"
+            android:paddingBottom="@dimen/length_10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Bạn đã chia sẻ"
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+            <ImageButton
+                android:id="@+id/detail_shared_user_escape"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="@dimen/length_20dp"
+                android:background="@drawable/circle_indicator_selected"
+                android:backgroundTint="#F0F2F5"
+                android:src="@drawable/ic_escape" />
+        </RelativeLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/detailSharedUserRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:overScrollMode="never"
+            android:layout_marginBottom="@dimen/length_20dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>
+

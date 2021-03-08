@@ -2,14 +2,11 @@ package com.lnb.imemo.Data.Repository.Notification;
 
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.Repository.Model.ResultNotification;
-import com.lnb.imemo.Model.Root;
 
 import io.reactivex.Flowable;
-import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.PUT;
-import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 

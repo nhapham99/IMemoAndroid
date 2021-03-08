@@ -10,7 +10,7 @@ import androidx.lifecycle.Observer;
 import com.lnb.imemo.Data.APIClient;
 import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.ResponseRepo;
-import com.lnb.imemo.Model.Root;
+import com.lnb.imemo.Data.Repository.Model.Root;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 

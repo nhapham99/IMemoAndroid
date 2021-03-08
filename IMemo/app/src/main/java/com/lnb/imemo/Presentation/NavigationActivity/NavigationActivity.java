@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,6 +37,7 @@ import com.github.nkzawa.socketio.client.Socket;
 import com.github.nkzawa.socketio.client.IO;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 
@@ -59,7 +61,18 @@ public class NavigationActivity extends AppCompatActivity {
     private int totalNotSeen = 0;
     private Fragment currentFragment;
     private Boolean setupStart = true;
-    private PublishSubject<Pair<String, Notification>> notificationObservable = PublishSubject.create();
+    private PublishSubject<Pair<String, Notification>> notificationObservable;
+    {
+        if (notificationObservable == null) {
+            notificationObservable = PublishSubject.create();
+        }
+    }
+    private CompositeDisposable disposable;
+    {
+        if (disposable == null) {
+            disposable = new CompositeDisposable();
+        }
+    }
     private Fragment notificationFragment = NotificationFragment.getNotificationFragment(true, notificationObservable, centerObservable);
 
 
@@ -120,7 +133,7 @@ public class NavigationActivity extends AppCompatActivity {
         notificationObservable.subscribe(new io.reactivex.Observer<Pair<String, Notification>>() {
             @Override
             public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
-
+                disposable.add(d);
             }
 
             @Override
@@ -142,7 +155,7 @@ public class NavigationActivity extends AppCompatActivity {
 
             @Override
             public void onError(@io.reactivex.annotations.NonNull Throwable e) {
-
+                e.printStackTrace();
             }
 
             @Override
@@ -168,12 +181,15 @@ public class NavigationActivity extends AppCompatActivity {
         currentFragment = homeFragment;
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.home:
                         if (!(currentFragment instanceof HomeFragment)) {
                             loadFragment(homeFragment);
+                        } else {
+                            centerObservable.onNext(new Pair<>("on_top_home_recyclerView", true));
                         }
                         return true;
 //                    case R.id.mail:
@@ -195,7 +211,7 @@ public class NavigationActivity extends AppCompatActivity {
         });
     }
 
-    private Emitter.Listener onNewNotification = new Emitter.Listener() {
+    private final Emitter.Listener onNewNotification = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             runOnUiThread(new Runnable() {
@@ -203,8 +219,9 @@ public class NavigationActivity extends AppCompatActivity {
                 public void run() {
                     String objectStr = args[0].toString();
                     Notification<String> notification = gsonBuilder.fromJson(objectStr, Notification.class);
-                    if (currentFragment instanceof NotificationFragment) {
-                        notificationObservable.onNext(new Pair<>("push_noti", notification));
+                    if (currentFragment == notificationFragment) {
+                        Log.d(TAG, "run: " + notification.toString());
+                        notificationObservable.onNext(new Pair<>("push_notification", notification));
                     }
                     BadgeDrawable badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.notification);
                     badgeDrawable.setVisible(true);

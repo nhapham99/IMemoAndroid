@@ -1,12 +1,11 @@
 package com.lnb.imemo.Data.Repository.Diary;
 
 import com.google.gson.JsonObject;
-import com.lnb.imemo.Model.Root;
+import com.lnb.imemo.Data.Repository.Model.ResultSharedUser;
+import com.lnb.imemo.Data.Repository.Model.SharedUser;
+import com.lnb.imemo.Data.Repository.Model.Root;
 import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
 import com.lnb.imemo.Data.Repository.Model.ResultDiary;
-
-import java.lang.reflect.Array;
-import java.util.List;
 
 import io.reactivex.Flowable;
 import retrofit2.http.Body;
@@ -62,4 +61,8 @@ public interface DiaryAPI {
                                              @Query("lastId") String lastId,
                                              @Query("pinned") Boolean pinned
     );
+
+    @GET("diaries/{id}/shares")
+    Flowable<Root<ResultSharedUser>> getSharedUser(@Header("Authorization") String token, @Path("id") String id);
+
 }

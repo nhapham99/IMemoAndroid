@@ -13,6 +13,8 @@ import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
+import com.lnb.imemo.Data.Repository.Model.ResultSharedUser;
+import com.lnb.imemo.Data.Repository.Model.SharedUser;
 import com.lnb.imemo.Data.Repository.PreviewLink.PreviewLinkRepository;
 import com.lnb.imemo.Data.Repository.Tags.TagsRepository;
 import com.lnb.imemo.Model.Pagination;
@@ -65,7 +67,19 @@ public class HomeViewModel extends ViewModel {
     protected ArrayList<Diary> listDiary = new ArrayList<>();
     private Boolean isUpdateForPublic = null;
     public ArrayList<String> listSharedEmail = new ArrayList<>();
-    public PublishSubject<ArrayList<String>> sharedEmailPublishSubject = PublishSubject.create();
+    public PublishSubject<ArrayList<String>> sharedEmailPublishSubject;
+    {
+        if (sharedEmailPublishSubject == null) {
+            sharedEmailPublishSubject = PublishSubject.create();
+        }
+    }
+
+    public PublishSubject<List<SharedUser>> sharedUserPublishSubject;
+    {
+        if (sharedUserPublishSubject == null) {
+            sharedUserPublishSubject = PublishSubject.create();
+        }
+    }
     private Boolean isUpdateForPinMemo = null;
 
 
@@ -100,8 +114,8 @@ public class HomeViewModel extends ViewModel {
         previewLinkRepository.getPreViewLink(url);
     }
 
-    public void getSharedUser() {
-        
+    public void getSharedUser(int position) {
+        diaryRepository.getSharedUser(mUser.getToken(), listDiary.get(position).getId());
     }
 
     protected void shareDiary(String diaryId, String email) {
@@ -312,6 +326,7 @@ public class HomeViewModel extends ViewModel {
                     response.setData(pair.first);
                     viewModelLiveData.setValue(response);
                 } else if (key.equals(Constant.GET_DIARIES_SHARED_WITH_ME)) {
+                    Log.d(TAG, "onChanged: get toatal memo " + getTotalMemoInStart);
                     ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
                     Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
                     Pagination pagination = pair.second.getPagination();
@@ -323,6 +338,11 @@ public class HomeViewModel extends ViewModel {
                     response.setData(new Pair<>(pair.first, (ArrayList<Diary>) pair.second.getDiaries()));
                     response.setKey(Constant.GET_DIARIES_SHARED_WITH_ME);
                     viewModelLiveData.setValue(response);
+                } else if (key.equals(Constant.GET_SHARED_USERS)) {
+                    Pair<Utils.State, List<SharedUser>> pair = (Pair<Utils.State, List<SharedUser>>) responseRepo.getData();
+                    if (pair.first == Utils.State.SUCCESS) {
+                        sharedUserPublishSubject.onNext(pair.second);
+                    }
                 }
             }
         };
@@ -344,6 +364,10 @@ public class HomeViewModel extends ViewModel {
 
     public void setTotalFilterMemo(int totalFilterMemo) {
         this.totalFilterMemo = totalFilterMemo;
+    }
+
+    public void setGetTotalMemoInStart(Boolean getTotalMemoInStart) {
+        this.getTotalMemoInStart = getTotalMemoInStart;
     }
 
     public MediatorLiveData<ArrayList<Tags>> observableAllTags() {

@@ -26,7 +26,12 @@ public class NotificationViewModel extends ViewModel {
     public int totalMemo = 0;
     public int page = 1;
     private final User mUser;
-    private final MediatorLiveData<ResponseRepo> viewModelLiveDate = new MediatorLiveData<>();
+    private MediatorLiveData<ResponseRepo> viewModelLiveDate;
+    {
+        if (viewModelLiveDate == null) {
+            viewModelLiveDate = new MediatorLiveData<>();
+        }
+    }
     private Observer<ResponseRepo> notificationObserver;
     public List<Notification> listNotification = new ArrayList<>();
     private NotificationViewModel() {
@@ -58,8 +63,10 @@ public class NotificationViewModel extends ViewModel {
         notificationObserver = new Observer<ResponseRepo>() {
             @Override
             public void onChanged(ResponseRepo responseRepo) {
+                Log.d(TAG, "onChanged: " + responseRepo.toString());
                 String key = responseRepo.getKey();
                 if (key.equals(Constant.GET_ALL_NOTIFICATION)) {
+                    Log.d(TAG, "onChanged: get all notification");
                     ResultNotification resultNotification = (ResultNotification) responseRepo.getData();
                     List<Notification<PersonProfile>> listNotification = resultNotification.getNotifications();
                     totalMemo = resultNotification.getPagination().getTotalItems();

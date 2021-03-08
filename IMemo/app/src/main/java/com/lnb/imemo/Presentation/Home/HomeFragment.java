@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -41,11 +42,13 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.lnb.imemo.Data.Repository.Model.SharedUser;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
+import com.lnb.imemo.Presentation.Home.RecyclerView.DetailSharedUserRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.FilterRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.HomeRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.SimpleSectionedRecyclerViewAdapter;
@@ -94,6 +97,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private EditText searchText;
     private TextView allMyMemo, allMemoSharedWithMe;
     private LinearLayout filterArea;
+    private RecyclerView homeRecyclerView;
 
 
     // var
@@ -179,7 +183,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private void init(View view) {
         subscribeCenterObservable();
 
-        RecyclerView homeRecyclerView = view.findViewById(R.id.home_recyclerView);
+        homeRecyclerView = view.findViewById(R.id.home_recyclerView);
         homeSwipeRefreshLayout = view.findViewById(R.id.home_refresh_layout);
         CircleImageView userAvatar = view.findViewById(R.id.home_user_avatar);
         ImageView homeFilter = view.findViewById(R.id.home_filter);
@@ -309,7 +313,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 homeViewMode = "allMyMemo";
                 allMemoSharedWithMe.setTextColor(Color.parseColor("#999999"));
                 allMyMemo.setTextColor(Color.parseColor("#333333"));
-                viewModel.getTotalMemoInStart = true;
+                viewModel.setGetTotalMemoInStart(true);
                 getAllMemo(null, null, null, null, null, null);
                 homeSwipeRefreshLayout.setRefreshing(true);
                 filterArea.setVisibility(View.VISIBLE);
@@ -321,13 +325,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 homeViewMode = "allMemoSharedWithMe";
                 allMemoSharedWithMe.setTextColor(Color.parseColor("#333333"));
                 allMyMemo.setTextColor(Color.parseColor("#999999"));
+                viewModel.setGetTotalMemoInStart(true);
                 if (viewModel.filterTagName.size() != 0 || viewModel.filterTimeName.length() != 0 || viewModel.filterHighLight.length() != 0) {
                     viewModel.filterTagName.clear();
                     filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
                     viewModel.filterTimeName = "";
                     filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
                     viewModel.filterHighLight = "";
-                    viewModel.getTotalMemoInStart = true;
                     searchKey = null;
                     adapter.removeFilter();
                 }
@@ -456,6 +460,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 if (key.equals("refresh_tag")) {
                     Log.d(TAG, "onNext: ");
                     viewModel.getAllTags();
+                } else if (key.equals("on_top_home_recyclerView")) {
+                    Log.d(TAG, "onNext: on_top_home_recyclerView");
+
                 }
             }
 
@@ -469,6 +476,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
         });
     }
+
 
     @SuppressLint("CheckResult")
     private void subscribeFilterObservable() {
@@ -606,7 +614,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
     private void showShareDialog(int position) {
         viewModel.getSharedEmails();
-        viewModel.getSharedUser();
+        viewModel.getSharedUser(position);
         final ArrayList[] listSharedEmails = new ArrayList[]{new ArrayList<>()};
 
         Diary diary = viewModel.listDiary.get(position);
@@ -617,16 +625,83 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         TextView previewMemo = view.findViewById(R.id.preview_memo);
         AutoCompleteTextView email_input = view.findViewById(R.id.input_email);
-        viewModel.sharedEmailPublishSubject.subscribe(strings -> {
-            listSharedEmails[0] = strings;
-            String[] listEmailArray = new String[listSharedEmails[0].size()];
-            for (int i = 0; i < listSharedEmails[0].size(); i++) {
-                listEmailArray[i] = listSharedEmails[0].get(i).toString();
+        LinearLayout sharedUserAvatarArea = view.findViewById(R.id.sharedUserAvatarArea);
+        ArrayList<CircleImageView> listSharedUserAvatar = new ArrayList<>();
+        CircleImageView userAvatar1 = view.findViewById(R.id.sharedUserAvatar1);
+        CircleImageView userAvatar2 = view.findViewById(R.id.sharedUserAvatar2);
+        CircleImageView userAvatar3 = view.findViewById(R.id.sharedUserAvatar3);
+        CircleImageView userAvatar4 = view.findViewById(R.id.sharedUserAvatarMore);
+        listSharedUserAvatar.add(userAvatar1);
+        listSharedUserAvatar.add(userAvatar2);
+        listSharedUserAvatar.add(userAvatar3);
+        listSharedUserAvatar.add(userAvatar4);
+        View sharedUserAvatarBlackLayout = view.findViewById(R.id.sharedUserAvatarBlackLayout);
+        TextView sharedUserAvatarMoreTextView = view.findViewById(R.id.sharedUserAvatarMoreTextView);
+
+        viewModel.sharedEmailPublishSubject.subscribe(new io.reactivex.Observer<ArrayList<String>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
             }
-            ArrayAdapter<String> adapterListSharedEmail = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, listEmailArray);
-            email_input.setAdapter(adapterListSharedEmail);
-            email_input.setThreshold(2);
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull ArrayList<String> strings) {
+                listSharedEmails[0] = strings;
+                String[] listEmailArray = new String[listSharedEmails[0].size()];
+                for (int i = 0; i < listSharedEmails[0].size(); i++) {
+                    listEmailArray[i] = listSharedEmails[0].get(i).toString();
+                }
+                ArrayAdapter<String> adapterListSharedEmail = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, listEmailArray);
+                email_input.setAdapter(adapterListSharedEmail);
+                email_input.setThreshold(2);
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+            }
         });
+
+        viewModel.sharedUserPublishSubject.subscribe(new io.reactivex.Observer<List<SharedUser>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
+            }
+
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull List<SharedUser> listSharedUsers) {
+                if (listSharedUsers.size() > 0) {
+                    sharedUserAvatarArea.setVisibility(View.VISIBLE);
+                   for (int i = 0; i < listSharedUsers.size(); i++) {
+                       listSharedUserAvatar.get(i).setVisibility(View.VISIBLE);
+                       Glide.with(getActivity())
+                               .load(listSharedUsers.get(i).getReceiver().getPicture())
+                               .into(listSharedUserAvatar.get(i));
+                   }
+                   if (listSharedUsers.size() >= 5) {
+                       sharedUserAvatarBlackLayout.setVisibility(View.VISIBLE);
+                       sharedUserAvatarMoreTextView.setVisibility(View.VISIBLE);
+                       sharedUserAvatarMoreTextView.setText("+" + (listSharedUsers.size() - 3));
+                   }
+                   sharedUserAvatarArea.setOnClickListener(v -> showDetailSharedUsers(listSharedUsers));
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
+
         Button shareButton = view.findViewById(R.id.share_memo);
         ImageButton dialogEscape = view.findViewById(R.id.share_memo_escape);
         SwitchMaterial switchShare = view.findViewById(R.id.switch_share);
@@ -714,6 +789,23 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
         });
     }
+
+    private void showDetailSharedUsers(List<SharedUser> listSharedUsers) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        View view = getLayoutInflater().inflate(R.layout.detail_shared_user_layout, null);
+        dialogBuilder.setView(view);
+        ImageButton escapeButton = view.findViewById(R.id.detail_shared_user_escape);
+        RecyclerView detailUserSharedRecyclerView = view.findViewById(R.id.detailSharedUserRecyclerView);
+        DetailSharedUserRecyclerViewAdapter adapter = new DetailSharedUserRecyclerViewAdapter(listSharedUsers);
+        detailUserSharedRecyclerView.setAdapter(adapter);
+        detailUserSharedRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+        escapeButton.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+    }
+
 
 
     private void startUploadFile() {

@@ -10,14 +10,12 @@ import androidx.lifecycle.Observer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.APIClient;
 import com.lnb.imemo.Data.Repository.Model.ResultSharedEmails;
 import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.ResponseRepo;
-import com.lnb.imemo.Model.Root;
+import com.lnb.imemo.Data.Repository.Model.Root;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 
