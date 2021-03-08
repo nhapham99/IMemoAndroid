@@ -2,7 +2,10 @@ package com.lnb.imemo.Presentation.Home;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -15,6 +18,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import android.util.Log;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -33,6 +37,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.bumptech.glide.Glide;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -52,6 +57,7 @@ import com.lnb.imemo.Presentation.UploadActivity.UploadActivity;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,9 +90,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private Button filterButton;
     private ProgressBar loadMoreProgressBar;
     private TextView noMoreMemoText;
-
     private FilterRecyclerViewAdapter tagFilterAdapter;
     private EditText searchText;
+    private TextView allMyMemo, allMemoSharedWithMe;
+    private LinearLayout filterArea;
 
 
     // var
@@ -99,38 +106,48 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private final int UPLOAD_MEMO_CODE = 4;
     private PublishSubject<Pair<String, Object>> centerObserver;
     private PublishSubject<Pair<String, String>> filterTimeObservable;
+
     {
         if (filterTimeObservable == null) {
             filterTimeObservable = PublishSubject.create();
         }
     }
+
     private PublishSubject<Pair<String, String>> filterTagObservable;
+
     {
         if (filterTagObservable == null) {
             filterTagObservable = PublishSubject.create();
         }
     }
+
     private PublishSubject<Pair<String, String>> filterHighLightObservable;
+
     {
         if (filterHighLightObservable == null) {
             filterHighLightObservable = PublishSubject.create();
         }
     }
+
     private String searchKey;
     private Boolean isLoadMore = false;
     private Boolean isLoading = false;
     String highLightKey = null;
     private CompositeDisposable disposable;
+
     {
         if (disposable == null) {
             disposable = new CompositeDisposable();
         }
     }
+
     private ShimmerFrameLayout shimerContainer;
     private int currentPinDiary = -1;
+    private String homeViewMode = "allMyMemo"; // allMyMemo or allMemoSharedWithMe
 
 
-    private HomeFragment(Boolean isStart, PublishSubject<Pair<String, Object>> centerObservable ) {
+    // start init
+    private HomeFragment(Boolean isStart, PublishSubject<Pair<String, Object>> centerObservable) {
         this.isStart = isStart;
         viewModel = HomeViewModel.getHomeViewModel(isStart);
         this.centerObserver = centerObservable;
@@ -142,6 +159,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         }
         return mHomeFragment;
     }
+    // end init
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -150,13 +168,19 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        isStart = false;
+    }
+
+    // start init
     @SuppressLint("CheckResult")
     private void init(View view) {
-        // init ui
-        // ui
+        subscribeCenterObservable();
+
         RecyclerView homeRecyclerView = view.findViewById(R.id.home_recyclerView);
         homeSwipeRefreshLayout = view.findViewById(R.id.home_refresh_layout);
-
         CircleImageView userAvatar = view.findViewById(R.id.home_user_avatar);
         ImageView homeFilter = view.findViewById(R.id.home_filter);
         homeFilter.setOnClickListener(this);
@@ -178,34 +202,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         loadMoreProgressBar.setVisibility(View.GONE);
         noMoreMemoText.setVisibility(View.GONE);
         shimerContainer = view.findViewById(R.id.shimmer_container);
-
-        centerObserver.subscribe(new io.reactivex.Observer<Pair<String, Object>>() {
-            @Override
-            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
-                disposable.add(d);
-            }
-
-            @Override
-            public void onNext(@io.reactivex.annotations.NonNull Pair<String, Object> pair) {
-                String key = pair.first;
-                if (key.equals("refresh_tag")) {
-                    Log.d(TAG, "onNext: ");
-                    viewModel.getAllTags();
-                }
-            }
-
-            @Override
-            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onComplete() {}
-        });
-
-
         searchText = view.findViewById(R.id.search_bar);
         ImageView searchIcon = view.findViewById(R.id.search_icon);
+        allMyMemo = view.findViewById(R.id.all_my_memo_textView);
+        allMemoSharedWithMe = view.findViewById(R.id.all_memo_shared_with_me);
+        filterArea = view.findViewById(R.id.filter_area);
+        homeViewModeListener();
+
+
         searchIcon.setOnClickListener(this);
         searchText.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -221,7 +225,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             shimerContainer.startShimmer();
             isStart = false;
         } else {
-            Log.d(TAG, "init: istart false");
+            Log.d(TAG, "init: isStart false");
             shimerContainer.stopShimmer();
             shimerContainer.setVisibility(View.GONE);
         }
@@ -252,7 +256,89 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         //Apply this adapter to the RecyclerView
         homeRecyclerView.setAdapter(mSectionedAdapter);
+        subscribeHomeRecyclerViewObservable();
 
+
+        homeSwipeRefreshLayout.setOnRefreshListener(() -> {
+            viewModel.listDiary = new ArrayList<>();
+            if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                loadMoreProgressBar.setVisibility(View.GONE);
+            }
+            if (noMoreMemoText.getVisibility() == View.VISIBLE) {
+                noMoreMemoText.setVisibility(View.GONE);
+            }
+            filterDiary();
+        });
+
+
+        // load user avatar
+        Glide.with(this).load(viewModel.personProfile.getPicture()).into(userAvatar);
+        if (viewModel.listTags.size() == 0) {
+            viewModel.getAllTags();
+        }
+
+        homeNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (scrollY == v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) {
+                if (viewModel.listDiary.size() < viewModel.getTotalFilterMemo()) {
+                    noMoreMemoText.setVisibility(View.INVISIBLE);
+                    loadMoreProgressBar.setVisibility(View.VISIBLE);
+                    loadMoreProgressBar.bringToFront();
+                    isLoadMore = true;
+                    if (!isLoading) {
+                        filterDiary();
+                    }
+                    isLoading = true;
+                } else {
+                    Log.d(TAG, "init: no more");
+                    isLoadMore = false;
+                    noMoreMemoText.setVisibility(View.VISIBLE);
+                    noMoreMemoText.bringToFront();
+                    if (viewModel.listDiary.size() == 0) {
+                        noMoreMemoText.setText("Không có memo nào!");
+                    } else {
+                        noMoreMemoText.setText("Không còn memo nào!");
+                    }
+                }
+            }
+        });
+    }
+
+    private void homeViewModeListener() {
+        allMyMemo.setOnClickListener(view -> {
+            if (homeViewMode.equals("allMemoSharedWithMe")) {
+                homeViewMode = "allMyMemo";
+                allMemoSharedWithMe.setTextColor(Color.parseColor("#999999"));
+                allMyMemo.setTextColor(Color.parseColor("#333333"));
+                viewModel.getTotalMemoInStart = true;
+                getAllMemo(null, null, null, null, null, null);
+                homeSwipeRefreshLayout.setRefreshing(true);
+                filterArea.setVisibility(View.VISIBLE);
+            }
+        });
+
+        allMemoSharedWithMe.setOnClickListener(view -> {
+            if (homeViewMode.equals("allMyMemo")) {
+                homeViewMode = "allMemoSharedWithMe";
+                allMemoSharedWithMe.setTextColor(Color.parseColor("#333333"));
+                allMyMemo.setTextColor(Color.parseColor("#999999"));
+                if (viewModel.filterTagName.size() != 0 || viewModel.filterTimeName.length() != 0 || viewModel.filterHighLight.length() != 0) {
+                    viewModel.filterTagName.clear();
+                    filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                    viewModel.filterTimeName = "";
+                    filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
+                    viewModel.filterHighLight = "";
+                    viewModel.getTotalMemoInStart = true;
+                    searchKey = null;
+                    adapter.removeFilter();
+                }
+                filterArea.setVisibility(View.GONE);
+                getAllMemoSharedWithMe(null, null, null, null, null, null);
+                homeSwipeRefreshLayout.setRefreshing(true);
+            }
+        });
+    }
+
+    private void subscribeHomeRecyclerViewObservable() {
         adapter.observableAction().observe(this, adapterAction -> {
             String key = adapterAction.first;
             if (key.equals(Constant.DELETE_DIARY_KEY)) {
@@ -332,7 +418,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         adapter.openPreviewImageTrigger.subscribe(new io.reactivex.Observer<Pair<String, ArrayList<Resource>>>() {
             @Override
-            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {disposable.add(d);}
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
+            }
 
             @Override
             public void onNext(@io.reactivex.annotations.NonNull Pair<String, ArrayList<Resource>> pair) {
@@ -350,59 +438,36 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
 
             @Override
-            public void onComplete() {}
-        });
-
-        homeSwipeRefreshLayout.setOnRefreshListener(() -> {
-            viewModel.listDiary = new ArrayList<>();
-            if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
-                loadMoreProgressBar.setVisibility(View.GONE);
-            }
-            if (noMoreMemoText.getVisibility() == View.VISIBLE) {
-                noMoreMemoText.setVisibility(View.GONE);
-            }
-            filterDiary();
-        });
-
-
-        // load user avatar
-        Glide.with(this).load(viewModel.personProfile.getPicture()).into(userAvatar);
-        if (viewModel.listTags.size() == 0) {
-            viewModel.getAllTags();
-        }
-
-        homeNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-            if (scrollY == v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) {
-                if (viewModel.listDiary.size() < viewModel.getTotalFilterMemo()) {
-                    noMoreMemoText.setVisibility(View.INVISIBLE);
-                    loadMoreProgressBar.setVisibility(View.VISIBLE);
-                    loadMoreProgressBar.bringToFront();
-                    isLoadMore = true;
-                    if (!isLoading) {
-                        filterDiary();
-                    }
-                    isLoading = true;
-                } else {
-                    Log.d(TAG, "init: no more");
-                    isLoadMore = false;
-                    noMoreMemoText.setVisibility(View.VISIBLE);
-                    noMoreMemoText.bringToFront();
-                    if (viewModel.listDiary.size() == 0) {
-                        noMoreMemoText.setText("Không có memo nào!");
-                    } else {
-                        noMoreMemoText.setText("Không còn memo nào!");
-                    }
-                }
+            public void onComplete() {
             }
         });
-
-
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        isStart = false;
+    private void subscribeCenterObservable() {
+        centerObserver.subscribe(new io.reactivex.Observer<Pair<String, Object>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
+            }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, Object> pair) {
+                String key = pair.first;
+                if (key.equals("refresh_tag")) {
+                    Log.d(TAG, "onNext: ");
+                    viewModel.getAllTags();
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
     }
 
     @SuppressLint("CheckResult")
@@ -435,7 +500,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
 
             @Override
-            public void onComplete() {}
+            public void onComplete() {
+            }
         });
 
         filterTagObservable.subscribe(new io.reactivex.Observer<Pair<String, String>>() {
@@ -459,7 +525,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
 
             @Override
-            public void onComplete() {}
+            public void onComplete() {
+            }
         });
 
         filterHighLightObservable.subscribe(new io.reactivex.Observer<Pair<String, String>>() {
@@ -484,7 +551,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
 
             @Override
-            public void onComplete() {}
+            public void onComplete() {
+            }
         });
     }
 
@@ -538,6 +606,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
     private void showShareDialog(int position) {
         viewModel.getSharedEmails();
+        viewModel.getSharedUser();
         final ArrayList[] listSharedEmails = new ArrayList[]{new ArrayList<>()};
 
         Diary diary = viewModel.listDiary.get(position);
@@ -725,6 +794,19 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         );
     }
 
+    private void getAllMemoSharedWithMe(String query, ArrayList<String> tagIds, String fromDate, String toDate, String lastId, Boolean pinned) {
+        int pageNumber = 1;
+        viewModel.getDiariesSharedWithMe(query,
+                tagIds,
+                pageNumber,
+                Constant.pageSize,
+                fromDate,
+                toDate,
+                lastId,
+                pinned
+        );
+    }
+
     private void subscribeDeleteMemoObservable() {
         viewModel.observableDeleteDiary().observe(this, new Observer<Utils.State>() {
             @Override
@@ -797,6 +879,50 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         break;
                 }
             } else if (key.equals(Constant.GET_DIARIES_KEY)) {
+                shimerContainer.stopShimmer();
+                shimerContainer.setVisibility(View.GONE);
+                Pair<Utils.State, ArrayList<Diary>> pair = (Pair<Utils.State, ArrayList<Diary>>) responseRepo.getData();
+                switch (pair.first) {
+                    case SUCCESS:
+                        Log.d(TAG, "onChanged: success ");
+                        if (homeSwipeRefreshLayout.isRefreshing()) {
+                            homeSwipeRefreshLayout.setRefreshing(false);
+                        }
+                        if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                            loadMoreProgressBar.setVisibility(View.GONE);
+                        }
+                        if (isLoadMore) {
+                            Log.d(TAG, "onChanged: insert");
+                            viewModel.listDiary.addAll(pair.second);
+                            adapter.insertListMemo(pair.second);
+                            isLoadMore = false;
+                            isLoading = false;
+                        } else {
+                            Log.d(TAG, "onChanged: update");
+                            viewModel.listDiary = pair.second;
+                            adapter.updateListMemo(viewModel.listDiary);
+                        }
+                        if (viewModel.listDiary.size() == 0) {
+                            noMoreMemoText.setVisibility(View.VISIBLE);
+                            noMoreMemoText.setText("Không có memo nào!");
+                        }
+                        filerMemoByFilter.setText(String.valueOf(viewModel.getTotalFilterMemo()));
+                        filterMemoTotal.setText(String.valueOf(viewModel.getTotalMemo()));
+                        break;
+                    case FAILURE:
+                        if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                            loadMoreProgressBar.setVisibility(View.GONE);
+                        }
+                        Toast.makeText(getContext(), "Lỗi. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
+                            loadMoreProgressBar.setVisibility(View.GONE);
+                        }
+                        Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            } else if (key.equals(Constant.GET_DIARIES_SHARED_WITH_ME)) {
                 shimerContainer.stopShimmer();
                 shimerContainer.setVisibility(View.GONE);
                 Pair<Utils.State, ArrayList<Diary>> pair = (Pair<Utils.State, ArrayList<Diary>>) responseRepo.getData();
@@ -995,13 +1121,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     }
 
     @Override
-    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
+    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+    }
 
     @Override
-    public void onDrawerOpened(@NonNull View drawerView) {}
+    public void onDrawerOpened(@NonNull View drawerView) {
+    }
 
     @Override
-    public void onDrawerClosed(@NonNull View drawerView) {}
+    public void onDrawerClosed(@NonNull View drawerView) {
+    }
 
     @Override
     public void onDrawerStateChanged(int newState) {

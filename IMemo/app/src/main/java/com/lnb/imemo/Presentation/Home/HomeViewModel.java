@@ -56,7 +56,7 @@ public class HomeViewModel extends ViewModel {
     public String filterHighLight = "";
     public ArrayList<String> filterTagName = new ArrayList<>();
     private static HomeViewModel mInstance;
-    private Boolean getTotalMemoInStart = true;
+    public Boolean getTotalMemoInStart = true;
     private int totalMemo;
     private int totalFilterMemo;
 
@@ -100,6 +100,10 @@ public class HomeViewModel extends ViewModel {
         previewLinkRepository.getPreViewLink(url);
     }
 
+    public void getSharedUser() {
+        
+    }
+
     protected void shareDiary(String diaryId, String email) {
         ArrayList<String> emails = new ArrayList<>();
         emails.add(email);
@@ -123,6 +127,25 @@ public class HomeViewModel extends ViewModel {
             tagIds = tagIds + tags.get(tags.size() - 1);
         }
         diaryRepository.getDiaries(mUser.getToken(), query, tagIds, page, pageSize, fromDate, toDate, lastId, pinned);
+    }
+
+    protected void getDiariesSharedWithMe(@Nullable String query,
+                              @Nullable List<String> tags,
+                              @NonNull int page,
+                              @NonNull int pageSize,
+                              @Nullable String fromDate,
+                              @Nullable String toDate,
+                              @Nullable String lastId,
+                              @Nullable Boolean pinned) {
+        String tagIds = null;
+        if (tags != null) {
+            tagIds = "";
+            for (int i = 0; i < tags.size() - 1; i++) {
+                tagIds = tagIds + tags.get(i) + ",";
+            }
+            tagIds = tagIds + tags.get(tags.size() - 1);
+        }
+        diaryRepository.getDiariesSharedWithMe(mUser.getToken(), query, tagIds, page, pageSize, fromDate, toDate, lastId, pinned);
     }
 
     protected void createDiary(Diary diary) {
@@ -288,11 +311,24 @@ public class HomeViewModel extends ViewModel {
                     }
                     response.setData(pair.first);
                     viewModelLiveData.setValue(response);
+                } else if (key.equals(Constant.GET_DIARIES_SHARED_WITH_ME)) {
+                    ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
+                    Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
+                    Pagination pagination = pair.second.getPagination();
+                    totalFilterMemo = pagination.getTotalItems();
+                    if (getTotalMemoInStart) {
+                        totalMemo = pagination.getTotalItems();
+                        getTotalMemoInStart = false;
+                    }
+                    response.setData(new Pair<>(pair.first, (ArrayList<Diary>) pair.second.getDiaries()));
+                    response.setKey(Constant.GET_DIARIES_SHARED_WITH_ME);
+                    viewModelLiveData.setValue(response);
                 }
             }
         };
         diaryRepository.observableDiaryRepo().observeForever(diaryObservable);
     }
+
 
     public int getTotalMemo() {
         return totalMemo;
@@ -337,7 +373,6 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.observableDiaryRepo().removeObserver(diaryObservable);
         authRepository.observableAuthRepo().removeObserver(authObservable);
     }
-
 
 
 }

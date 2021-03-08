@@ -50,4 +50,16 @@ public interface DiaryAPI {
 
     @GET("diaries/public/{id}")
     Flowable<Root<JsonObject>> publicDiary(@Header("Authorization") String token, @Path("id") String id);
+
+    @GET("diaries/share-with-me")
+    Flowable<Root<ResultDiaries>> getDiariesSharedWithMe(@Header("Authorization") String token,
+                                             @Query("q") String query,
+                                             @Query("tag") String tags,
+                                             @Query("page") int page,
+                                             @Query("pageSize") int pageSize,
+                                             @Query("fromDate") String fromDate,
+                                             @Query("toDate") String toDate,
+                                             @Query("lastId") String lastId,
+                                             @Query("pinned") Boolean pinned
+    );
 }

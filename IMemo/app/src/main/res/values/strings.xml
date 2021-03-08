@@ -33,4 +33,6 @@
     <string name="delete">Xóa</string>
     <string name="share">Chia sẻ</string>
     <string name="add_memo_label">Thêm memo</string>
+    <string name="all_my_memo_textView">Memo của tôi</string>
+    <string name="all_memo_shared_with_me_textView">Memo chia sẻ với tôi</string>
 </resources>
