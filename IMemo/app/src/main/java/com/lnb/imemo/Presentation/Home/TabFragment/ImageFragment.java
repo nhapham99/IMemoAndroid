@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
+
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,17 +30,24 @@ public class ImageFragment extends Fragment {
     private final ArrayList<Resource> listImageAndVideo;
     public PublishSubject<Boolean> imageFragmentPublish;
     private CompositeDisposable disposable;
-    private Context context;
+    private ImageAndVideoViewPagerAdapter adapter;
 
     public ImageFragment(ArrayList<Resource> listImageAndVideo, Context context) {
         this.listImageAndVideo = listImageAndVideo;
-        this.context = context;
         if (imageFragmentPublish == null) {
             imageFragmentPublish = PublishSubject.create();
         }
         if (disposable == null) {
             disposable = new CompositeDisposable();
         }
+    }
+
+    public void clearMedia() {
+        adapter.clearMedia();
+    }
+
+    public void destroyMedia() {
+        adapter.destroyMedia();
     }
 
     @Override
@@ -52,7 +61,7 @@ public class ImageFragment extends Fragment {
     private void init(View view) {
 
         ViewPager2 imageAndVideoViewPager = view.findViewById(R.id.memo_image_viewPager);
-        ImageAndVideoViewPagerAdapter adapter = new ImageAndVideoViewPagerAdapter(listImageAndVideo);
+        adapter = new ImageAndVideoViewPagerAdapter(listImageAndVideo);
         imageAndVideoViewPager.setAdapter(adapter);
 
         imageAndVideoViewPager.setClipToPadding(false);

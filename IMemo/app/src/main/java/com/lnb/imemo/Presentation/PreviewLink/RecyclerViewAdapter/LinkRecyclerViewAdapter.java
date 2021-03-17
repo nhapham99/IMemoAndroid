@@ -16,12 +16,9 @@ import com.bumptech.glide.Glide;
 import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.R;
 
-import java.util.ArrayList;
-
-import io.reactivex.subjects.PublishSubject;
 
 public class LinkRecyclerViewAdapter extends RecyclerView.Adapter<LinkRecyclerViewAdapter.LinkRecyclerViewHolder>{
-    private Link link;
+    private final Link link;
     private Context mContext;
 
     public LinkRecyclerViewAdapter(Link link) {
@@ -41,15 +38,23 @@ public class LinkRecyclerViewAdapter extends RecyclerView.Adapter<LinkRecyclerVi
         if (link.getImage() != null && (link.getImage().toString().contains("https") || link.getImage().toString().contains("http"))) {
             Glide.with(mContext).load(link.getImage().toString()).into(holder.linkImage);
         }
-        holder.linkTitle.setText(link.getTitle().toString());
-        holder.linkDescription.setText(link.getDescription().toString());
-        holder.linkUrl.setText(link.getUrl());
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mContext.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link.getUrl())));
-            }
-        });
+        if (link.getTitle() != null) {
+            holder.linkTitle.setText(link.getTitle().toString());
+        } else {
+            holder.linkTitle.setText("");
+        }
+        if (link.getDescription() != null) {
+            holder.linkDescription.setText(link.getDescription().toString());
+        } else {
+            holder.linkDescription.setText("");
+        }
+        if (link.getUrl() != null) {
+            holder.linkUrl.setText(link.getUrl());
+        } else {
+            holder.linkUrl.setText("");
+        }
+
+        holder.itemView.setOnClickListener(v -> mContext.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(link.getUrl()))));
     }
 
     @Override
@@ -61,7 +66,7 @@ public class LinkRecyclerViewAdapter extends RecyclerView.Adapter<LinkRecyclerVi
         return link;
     }
 
-    class LinkRecyclerViewHolder extends RecyclerView.ViewHolder {
+    static class LinkRecyclerViewHolder extends RecyclerView.ViewHolder {
         ImageView linkImage;
         TextView linkTitle;
         TextView linkDescription;

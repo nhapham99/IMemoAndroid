@@ -26,15 +26,6 @@
             android:textColor="@color/black"
             android:textSize="18sp"
             android:singleLine="true"/>
-
-        <ImageView
-            android:id="@+id/pop_down_menu"
-            android:layout_width="15dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginRight="@dimen/length_10dp"
-            android:src="@drawable/ic_three_dot" />
-
     </LinearLayout>
 
     <TextView
@@ -45,8 +36,7 @@
         android:layout_marginTop="@dimen/length_5dp"
         android:fontFamily="@font/roboto_regular"
         android:textColor="@color/memo_time_color"
-        android:textSize="@dimen/text_12sp"
-        android:visibility="gone"/>
+        android:textSize="@dimen/text_12sp"/>
 
 
     <TextView
@@ -88,30 +78,4 @@
         android:layout_marginStart="@dimen/length_10dp"
         android:soundEffectsEnabled="false"
         />
-
-
-    <LinearLayout
-        android:id="@+id/memo_share"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="@dimen/length_10dp"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:src="@drawable/ic_share"
-            app:tint="@color/blue_dark"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/length_5dp"
-            android:fontFamily="@font/roboto_regular"
-            android:text="@string/share"
-            android:textColor="@color/blue_dark"
-            android:textSize="12sp" />
-
-    </LinearLayout>
 </LinearLayout>

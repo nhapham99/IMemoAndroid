@@ -1,22 +1,23 @@
 package com.lnb.imemo.Data.Repository.Model;
 
 import com.lnb.imemo.Model.Diary;
+import com.lnb.imemo.Model.PersonProfile;
 
 public class ResultDiary {
-    private Diary diary;
+    private Diary<PersonProfile> diary;
 
     public ResultDiary() {
     }
 
-    public ResultDiary(Diary diary) {
+    public ResultDiary(Diary<PersonProfile> diary) {
         this.diary = diary;
     }
 
-    public Diary getDiary() {
+    public Diary<PersonProfile> getDiary() {
         return diary;
     }
 
-    public void setDiary(Diary diary) {
+    public void setDiary(Diary<PersonProfile> diary) {
         this.diary = diary;
     }
 }

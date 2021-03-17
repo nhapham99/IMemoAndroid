@@ -10,18 +10,21 @@ public class Resource implements Parcelable {
     private String type;
     private String createdAt;
     private String updatedAt;
+    private Boolean uploading;
 
     public Resource() {
     }
 
-    public Resource(String id, String url, String name, String type, String createdAt, String updatedAt) {
+    public Resource(String id, String url, String name, String type, String createdAt, String updatedAt, Boolean uploading) {
         this.id = id;
         this.url = url;
         this.name = name;
         this.type = type;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.uploading = uploading;
     }
+
 
     protected Resource(Parcel in) {
         id = in.readString();
@@ -30,6 +33,8 @@ public class Resource implements Parcelable {
         type = in.readString();
         createdAt = in.readString();
         updatedAt = in.readString();
+        byte tmpUploading = in.readByte();
+        uploading = tmpUploading == 0 ? null : tmpUploading == 1;
     }
 
     @Override
@@ -40,6 +45,7 @@ public class Resource implements Parcelable {
         dest.writeString(type);
         dest.writeString(createdAt);
         dest.writeString(updatedAt);
+        dest.writeByte((byte) (uploading == null ? 0 : uploading ? 1 : 2));
     }
 
     @Override
@@ -105,6 +111,14 @@ public class Resource implements Parcelable {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Boolean getUploading() {
+        return uploading;
+    }
+
+    public void setUploading(Boolean uploading) {
+        this.uploading = uploading;
     }
 
     @Override

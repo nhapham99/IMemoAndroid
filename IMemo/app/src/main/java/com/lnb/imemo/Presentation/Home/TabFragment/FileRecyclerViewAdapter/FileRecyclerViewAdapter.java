@@ -4,7 +4,6 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +19,7 @@ import com.lnb.imemo.Utils.Utils;
 import java.util.ArrayList;
 
 public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerViewAdapter.FileRecyclerViewHolder> {
-    private static final String TAG = "FileRecyclerViewAdapter";
-    private ArrayList<Resource> listFile = new ArrayList<>();
+    private final ArrayList<Resource> listFile;
     private Context mContext;
 
     public FileRecyclerViewAdapter(ArrayList<Resource> listFile) {
@@ -39,12 +37,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     @Override
     public void onBindViewHolder(@NonNull FileRecyclerViewHolder holder, int position) {
         holder.fileName.setText(listFile.get(position).getName());
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startDownloadFile(position);
-            }
-        });
+        holder.itemView.setOnClickListener(v -> startDownloadFile(position));
     }
 
     private void startDownloadFile(int position) {
@@ -59,9 +52,8 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         request.allowScanningByMediaScanner();
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "" + listFile.get(position).getName());
-
-
         DownloadManager downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+        assert downloadManager != null;
         downloadManager.enqueue(request);
     }
 
@@ -71,7 +63,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
         return listFile.size();
     }
 
-    class FileRecyclerViewHolder extends RecyclerView.ViewHolder {
+    static class FileRecyclerViewHolder extends RecyclerView.ViewHolder {
         TextView fileName;
         public FileRecyclerViewHolder(@NonNull View itemView) {
             super(itemView);

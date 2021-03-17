@@ -2,13 +2,13 @@ package com.lnb.imemo.Presentation.Home;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.GravityCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -16,13 +16,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.util.Pair;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +28,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -41,12 +38,12 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.facebook.shimmer.ShimmerFrameLayout;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.lnb.imemo.Data.Repository.Model.SharedUser;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.Resource;
-import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Presentation.Home.RecyclerView.DetailSharedUserRecyclerViewAdapter;
 import com.lnb.imemo.Presentation.Home.RecyclerView.FilterRecyclerViewAdapter;
@@ -65,24 +62,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 
 import static android.app.Activity.RESULT_OK;
 
 public class HomeFragment extends Fragment implements View.OnClickListener, DrawerLayout.DrawerListener {
     private static final String TAG = "HomeFragment";
-    private static HomeFragment mHomeFragment;
-    private Boolean isStart = false;
-
-    {
-        Log.d(TAG, "instance initializer: " + isStart);
-    }
-
     private SwipeRefreshLayout homeSwipeRefreshLayout;
     private DrawerLayout drawerLayout;
 
@@ -98,6 +88,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private TextView allMyMemo, allMemoSharedWithMe;
     private LinearLayout filterArea;
     private RecyclerView homeRecyclerView;
+    private NestedScrollView homeNestedScrollView;
 
 
     // var
@@ -108,42 +99,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private final int GET_TAGS = 2;
     private final int GET_PREVIEW_LINK = 3;
     private final int UPLOAD_MEMO_CODE = 4;
-    private PublishSubject<Pair<String, Object>> centerObserver;
-    private PublishSubject<Pair<String, String>> filterTimeObservable;
-
-    {
-        if (filterTimeObservable == null) {
-            filterTimeObservable = PublishSubject.create();
-        }
-    }
-
-    private PublishSubject<Pair<String, String>> filterTagObservable;
-
-    {
-        if (filterTagObservable == null) {
-            filterTagObservable = PublishSubject.create();
-        }
-    }
-
-    private PublishSubject<Pair<String, String>> filterHighLightObservable;
-
-    {
-        if (filterHighLightObservable == null) {
-            filterHighLightObservable = PublishSubject.create();
-        }
-    }
+    private final PublishSubject<Pair<String, Object>> centerObserver;
+    private final PublishSubject<Pair<String, String>>  filterTimeObservable = PublishSubject.create();
+    private final PublishSubject<Pair<String, String>> filterTagObservable = PublishSubject.create();
+    private final PublishSubject<Pair<String, String>> filterHighLightObservable = PublishSubject.create();
 
     private String searchKey;
     private Boolean isLoadMore = false;
     private Boolean isLoading = false;
     String highLightKey = null;
-    private CompositeDisposable disposable;
-
-    {
-        if (disposable == null) {
-            disposable = new CompositeDisposable();
-        }
-    }
+    private final CompositeDisposable disposable = new CompositeDisposable();
 
     private ShimmerFrameLayout shimerContainer;
     private int currentPinDiary = -1;
@@ -151,31 +116,19 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
 
     // start init
-    private HomeFragment(Boolean isStart, PublishSubject<Pair<String, Object>> centerObservable) {
-        this.isStart = isStart;
-        viewModel = HomeViewModel.getHomeViewModel(isStart);
+    public HomeFragment(PublishSubject<Pair<String, Object>> centerObservable) {
+        viewModel = new HomeViewModel();
         this.centerObserver = centerObservable;
     }
 
-    public static HomeFragment getHomeFragment(Boolean isStart, PublishSubject<Pair<String, Object>> centerObservable) {
-        if (mHomeFragment == null || isStart) {
-            mHomeFragment = new HomeFragment(isStart, centerObservable);
-        }
-        return mHomeFragment;
-    }
     // end init
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setRetainInstance(true);
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         init(view);
         return view;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        isStart = false;
     }
 
     // start init
@@ -200,7 +153,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         filterMemoTimeRecyclerView = view.findViewById(R.id.filter_time_recyclerView);
         filterMemoTagRecyclerView = view.findViewById(R.id.filter_tag_recyclerview);
         filterButton = view.findViewById(R.id.filter_button);
-        NestedScrollView homeNestedScrollView = view.findViewById(R.id.nested_scroll);
+        homeNestedScrollView = view.findViewById(R.id.nested_scroll);
         loadMoreProgressBar = view.findViewById(R.id.load_more_progressBar);
         noMoreMemoText = view.findViewById(R.id.no_more_memo);
         loadMoreProgressBar.setVisibility(View.GONE);
@@ -211,29 +164,26 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         allMyMemo = view.findViewById(R.id.all_my_memo_textView);
         allMemoSharedWithMe = view.findViewById(R.id.all_memo_shared_with_me);
         filterArea = view.findViewById(R.id.filter_area);
+        AppBarLayout appBarLayout = view.findViewById(R.id.appBarLayout);
+        CoordinatorLayout coordinatorLayout = view.findViewById(R.id.coordinatorLayout);
         homeViewModeListener();
-
 
         searchIcon.setOnClickListener(this);
         searchText.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                searchKey = searchText.getText().toString();
-                filterDiary();
-                searchText.setText("");
+                if (!searchText.getText().toString().equals("")) {
+                    searchKey = searchText.getText().toString();
+                    filterDiary();
+                    searchText.setText("");
+                    searchText.setCursorVisible(false);
+                }
             }
             return false;
         });
 
-        if (isStart) {
-            Log.d(TAG, "init: " + isStart);
-            shimerContainer.startShimmer();
-            isStart = false;
-        } else {
-            Log.d(TAG, "init: isStart false");
-            shimerContainer.stopShimmer();
-            shimerContainer.setVisibility(View.GONE);
-        }
 
+
+        shimerContainer.startShimmer();
 
         Log.d(TAG, "init: " + viewModel.listDiary.size());
         if (viewModel.listDiary.size() == 0) {
@@ -245,21 +195,22 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         setupFilterView();
         // init var
-
-        adapter = new HomeRecyclerViewAdapter((ArrayList<Diary>) viewModel.listDiary);
+        adapter = new HomeRecyclerViewAdapter((ArrayList<Diary>) viewModel.listDiary, false);
         homeRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         homeRecyclerView.setAdapter(adapter);
-        List<SimpleSectionedRecyclerViewAdapter.Section> sections = new ArrayList<SimpleSectionedRecyclerViewAdapter.Section>();
-        //Add your adapter to the sectionAdapter
-        SimpleSectionedRecyclerViewAdapter.Section[] dummy = new SimpleSectionedRecyclerViewAdapter.Section[sections.size()];
-        SimpleSectionedRecyclerViewAdapter mSectionedAdapter = new SimpleSectionedRecyclerViewAdapter(getContext(),
-                R.layout.sections,
-                R.id.section_text,
-                adapter);
-        mSectionedAdapter.setSections(sections.toArray(dummy));
 
-        //Apply this adapter to the RecyclerView
-        homeRecyclerView.setAdapter(mSectionedAdapter);
+        homeRecyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(@NonNull View view) {
+
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(@NonNull View view) {
+                Log.d(TAG, "onChildViewDetachedFromWindow: " + view);
+            }
+        });
+
         subscribeHomeRecyclerViewObservable();
 
 
@@ -271,7 +222,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             if (noMoreMemoText.getVisibility() == View.VISIBLE) {
                 noMoreMemoText.setVisibility(View.GONE);
             }
-            filterDiary();
+            if (homeViewMode.equals("allMyMemo")) {
+                filterDiary();
+            } else {
+                getAllMemoSharedWithMe(null, null, null, null, null, null);
+            }
         });
 
 
@@ -310,6 +265,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private void homeViewModeListener() {
         allMyMemo.setOnClickListener(view -> {
             if (homeViewMode.equals("allMemoSharedWithMe")) {
+                homeNestedScrollView.scrollTo(0,0);
                 homeViewMode = "allMyMemo";
                 allMemoSharedWithMe.setTextColor(Color.parseColor("#999999"));
                 allMyMemo.setTextColor(Color.parseColor("#333333"));
@@ -322,6 +278,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         allMemoSharedWithMe.setOnClickListener(view -> {
             if (homeViewMode.equals("allMyMemo")) {
+                homeNestedScrollView.scrollTo(0,0);
                 homeViewMode = "allMemoSharedWithMe";
                 allMemoSharedWithMe.setTextColor(Color.parseColor("#333333"));
                 allMyMemo.setTextColor(Color.parseColor("#999999"));
@@ -347,10 +304,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             String key = adapterAction.first;
             if (key.equals(Constant.DELETE_DIARY_KEY)) {
                 Log.d(TAG, "onChanged: " + adapterAction.second);
-                currentChoosedDiaryPosition = adapterAction.second;
-                viewModel.deleteDiary(adapterAction.second);
-                viewModel.setTotalMemo(viewModel.getTotalMemo() - 1);
-                viewModel.setTotalFilterMemo(viewModel.getTotalFilterMemo() - 1);
+                showDeleteAlert(adapterAction.second);
+
             } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                 Intent intent = new Intent(getActivity(), UploadActivity.class);
                 startActivityForResult(intent, UPLOAD_MEMO_CODE);
@@ -382,41 +337,59 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             }
         });
 
-        adapter.getFilterObservable().subscribe(pair -> {
-            String key = pair.first;
-            switch (key) {
-                case "remove_filter_search":
-                    searchKey = null;
-                    filterDiary();
-                    break;
-                case "remove_filter_time":
-                    filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
-                    viewModel.filterTimeName = "";
-                    filterDiary();
-                    break;
-                case "remove_filter_tag":
-                    Log.d(TAG, "onChanged: " + pair.second);
-                    filterTagObservable.onNext(new Pair<>("update_filter", pair.second));
-                    viewModel.filterTagName.remove(pair.second);
-                    Log.d(TAG, "onChanged: " + viewModel.filterTagName);
-                    filterDiary();
-                    break;
-                case "remove_filter_high_light":
-                    Log.d(TAG, "init: remove filter high light");
-                    filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
-                    viewModel.filterHighLight = "";
-                    highLightKey = null;
-                    filterDiary();
-                    break;
-                case "reset_all":
-                    viewModel.filterTagName.clear();
-                    filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
-                    viewModel.filterTimeName = "";
-                    filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
-                    viewModel.filterHighLight = "";
-                    searchKey = null;
-                    filterDiary();
-                    break;
+        adapter.getFilterObservable().subscribe(new io.reactivex.Observer<Pair<String, String>>() {
+            @Override
+            public void onSubscribe(@io.reactivex.annotations.NonNull Disposable d) {
+                disposable.add(d);
+            }
+
+            @Override
+            public void onNext(@io.reactivex.annotations.NonNull Pair<String, String> pair) {
+                String key = pair.first;
+                switch (key) {
+                    case "remove_filter_search":
+                        searchKey = null;
+                        filterDiary();
+                        break;
+                    case "remove_filter_time":
+                        filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                        viewModel.filterTimeName = "";
+                        filterDiary();
+                        break;
+                    case "remove_filter_tag":
+                        Log.d(TAG, "onChanged: " + pair.second);
+                        filterTagObservable.onNext(new Pair<>("update_filter", pair.second));
+                        viewModel.filterTagName.remove(pair.second);
+                        Log.d(TAG, "onChanged: " + viewModel.filterTagName);
+                        filterDiary();
+                        break;
+                    case "remove_filter_high_light":
+                        Log.d(TAG, "init: remove filter high light");
+                        filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
+                        viewModel.filterHighLight = "";
+                        highLightKey = null;
+                        filterDiary();
+                        break;
+                    case "reset_all":
+                        viewModel.filterTagName.clear();
+                        filterTimeObservable.onNext(new Pair<>("update_filter", viewModel.filterTimeName));
+                        viewModel.filterTimeName = "";
+                        filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
+                        viewModel.filterHighLight = "";
+                        searchKey = null;
+                        filterDiary();
+                        break;
+                }
+            }
+
+            @Override
+            public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
 
@@ -447,6 +420,26 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         });
     }
 
+    private void showDeleteAlert(int position) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        View view = getLayoutInflater().inflate(R.layout.delete_memo_alert, null);
+        dialogBuilder.setView(view);
+        AlertDialog dialog = dialogBuilder.create();
+        TextView deleteBtn = view.findViewById(R.id.delete_memo);
+        TextView cancelDeleteBtn = view.findViewById(R.id.cancel_delete);
+        deleteBtn.setOnClickListener(v -> {
+            currentChoosedDiaryPosition = position;
+            viewModel.deleteDiary(position);
+            viewModel.setTotalMemo(viewModel.getTotalMemo() - 1);
+            viewModel.setTotalFilterMemo(viewModel.getTotalFilterMemo() - 1);
+            dialog.dismiss();
+        });
+        cancelDeleteBtn.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+        dialog.show();
+    }
+
     private void subscribeCenterObservable() {
         centerObserver.subscribe(new io.reactivex.Observer<Pair<String, Object>>() {
             @Override
@@ -462,7 +455,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     viewModel.getAllTags();
                 } else if (key.equals("on_top_home_recyclerView")) {
                     Log.d(TAG, "onNext: on_top_home_recyclerView");
-
+                    homeNestedScrollView.smoothScrollTo(0,0);
+                } else if (key.equals("clear_home_fragment")) {
+                    adapter.clearMedia();
                 }
             }
 
@@ -675,15 +670,21 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             @SuppressLint("SetTextI18n")
             @Override
             public void onNext(@io.reactivex.annotations.NonNull List<SharedUser> listSharedUsers) {
+                Log.d(TAG, "onNext: " + listSharedUsers.toString());
                 if (listSharedUsers.size() > 0) {
+                    int count = 0;
                     sharedUserAvatarArea.setVisibility(View.VISIBLE);
-                   for (int i = 0; i < listSharedUsers.size(); i++) {
-                       listSharedUserAvatar.get(i).setVisibility(View.VISIBLE);
-                       Glide.with(getActivity())
-                               .load(listSharedUsers.get(i).getReceiver().getPicture())
-                               .into(listSharedUserAvatar.get(i));
-                   }
-                   if (listSharedUsers.size() >= 5) {
+                    for (SharedUser sharedUser : listSharedUsers) {
+                        if (sharedUser.getReceiver() != null) {
+                            listSharedUserAvatar.get(count).setVisibility(View.VISIBLE);
+                            Log.d(TAG, "onNext: " + listSharedUsers.get(count).getReceiver().getPicture());
+                            Glide.with(getActivity())
+                                    .load(listSharedUsers.get(count).getReceiver().getPicture())
+                                    .into(listSharedUserAvatar.get(count));
+                            count++;
+                        }
+                    }
+                   if (count >= 5) {
                        sharedUserAvatarBlackLayout.setVisibility(View.VISIBLE);
                        sharedUserAvatarMoreTextView.setVisibility(View.VISIBLE);
                        sharedUserAvatarMoreTextView.setText("+" + (listSharedUsers.size() - 3));
@@ -827,7 +828,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         super.onActivityResult(requestCode, resultCode, data);
         Intent intent = new Intent(getActivity(), UploadActivity.class);
         if (requestCode == GET_FILE_CODE) {
-            if (resultCode == RESULT_OK && data.getData() != null) {
+            if (resultCode == RESULT_OK && Objects.requireNonNull(data).getData() != null) {
                 intent.putExtra(Constant.GET_FILE_CODE, data.getData().toString());
             } else {
                 Log.d(TAG, "onActivityResult: failure");
@@ -942,19 +943,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
             } else if (key.equals(Constant.GET_ALL_TAGS_KEY)) {
                 Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) responseRepo.getData();
-                switch (pair.first) {
-                    case SUCCESS:
-                        viewModel.listTags = pair.second;
-                        ArrayList<String> listTags = new ArrayList<>();
-                        for (Tags tags : pair.second) {
-                            if (tags.getIsDefault()) {
-                                listTags.add(tags.getName());
-                                viewModel.mIdTagByNameHashMap.put(tags.getName(), tags.getId());
-                                viewModel.mTagByNameHashMap.put(tags.getName(), tags);
-                            }
+                if (pair.first == Utils.State.SUCCESS) {
+                    viewModel.listTags = pair.second;
+                    ArrayList<String> listTags = new ArrayList<>();
+                    for (Tags tags : pair.second) {
+                        if (tags.getIsDefault()) {
+                            listTags.add(tags.getName());
+                            viewModel.mIdTagByNameHashMap.put(tags.getName(), tags.getId());
+                            viewModel.mTagByNameHashMap.put(tags.getName(), tags);
                         }
-                        tagFilterAdapter.setData(listTags);
-                        break;
+                    }
+                    tagFilterAdapter.setData(listTags);
                 }
             } else if (key.equals(Constant.SHARE_DIARY)) {
                 Utils.State state = (Utils.State) responseRepo.getData();
@@ -993,6 +992,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             Log.d(TAG, "onChanged: update");
                             viewModel.listDiary = pair.second;
                             adapter.updateListMemo(viewModel.listDiary);
+                            adapter.setSharedMode(false);
                         }
                         if (viewModel.listDiary.size() == 0) {
                             noMoreMemoText.setVisibility(View.VISIBLE);
@@ -1037,6 +1037,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             Log.d(TAG, "onChanged: update");
                             viewModel.listDiary = pair.second;
                             adapter.updateListMemo(viewModel.listDiary);
+                            adapter.setSharedMode(true);
                         }
                         if (viewModel.listDiary.size() == 0) {
                             noMoreMemoText.setVisibility(View.VISIBLE);
@@ -1110,8 +1111,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 filterDiary();
                 break;
             case R.id.search_icon:
-                searchKey = searchText.getText().toString();
-                filterDiary();
+                if (!searchText.getText().toString().equals("")) {
+                    searchKey = searchText.getText().toString();
+                    filterDiary();
+                    searchText.setText("");
+                    searchText.setCursorVisible(false);
+                }
                 break;
         }
     }
@@ -1231,5 +1236,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             filerMemoByFilter.setText(String.valueOf(viewModel.getTotalFilterMemo()));
             filterMemoTotal.setText(String.valueOf(viewModel.getTotalMemo()));
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        adapter.destroyMedia();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        adapter.clearMedia();
     }
 }

@@ -21,40 +21,27 @@ import java.util.List;
 
 public class NotificationViewModel extends ViewModel {
     private static final String TAG = "NotificationViewModel";
-    private static NotificationViewModel mInstance;
     private final NotificationRepository notificationRepository;
     public int totalMemo = 0;
-    public int page = 1;
     private final User mUser;
-    private MediatorLiveData<ResponseRepo> viewModelLiveDate;
+    private final MediatorLiveData<ResponseRepo> viewModelLiveDate;
     {
-        if (viewModelLiveDate == null) {
-            viewModelLiveDate = new MediatorLiveData<>();
-        }
+        viewModelLiveDate = new MediatorLiveData<>();
     }
     private Observer<ResponseRepo> notificationObserver;
     public List<Notification> listNotification = new ArrayList<>();
-    private NotificationViewModel() {
+
+    public NotificationViewModel() {
         notificationRepository = new NotificationRepository();
         mUser = User.getUser();
         subscribeNotificationObserver();
     }
 
-    public static NotificationViewModel getNotificationViewModel(Boolean isStart) {
 
-        if (mInstance == null || isStart) {
-            Log.d(TAG, "getNotificationViewModel: ");
-
-            mInstance = new NotificationViewModel();
-        }
-        return mInstance;
-    }
-
-    public void getAllNotification() {
+    public void getAllNotification(int page) {
         Log.d(TAG, "getAllNotification: ");
         if (listNotification.size() < totalMemo || page == 1) {
             notificationRepository.getAllNotification(mUser.getToken(), page);
-            page++;
         }
 
     }
@@ -74,6 +61,7 @@ public class NotificationViewModel extends ViewModel {
                     response.setData(new Pair<>(Utils.State.SUCCESS, listNotification));
                     response.setKey(Constant.GET_ALL_NOTIFICATION);
                     viewModelLiveDate.setValue(response);
+
                 } else if (key.equals(Constant.MARK_READ_NOTIFICATION)) {
                     ResponseRepo<Utils.State> response = new ResponseRepo<>();
                     response.setKey(Constant.MARK_READ_NOTIFICATION);
@@ -95,8 +83,7 @@ public class NotificationViewModel extends ViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
+        Log.d(TAG, "onCleared: ");
         notificationRepository.getNotificationLiveData().removeObserver(notificationObserver);
     }
-
-
 }

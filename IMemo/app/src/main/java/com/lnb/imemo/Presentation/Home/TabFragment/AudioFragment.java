@@ -17,8 +17,20 @@ import com.lnb.imemo.R;
 import java.util.ArrayList;
 
 public class AudioFragment extends Fragment {
-    private RecyclerView memoAudioRecyclerView;
-    private ArrayList<Resource> listAudio;
+    private final ArrayList<Resource> listAudio;
+    private AudioRecyclerViewAdapter adapter;
+
+    public void clearMedia() {
+        if (adapter != null) {
+            adapter.clearMedia();
+        }
+    }
+
+    public void destroyMedia() {
+        if (adapter != null) {
+            adapter.destroyMedia();
+        }
+    }
 
     public AudioFragment(ArrayList<Resource> listAudio) {
         this.listAudio = listAudio;
@@ -28,9 +40,9 @@ public class AudioFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_audio, container, false);
-        memoAudioRecyclerView = view.findViewById(R.id.audio_recyclerView);
-        AudioRecyclerViewAdapter adapter = new AudioRecyclerViewAdapter(listAudio);
+        View view = inflater.inflate(R.layout.fragment_audio, container, false);
+        RecyclerView memoAudioRecyclerView = view.findViewById(R.id.audio_recyclerView);
+        adapter = new AudioRecyclerViewAdapter(listAudio);
         memoAudioRecyclerView.setAdapter(adapter);
         memoAudioRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         return view;

@@ -1,6 +1,8 @@
 package com.lnb.imemo.Presentation.Person;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -19,9 +21,12 @@ import com.lnb.imemo.Presentation.Login.LoginActivity;
 import com.lnb.imemo.Presentation.PersonalSetting.PersonalSettingActivity;
 import com.lnb.imemo.Presentation.TagsSetting.TagsSettingActivity;
 import com.lnb.imemo.R;
+import com.lnb.imemo.Utils.AESCrypt;
 import com.lnb.imemo.Utils.Utils;
 
 import io.reactivex.subjects.PublishSubject;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class PersonFragment extends Fragment implements View.OnClickListener {
 
@@ -76,10 +81,26 @@ public class PersonFragment extends Fragment implements View.OnClickListener {
     private void signOut() {
         mGoogleSignInClient.signOut();
         mUser.clear();
+        savePrefData();
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         getActivity().finish();
+    }
+
+
+
+    private void savePrefData() {
+        SharedPreferences pref = getActivity().getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("googleToken", null);
+        editor.putString("email", "");
+        try {
+            editor.putString("password", AESCrypt.encrypt(""));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        editor.apply();
     }
 
     private void goToPersonSetting() {
@@ -92,6 +113,7 @@ public class PersonFragment extends Fragment implements View.OnClickListener {
         startActivity(intent);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

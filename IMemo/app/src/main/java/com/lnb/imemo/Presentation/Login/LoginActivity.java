@@ -2,9 +2,9 @@ package com.lnb.imemo.Presentation.Login;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.lifecycle.Observer;
-
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -15,9 +15,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -29,10 +26,8 @@ import com.lnb.imemo.Presentation.ForgotPassword.ForgotPasswordActivity;
 import com.lnb.imemo.Presentation.NavigationActivity.NavigationActivity;
 import com.lnb.imemo.Presentation.Register.RegisterActivity;
 import com.lnb.imemo.R;
+import com.lnb.imemo.Utils.AESCrypt;
 import com.lnb.imemo.Utils.Utils;
-
-import java.net.URISyntaxException;
-
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
@@ -45,10 +40,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     int RC_SIGN_IN = 0;
     private TextInputLayout email_TextIL;
     private TextInputLayout password_TextIL;
-    private Button signIn_button;
-    private Button signInWithGoogle_button;
-    private TextView forgot_password_button;
-    private TextView register_button;
     private BlurView blurView;
 
     // var
@@ -97,19 +88,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             }
         });
-        signIn_button = findViewById(R.id.sign_in_button);
-        signInWithGoogle_button = findViewById(R.id.sign_in_with_google_button);
+        Button signIn_button = findViewById(R.id.sign_in_button);
+        Button signInWithGoogle_button = findViewById(R.id.sign_in_with_google_button);
         signIn_button.setOnClickListener(this);
         signInWithGoogle_button.setOnClickListener(this);
-        forgot_password_button = findViewById(R.id.forgot_password_button);
+        TextView forgot_password_button = findViewById(R.id.forgot_password_button);
         forgot_password_button.setOnClickListener(this);
-        register_button = findViewById(R.id.register_textview);
+        TextView register_button = findViewById(R.id.register_textview);
         register_button.setOnClickListener(this);
         blurView = findViewById(R.id.blurView);
         blurView.setVisibility(View.INVISIBLE);
 
         // register viewmodel
-        viewModel = new LoginViewModel();
+        viewModel = new LoginViewModel(this);
 
         // register observable
         subscribeLoginObservable();
@@ -145,47 +136,41 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void subscribeLoginObservable() {
-        viewModel.observableLogin().observe(this, new Observer<Utils.State>() {
-            @Override
-            public void onChanged(Utils.State state) {
-                switch (state) {
-                    case SUCCESS:
-                        Log.d(TAG, "onChanged login: success");
-                        Intent intent  = new Intent(LoginActivity.this, NavigationActivity.class);
-                        startActivity(intent);
-                        finish();
-                        clearScreen();
-                        break;
-                    case FAILURE:
-                        Log.d(TAG, "onChanged login: failure");
-                        Toast.makeText(LoginActivity.this, "Tài khoản hoặc mật khẩu không chính xác", Toast.LENGTH_SHORT).show();
-                        clearScreen();
-                        break;
-                    case NO_INTERNET:
-                        Log.d(TAG, "onChanged login: no_internet");
-                        Toast.makeText(LoginActivity.this, "Không có kết nối mạng. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
-                        clearScreen();
-                        break;
-                }
+        viewModel.observableLogin().observe(this, state -> {
+            switch (state) {
+                case SUCCESS:
+                    Log.d(TAG, "onChanged login: success");
+                    Intent intent  = new Intent(LoginActivity.this, NavigationActivity.class);
+                    startActivity(intent);
+                    finish();
+                    clearScreen();
+                    break;
+                case FAILURE:
+                    Log.d(TAG, "onChanged login: failure");
+                    Toast.makeText(LoginActivity.this, "Tài khoản hoặc mật khẩu không chính xác", Toast.LENGTH_SHORT).show();
+                    clearScreen();
+                    break;
+                case NO_INTERNET:
+                    Log.d(TAG, "onChanged login: no_internet");
+                    Toast.makeText(LoginActivity.this, "Không có kết nối mạng. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                    clearScreen();
+                    break;
             }
         });
     }
 
     private void subscribeForgotPasswordObservable() {
-        viewModel.observableForgotPasswordLiveData().observe(this, new Observer<Utils.State>() {
-            @Override
-            public void onChanged(Utils.State state) {
-                switch (state) {
-                    case SUCCESS:
-                        Log.d(TAG, "onChanged: resend pass success" );
-                        break;
-                    case FAILURE:
-                        Log.d(TAG, "onChanged: resend failure");
-                        break;
-                    case NO_INTERNET:
-                        Log.d(TAG, "onChanged: no internet");
-                        break;
-                }
+        viewModel.observableForgotPasswordLiveData().observe(this, state -> {
+            switch (state) {
+                case SUCCESS:
+                    Log.d(TAG, "onChanged: resend pass success" );
+                    break;
+                case FAILURE:
+                    Log.d(TAG, "onChanged: resend failure");
+                    break;
+                case NO_INTERNET:
+                    Log.d(TAG, "onChanged: no internet");
+                    break;
             }
         });
     }
@@ -194,6 +179,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -217,7 +203,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void signIn() {
         String email = email_TextIL.getEditText().getText().toString();
         String password = password_TextIL.getEditText().getText().toString();
-        Boolean allowSignIn = true;
+        boolean allowSignIn = true;
         if (email.equals("")) {
             email_TextIL.setError(getResources().getText(R.string.input_email_empty_error));
             email_TextIL.setErrorEnabled(true);
@@ -257,12 +243,25 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             // if login success
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             blurScreen();
+            savePrefData(account.getIdToken());
             viewModel.signInWithGoogle(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
         }
+    }
+
+
+    private void savePrefData(String googleToken) {
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        try {
+            editor.putString("googleToken", AESCrypt.encrypt(googleToken));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        editor.apply();
     }
 
     // for watch text field

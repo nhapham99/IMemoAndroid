@@ -41,7 +41,7 @@ import io.reactivex.subjects.PublishSubject;
 
 public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<NotificationRecyclerViewAdapter.NotificationReyclerViewHolder> {
     private static final String TAG = "NotificationRecyclerVie";
-    private ArrayList<Notification> listNotifications = new ArrayList<>();
+    protected ArrayList<Notification> listNotifications = new ArrayList<>();
     private Gson gson = new GsonBuilder().create();
     private Context mContext;
     private PublishSubject<Pair<Diary, String>> recyclerViewObserver;
@@ -50,24 +50,37 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
             recyclerViewObserver = PublishSubject.create();
         }
     }
+
     private PublishSubject<Pair<String, Integer>> markReadObserver;
     {
         if (markReadObserver == null) {
             markReadObserver = PublishSubject.create();
         }
     }
-    private ArrayList<Diary> listDiary = new ArrayList<>();
+
+    private final ArrayList<Diary> listDiary = new ArrayList<>();
+    private final ArrayList<PersonProfile> listPersonProfiles = new ArrayList<>();
 
 
     public NotificationRecyclerViewAdapter(ArrayList<Notification> listNotifications) {
         this.listNotifications = listNotifications;
     }
 
-    public NotificationRecyclerViewAdapter() {
-    }
-
     public void setListNotifications(ArrayList<Notification> listNotifications) {
         this.listNotifications = listNotifications;
+        for (Notification notification : listNotifications) {
+            JsonObject jsonObject = new JsonParser().parse(notification.getData()).getAsJsonObject();
+            JsonObject diaryObject = jsonObject.getAsJsonObject("diary");
+            JsonObject user = diaryObject.getAsJsonObject("user");
+            PersonProfile personProfile = gson.fromJson(user, PersonProfile.class);
+            listPersonProfiles.add(personProfile);
+            try {
+                Diary diary = gson.fromJson(diaryObject, Diary.class);
+                listDiary.add(diary);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         notifyDataSetChanged();
     }
 
@@ -82,24 +95,19 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
     @SuppressLint("CheckResult")
     @Override
     public void onBindViewHolder(@NonNull NotificationReyclerViewHolder holder, int position) {
-        JsonObject jsonObject = new JsonParser().parse(listNotifications.get(position).getData()).getAsJsonObject();
-        JsonObject diaryObject = jsonObject.getAsJsonObject("diary");
-        JsonObject user = diaryObject.getAsJsonObject("user");
-        PersonProfile personProfile = gson.fromJson(user, PersonProfile.class);
-        holder.notificationTextView.setText("Bạn được chia sẻ một memo từ " +personProfile.getName());
+        PersonProfile personProfile = listPersonProfiles.get(position);
+        holder.notificationTextView.setText("Bạn được chia sẻ một memo từ " + personProfile.getName());
+
         Glide.with(mContext)
                 .load(personProfile.getPicture())
                 .into(holder.userImage);
-        Diary diary = gson.fromJson(diaryObject, Diary.class);
-        listDiary.add(diary);
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                recyclerViewObserver.onNext(new Pair<>(listDiary.get(position), personProfile.getName()));
-                if (!listNotifications.get(position).getSeen()) {
-                    markReadObserver.onNext(new Pair<>(listNotifications.get(position).getId(), position));
-                }
+        holder.itemView.setOnClickListener(v -> {
+            Log.d(TAG, "onBindViewHolder: " + position);
+            recyclerViewObserver.onNext(new Pair<>(listDiary.get(position), listPersonProfiles.get(position).getName()));
+            if (!listNotifications.get(position).getSeen()) {
+                Log.d(TAG, "onBindViewHolder: mark seen");
+                markReadObserver.onNext(new Pair<>(listNotifications.get(position).getId(), position));
             }
         });
 
@@ -117,7 +125,7 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
 
     @Override
     public int getItemCount() {
-        return Math.min(listNotifications.size(), 30);
+        return listNotifications.size();
     }
 
 
@@ -131,19 +139,26 @@ public class NotificationRecyclerViewAdapter extends RecyclerView.Adapter<Notifi
     }
 
     public void addNotification(Notification notification) {
-        this.listNotifications.add(0, notification);
-        if (listNotifications.size() > 30) {
-            listNotifications.remove(listNotifications.size() - 1);
-        }
-        notifyItemInserted(0);
+//        this.listNotifications.add(0, notification);
+        JsonObject jsonObject = new JsonParser().parse(notification.getData()).getAsJsonObject();
+        JsonObject diaryObject = jsonObject.getAsJsonObject("diary");
+        JsonObject user = diaryObject.getAsJsonObject("user");
+        PersonProfile personProfile = gson.fromJson(user, PersonProfile.class);
+        listPersonProfiles.add(0, personProfile);
+        Diary diary = gson.fromJson(diaryObject, Diary.class);
+        listDiary.add(0, diary);
+        notifyDataSetChanged();
     }
 
     public void updateItem(int currentReadNotificationPosition) {
-        listNotifications.get(currentReadNotificationPosition).setSeen(true);
+        Log.d(TAG, "updateItem: " + currentReadNotificationPosition);
+        Notification notification = listNotifications.get(currentReadNotificationPosition);
+        notification.setSeen(true);
+        listNotifications.set(currentReadNotificationPosition, notification);
         notifyItemChanged(currentReadNotificationPosition);
     }
 
-    class NotificationReyclerViewHolder extends RecyclerView.ViewHolder {
+    static class NotificationReyclerViewHolder extends RecyclerView.ViewHolder {
         TextView notificationTextView;
         CircleImageView userImage;
         private TextView time;

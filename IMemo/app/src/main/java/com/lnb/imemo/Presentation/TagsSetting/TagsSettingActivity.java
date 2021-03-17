@@ -3,7 +3,6 @@ package com.lnb.imemo.Presentation.TagsSetting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -40,6 +39,9 @@ import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 
 import java.util.ArrayList;
 
+import io.reactivex.Observer;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 
@@ -59,11 +61,9 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
     private TagManagerRecyclerViewAdapter tagManagerAdapter;
     private TagSettingViewModel viewModel;
     private int currentPositionTagChoose = 0;
-    private PublishSubject<Pair<String, Object>> centerObserver;
+    private final PublishSubject<Pair<String, Object>> centerObserver;
     {
-        if (centerObserver == null) {
-            centerObserver = PersonFragment.getCenterObserver();
-        }
+        centerObserver = PersonFragment.getCenterObserver();
     }
 
     @Override
@@ -90,9 +90,25 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
         managerTagRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         viewModel = new TagSettingViewModel();
         viewModel.getTags();
-        tagManagerAdapter.getManagerTagOptionListener().subscribe(position -> {
-            currentPositionTagChoose = position;
-            showBottomDialog();
+        tagManagerAdapter.getManagerTagOptionListener().subscribe(new Observer<Integer>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(@NonNull Integer position) {
+                currentPositionTagChoose = position;
+                showBottomDialog();
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {}
         });
         subscribeGetAllTagsObservable();
     }
@@ -100,7 +116,7 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
     @SuppressLint("UseCompatLoadingForDrawables")
     private void showBottomDialog() {
         bottomSheetDialog = new BottomSheetDialog(this);
-        View view = LayoutInflater.from(this).inflate(R.layout.manager_tag_bottom_dialog_layout, null);
+        @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.manager_tag_bottom_dialog_layout, null);
         bottomSheetDialog.setContentView(view);
         bottomSheetDialog.setCancelable(true);
         TextView managerDefaultTag = view.findViewById(R.id.manager_tag_default);

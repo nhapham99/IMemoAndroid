@@ -6,7 +6,8 @@
     android:layout_marginBottom="@dimen/length_20dp"
     android:background="@color/white"
     android:elevation="3dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/length_10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,7 +24,8 @@
             android:fontFamily="@font/roboto_medium"
             android:text="Memo title detail here"
             android:textColor="@color/black"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:singleLine="true"/>
 
         <ImageView
             android:id="@+id/pop_down_menu"
@@ -35,6 +37,16 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/shared_by_textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/length_10dp"
+        android:layout_marginTop="@dimen/length_5dp"
+        android:fontFamily="@font/roboto_regular"
+        android:textColor="@color/memo_time_color"
+        android:textSize="@dimen/text_12sp"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/memo_time"
@@ -76,7 +88,6 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="@dimen/length_10dp"
-        android:layout_marginBottom="@dimen/length_10dp"
         android:orientation="horizontal">
 
         <ImageView

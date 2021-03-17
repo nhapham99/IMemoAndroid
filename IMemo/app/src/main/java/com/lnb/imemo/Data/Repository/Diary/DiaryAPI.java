@@ -1,6 +1,7 @@
 package com.lnb.imemo.Data.Repository.Diary;
 
 import com.google.gson.JsonObject;
+import com.lnb.imemo.Data.Repository.Model.ResultSharedDiaries;
 import com.lnb.imemo.Data.Repository.Model.ResultSharedUser;
 import com.lnb.imemo.Data.Repository.Model.SharedUser;
 import com.lnb.imemo.Data.Repository.Model.Root;
@@ -51,15 +52,15 @@ public interface DiaryAPI {
     Flowable<Root<JsonObject>> publicDiary(@Header("Authorization") String token, @Path("id") String id);
 
     @GET("diaries/share-with-me")
-    Flowable<Root<ResultDiaries>> getDiariesSharedWithMe(@Header("Authorization") String token,
-                                             @Query("q") String query,
-                                             @Query("tag") String tags,
-                                             @Query("page") int page,
-                                             @Query("pageSize") int pageSize,
-                                             @Query("fromDate") String fromDate,
-                                             @Query("toDate") String toDate,
-                                             @Query("lastId") String lastId,
-                                             @Query("pinned") Boolean pinned
+    Flowable<Root<ResultSharedDiaries>> getDiariesSharedWithMe(@Header("Authorization") String token,
+                                                               @Query("q") String query,
+                                                               @Query("tag") String tags,
+                                                               @Query("page") int page,
+                                                               @Query("pageSize") int pageSize,
+                                                               @Query("fromDate") String fromDate,
+                                                               @Query("toDate") String toDate,
+                                                               @Query("lastId") String lastId,
+                                                               @Query("pinned") Boolean pinned
     );
 
     @GET("diaries/{id}/shares")

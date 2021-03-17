@@ -44,6 +44,7 @@ public class MemoPreviewActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private ImageView popDownMenu;
     private Diary diary;
+    private final ArrayList<Fragment> listFragmentToDestroy = new ArrayList<>();
 
 
     @Override
@@ -79,12 +80,7 @@ public class MemoPreviewActivity extends AppCompatActivity {
         }
         setupDiary();
         memoAuthor.setText("Bản ghi của " + authorName);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        backButton.setOnClickListener(v -> finish());
     }
 
     private void setupDiary() {
@@ -136,7 +132,9 @@ public class MemoPreviewActivity extends AppCompatActivity {
         try {
             if (listImageAndVideo.size() != 0) {
                 listTabs.add(getResources().getText(R.string.image_and_video).toString());
-                listFragments.add(new ImageFragment(listImageAndVideo, this));
+                ImageFragment imageFragment = new ImageFragment(listImageAndVideo, this);
+                listFragmentToDestroy.add(imageFragment);
+                listFragments.add(imageFragment);
             }
 
             if (listLinks.size() != 0) {
@@ -147,7 +145,9 @@ public class MemoPreviewActivity extends AppCompatActivity {
             if (listAudio.size() != 0) {
                 listTabs.add(getResources().getText(R.string.audio).toString());
                 Log.d(TAG, "onBindViewHolder: " + listAudio.size());
-                listFragments.add(new AudioFragment(listAudio));
+                AudioFragment audioFragment = new AudioFragment(listAudio);
+                listFragmentToDestroy.add(audioFragment);
+                listFragments.add(audioFragment);
             }
         } catch (Exception e) {
             Log.d(TAG, "initViewForHomeItem: " + e.getMessage());
@@ -162,12 +162,7 @@ public class MemoPreviewActivity extends AppCompatActivity {
         adapter.setData(listTabs, listFragments);
         viewPager.setAdapter(adapter);
 
-        new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                tab.setText(listTabs.get(position));
-            }
-        }).attach();
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(listTabs.get(position))).attach();
 
     }
 
@@ -196,6 +191,18 @@ public class MemoPreviewActivity extends AppCompatActivity {
         public int getItemCount() {
             return listFragment.size();
         }
+    }
 
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy: ");
+        super.onDestroy();
+        for (Fragment fragment : listFragmentToDestroy) {
+            if (fragment instanceof ImageFragment) {
+                ((ImageFragment) fragment).destroyMedia();
+            } else if (fragment instanceof AudioFragment) {
+                ((AudioFragment) fragment).destroyMedia();
+            }
+        }
     }
 }

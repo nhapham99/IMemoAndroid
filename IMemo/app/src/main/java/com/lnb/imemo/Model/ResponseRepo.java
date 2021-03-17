@@ -2,6 +2,8 @@ package com.lnb.imemo.Model;
 
 import androidx.annotation.NonNull;
 
+import com.lnb.imemo.Utils.Utils;
+
 public class ResponseRepo<T> {
     private T data;
     private String key;
@@ -21,7 +23,7 @@ public class ResponseRepo<T> {
         return data;
     }
 
-    public void setData(@NonNull  T data) {
+    public void setData(@NonNull T data) {
         this.data = data;
     }
 

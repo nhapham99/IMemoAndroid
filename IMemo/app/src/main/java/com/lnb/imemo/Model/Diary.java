@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Diary implements Parcelable {
+public class Diary<T> implements Parcelable {
     private String id;
     private String title;
     private String content;
@@ -21,8 +21,7 @@ public class Diary implements Parcelable {
     private List<String> tagIds = new ArrayList<>();
     private Boolean isUploading;
     private Boolean pinned;
-
-
+    private T user;
 
     public Diary() {
     }
@@ -36,8 +35,12 @@ public class Diary implements Parcelable {
                  String createdAt,
                  String updatedAt,
                  ArrayList<Resource> resources,
-                 ArrayList<Tags> tags, List<Link> links,
-                 Boolean pinned) {
+                 ArrayList<Tags> tags,
+                 List<Link> links,
+                 List<String> tagIds,
+                 Boolean isUploading,
+                 Boolean pinned,
+                 T user) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -49,7 +52,10 @@ public class Diary implements Parcelable {
         this.resources = resources;
         this.tags = tags;
         this.links = links;
+        this.tagIds = tagIds;
+        this.isUploading = isUploading;
         this.pinned = pinned;
+        this.user = user;
     }
 
 
@@ -219,6 +225,14 @@ public class Diary implements Parcelable {
 
     public void setPinned(Boolean pinned) {
         this.pinned = pinned;
+    }
+
+    public T getUser() {
+        return user;
+    }
+
+    public void setUser(T user) {
+        this.user = user;
     }
 
     public void setDiary(Diary diary) {

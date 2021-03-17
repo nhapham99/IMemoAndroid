@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.lnb.imemo.Model.Resource;
@@ -29,12 +30,29 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
     private Context mContext;
     private PublishSubject<Pair<String, Object>> imageAndVideoViewPagerObservable;
     private static final String TAG = "ImageAndVideoViewPagerA";
+    private final ArrayList<Player> listPlayers = new ArrayList<>();
 
 
     public ImageAndVideoViewPagerAdapter(ArrayList<Resource> listImage) {
         this.listImage = listImage;
         if (imageAndVideoViewPagerObservable == null) {
             imageAndVideoViewPagerObservable = PublishSubject.create();
+        }
+    }
+
+    public void clearMedia() {
+        for (Player player : listPlayers) {
+            if (player.isPlaying()) {
+                player.stop();
+            }
+        }
+    }
+
+    public void destroyMedia() {
+        for (Player player : listPlayers) {
+            if (player.isPlaying()) {
+                player.release();
+            }
         }
     }
 
@@ -68,6 +86,7 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
                 }
                 holder.imageView.setVisibility(View.GONE);
                 SimpleExoPlayer player = new SimpleExoPlayer.Builder(mContext).build();
+                listPlayers.add(player);
                 holder.videoPlayer.setPlayer(player);
                 holder.videoPlayer.setOnTouchListener(new View.OnTouchListener() {
                     final GestureDetector detector = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
@@ -110,4 +129,5 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
             videoPlayer = itemView.findViewById(R.id.video_view);
         }
     }
+
 }

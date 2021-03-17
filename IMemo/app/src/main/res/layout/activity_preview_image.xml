@@ -16,9 +16,20 @@
         android:layout_width="@dimen/length_30dp"
         android:layout_height="@dimen/length_30dp"
         android:src="@drawable/ic_escape"
-        android:layout_alignParentRight="true"
         android:layout_marginRight="@dimen/length_10dp"
         android:layout_marginTop="@dimen/length_10dp"
+        app:tint="@color/white"
+        android:layout_marginLeft="@dimen/length_10dp"/>
+
+    <ImageView
+        android:id="@+id/ic_more"
+        android:layout_width="@dimen/length_30dp"
+        android:layout_height="@dimen/length_30dp"
+        android:src="@drawable/ic_union"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/length_10dp"
+        android:layout_marginTop="10dp"
+        android:padding="5dp"
         app:tint="@color/white"/>
 
 </RelativeLayout>

@@ -52,8 +52,8 @@ public class UploadViewModel extends ViewModel {
         subscribeDiaryObservable();
     }
 
-    protected void uploadFile(Uri uri) {
-        FileMetaData fileMetaData = FileMetaData.getFileMetaData(context, uri);
+    protected void uploadFile(FileMetaData fileMetaData, Uri uri) {
+        Log.d(TAG, "uploadFile: " + uri);
         try {
             FileRequestBody requestBody = new FileRequestBody(context.getContentResolver().openInputStream(uri), fileMetaData.mimeType);
             MultipartBody.Part file = MultipartBody.Part.createFormData("resource", fileMetaData.displayName, requestBody);
@@ -88,36 +88,33 @@ public class UploadViewModel extends ViewModel {
 
 
     private void subscribeUploadObservable() {
-        uploadObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                ResponseRepo<Pair<Utils.State, Object>> responseToActivity = new ResponseRepo();
-                // upload file
-                if (key.equals(Constant.UPLOAD_FILE_KEY)) {
-                    Pair<Utils.State, JsonObject> responseRepoObject = (Pair<Utils.State, JsonObject>) responseRepo.getData();
-                    Utils.State state = responseRepoObject.first;
-                    JsonObject responseJsonObject = responseRepoObject.second;
-                    switch (state) {
-                        case SUCCESS:
-                            JsonObject response = responseRepoObject.second.getAsJsonObject(Constant.RESULT);
-                            Resource resource = new Resource();
-                            resource.setType(response.get("mimetype").getAsString());
-                            resource.setName(response.get("key").getAsString());
-                            resource.setUrl(response.get("url").getAsString());
-                            responseToActivity.setData(new Pair<>(Utils.State.SUCCESS, resource));
-                            break;
-                        case FAILURE:
-                            responseToActivity.setData(new Pair<>(Utils.State.FAILURE, null));
-                            break;
-                        case NO_INTERNET:
-                            responseToActivity.setData(new Pair<>(Utils.State.NO_INTERNET, null));
-                            break;
-                    }
-                    responseToActivity.setKey(Constant.UPLOAD_FILE_KEY);
+        uploadObservable = responseRepo -> {
+            String key = responseRepo.getKey();
+            ResponseRepo<Pair<Utils.State, Object>> responseToActivity = new ResponseRepo();
+            // upload file
+            if (key.equals(Constant.UPLOAD_FILE_KEY)) {
+                Pair<Utils.State, JsonObject> responseRepoObject = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                Utils.State state = responseRepoObject.first;
+                switch (state) {
+                    case SUCCESS:
+                        Log.d(TAG, "subscribeUploadObservable: " + responseRepoObject.second.toString());
+                        JsonObject response = responseRepoObject.second.getAsJsonObject(Constant.RESULT);
+                        Resource resource = new Resource();
+                        resource.setType(response.get("mimetype").getAsString());
+                        resource.setName(response.get("key").getAsString());
+                        resource.setUrl(response.get("url").getAsString());
+                        responseToActivity.setData(new Pair<>(Utils.State.SUCCESS, resource));
+                        break;
+                    case FAILURE:
+                        responseToActivity.setData(new Pair<>(Utils.State.FAILURE, null));
+                        break;
+                    case NO_INTERNET:
+                        responseToActivity.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                        break;
                 }
-                viewModelLiveData.setValue(responseToActivity);
+                responseToActivity.setKey(Constant.UPLOAD_FILE_KEY);
             }
+            viewModelLiveData.setValue(responseToActivity);
         };
         uploadFileRepository.observableUploadFile().observeForever(uploadObservable);
     }

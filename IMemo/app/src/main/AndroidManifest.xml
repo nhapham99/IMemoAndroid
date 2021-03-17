@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.lnb.imemo">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
 
     <application
         android:allowBackup="true"
@@ -13,8 +16,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.IMemo"
-        android:usesCleartextTraffic="true">
-        <activity android:name=".Presentation.PreviewImage.PreviewImageActivity"></activity>
+        android:usesCleartextTraffic="true"
+        tools:targetApi="m">
+        <activity android:name=".Presentation.Introduce.IntroduceActivity"></activity>
+        <activity android:name=".Presentation.PreviewImage.PreviewImageActivity" />
         <activity android:name=".Presentation.Login.LoginActivity" />
         <activity android:name=".Presentation.MemoPreview.MemoPreviewActivity" />
         <activity android:name=".Presentation.ForgotPassword.ForgotPasswordActivity" />
@@ -23,11 +28,15 @@
         <activity android:name=".Presentation.PreviewLink.PreviewActivity" />
         <activity android:name=".Presentation.PickTag.PickTagsActivity" />
         <activity android:name=".Presentation.Register.RegisterActivity" />
-        <activity android:name=".Presentation.NavigationActivity.NavigationActivity" />
-        <activity android:name=".Presentation.UploadActivity.UploadActivity"
-            android:windowSoftInputMode="adjustResize"/>
         <activity
-            android:name=".Presentation.Introduce.IntroduceActivity"
+            android:name=".Presentation.NavigationActivity.NavigationActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Presentation.UploadActivity.UploadActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".Presentation.Splash.SplashActivity"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

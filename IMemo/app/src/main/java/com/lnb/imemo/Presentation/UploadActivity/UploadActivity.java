@@ -40,6 +40,7 @@ import com.lnb.imemo.Presentation.UploadActivity.Adapter.UploadRecyclerViewAdapt
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.DateHelper;
+import com.lnb.imemo.Utils.FileMetaData;
 import com.lnb.imemo.Utils.Utils;
 
 import java.text.ParseException;
@@ -55,27 +56,20 @@ import io.reactivex.functions.Consumer;
 
 public class UploadActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "UploadActivity";
-    // ui
-    private ImageButton escapeButton;
-    private LinearLayout datePicker;
     private TextView createMemoDate;
     private TextView createMemoTitle;
     private TextView createMemoContent;
     private Button createMemoButton;
-    private RecyclerView createMemoResourceRecyclerView;
     private RecyclerView createMemoTagsRecyclerView;
-    private LinearLayout uploadFile;
-    private LinearLayout uploadTags;
-    private LinearLayout uploadLinks;
-    private Calendar diaryTime = Calendar.getInstance();
+    private final Calendar diaryTime = Calendar.getInstance();
     private TagRecyclerViewAdapter tagsAdapter;
     ArrayList<Object> listObject = new ArrayList<>();
-    private CompositeDisposable disposable = new CompositeDisposable();
+    private final CompositeDisposable disposable = new CompositeDisposable();
 
     // var
-    private int GET_FILE_CODE = 1;
-    private int GET_TAGS = 2;
-    private int GET_PREVIEW_LINK = 3;
+    private final int GET_FILE_CODE = 1;
+    private final int GET_TAGS = 2;
+    private final int GET_PREVIEW_LINK = 3;
     private UploadViewModel viewModel;
     private UploadRecyclerViewAdapter resourceAdapter;
 
@@ -87,49 +81,43 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         init();
     }
 
+    @SuppressLint("SetTextI18n")
     private void init() {
         // init ui
-        escapeButton = findViewById(R.id.create_memo_escape);
+        // ui
+        ImageButton escapeButton = findViewById(R.id.create_memo_escape);
         escapeButton.setOnClickListener(this);
-        datePicker = findViewById(R.id.create_memo_date);
+        LinearLayout datePicker = findViewById(R.id.create_memo_date);
         datePicker.setOnClickListener(this);
         createMemoDate = findViewById(R.id.date_textView);
         Date currentTime = Calendar.getInstance().getTime();
-        SimpleDateFormat currentDateFormat = new SimpleDateFormat("EEEE', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat currentDateFormat = new SimpleDateFormat("EEEE', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
         String[] splitDate = currentDateFormat.format(currentTime).split(",");
         createMemoDate.setText(DateHelper.convertDate(splitDate[0]) + "," + splitDate[1]);
         createMemoTitle = findViewById(R.id.create_memo_title);
         createMemoContent = findViewById(R.id.create_memo_content);
         createMemoButton = findViewById(R.id.create_memo_button);
         createMemoButton.setOnClickListener(this);
-        createMemoResourceRecyclerView = findViewById(R.id.create_memo_resource_recyclerView);
-        uploadFile = findViewById(R.id.upload_memo_file);
+        RecyclerView createMemoResourceRecyclerView = findViewById(R.id.create_memo_resource_recyclerView);
+        LinearLayout uploadFile = findViewById(R.id.upload_memo_file);
         uploadFile.setOnClickListener(this);
-        uploadTags = findViewById(R.id.upload_memo_tag);
+        LinearLayout uploadTags = findViewById(R.id.upload_memo_tag);
         uploadTags.setOnClickListener(this);
-        uploadLinks = findViewById(R.id.upload_memo_link);
+        LinearLayout uploadLinks = findViewById(R.id.upload_memo_link);
         uploadLinks.setOnClickListener(this);
         createMemoTagsRecyclerView = findViewById(R.id.upload_memo_item_tag_list);
 
         createMemoTitle.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() == 0) {
-                    createMemoButton.setEnabled(false);
-                } else {
-                    createMemoButton.setEnabled(true);
-                }
+                createMemoButton.setEnabled(s.length() != 0);
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
 
@@ -143,8 +131,16 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
 
         if (getIntent().getStringExtra(Constant.GET_FILE_CODE) != null) {
             Uri uri = Uri.parse(getIntent().getStringExtra(Constant.GET_FILE_CODE));
-            viewModel.uploadFile(uri);
-
+            FileMetaData fileMetaData = FileMetaData.getFileMetaData(this, uri);
+            if (fileMetaData != null) {
+                Resource resource = new Resource();
+                resource.setName(fileMetaData.displayName);
+                resource.setType(fileMetaData.mimeType);
+                resource.setUploading(true);
+                resourceAdapter.addItem(resource);
+                viewModel.getUploadDiary().getResources().add(resource);
+                viewModel.uploadFile(fileMetaData, uri);
+            }
         } else if (getIntent().getParcelableArrayListExtra(Constant.GET_TAGS_CODE) != null
                 && getIntent().getStringArrayListExtra("arrayTagIds") != null) {
             tagsAdapter = new TagRecyclerViewAdapter(getIntent().getParcelableArrayListExtra(Constant.GET_TAGS_CODE));
@@ -163,12 +159,13 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             resourceAdapter.addItem(link);
         } else if (getIntent().getParcelableExtra("diary_edit") != null) {
             Diary diary = getIntent().getParcelableExtra("diary_edit");
+            assert diary != null;
             setupViewForEdit(diary);
         }
         subscribeUploadRecyclerViewObservable();
     }
 
-    private void setupViewForEdit(Diary diary) {
+    private void setupViewForEdit(Diary<String> diary) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         try {
             diaryTime.setTime(simpleDateFormat.parse(diary.getTime()));
@@ -212,69 +209,65 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             public void onNext(@NonNull Integer position) {
                 Log.d(TAG, "accept: " + position);
                 Log.d(TAG, "accept: remove" + viewModel.getUploadDiary().getResources().toString());
-                Resource resource = viewModel.getUploadDiary().getResources().get(position);
+                Resource resource = (Resource) viewModel.getUploadDiary().getResources().get(position);
                 viewModel.getUploadDiary().getResources().remove(resource);
                 resourceAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onError(@NonNull Throwable e) {
-
-            }
+            public void onError(@NonNull Throwable e) {}
 
             @Override
-            public void onComplete() {
-
-            }
+            public void onComplete() {}
         });
     }
 
     private void subscribeViewModelObservable() {
-       viewModel.getViewModelObservable().observe(this, new Observer<ResponseRepo>() {
-           @Override
-           public void onChanged(ResponseRepo responseRepo) {
-               Log.d(TAG, "onChanged: " + responseRepo.toString());
-               String key = responseRepo.getKey();
-               if (key.equals(Constant.UPLOAD_FILE_KEY)) {
-                   Pair<Utils.State, Object> response = (Pair<Utils.State, Object>) responseRepo.getData();
-                   switch (response.first) {
-                       case SUCCESS:
-                           resourceAdapter.addItem(response.second);
-                           Object object = response.second;
-                           if (object instanceof Link) {
-                               viewModel.getUploadDiary().getLinks().add((Link) object);
-                           } else if (object instanceof Resource) {
-                               viewModel.getUploadDiary().getResources().add((Resource) object);
-                               Log.d(TAG, "onChanged: " + viewModel.getUploadDiary().getResources().size());
-                           }
-                           break;
-                       case FAILURE:
-                           Toast.makeText(UploadActivity.this, "Lỗi tải file lên", Toast.LENGTH_SHORT).show();
-                           break;
-                       case NO_INTERNET:
-                           Toast.makeText(UploadActivity.this, "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
-                           break;
-                   }
-               } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
-                   Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
+       viewModel.getViewModelObservable().observe(this, responseRepo -> {
+           Log.d(TAG, "onChanged: " + responseRepo.toString());
+           String key = responseRepo.getKey();
+           if (key.equals(Constant.UPLOAD_FILE_KEY)) {
+               Pair<Utils.State, Object> response = (Pair<Utils.State, Object>) responseRepo.getData();
+               switch (response.first) {
+                   case SUCCESS:
+                       Resource resource = (Resource) viewModel.getUploadDiary().getResources().get(viewModel.getUploadDiary().getResources().size() - 1);
+                       resourceAdapter.removeItemAt(viewModel.getUploadDiary().getResources().size() - 1);
+                       viewModel.getUploadDiary().getResources().remove(resource);
+                       resourceAdapter.addItem(response.second);
+                       Object object = response.second;
+                       if (object instanceof Link) {
+                           viewModel.getUploadDiary().getLinks().add((Link) object);
+                       } else if (object instanceof Resource) {
+                           viewModel.getUploadDiary().getResources().add((Resource) object);
+                           Log.d(TAG, "onChanged: " + viewModel.getUploadDiary().getResources().size());
+                       }
+                       break;
+                   case FAILURE:
+                       Toast.makeText(UploadActivity.this, "Lỗi tải file lên", Toast.LENGTH_SHORT).show();
+                       break;
+                   case NO_INTERNET:
+                       Toast.makeText(UploadActivity.this, "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
+                       break;
+               }
+           } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
+               Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
 
-               } else if (key == Constant.UPDATE_DIARY_KEY) {
-                   Utils.State state = (Utils.State) responseRepo.getData();
-                   switch (state) {
-                       case SUCCESS:
-                           Toast.makeText(UploadActivity.this, "Cập nhật memo thành công", Toast.LENGTH_SHORT).show();
-                           Intent intent = new Intent();
-                           intent.putExtra("update_memo", viewModel.getUploadDiary());
-                           setResult(Activity.RESULT_OK, intent);
-                           finish();
-                           break;
-                       case FAILURE:
-                           Toast.makeText(UploadActivity.this, "Cập nhật memo không thành công", Toast.LENGTH_SHORT).show();
-                           break;
-                       case NO_INTERNET:
-                           Toast.makeText(UploadActivity.this, "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
-                           break;
-                   }
+           } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
+               Utils.State state = (Utils.State) responseRepo.getData();
+               switch (state) {
+                   case SUCCESS:
+                       Toast.makeText(UploadActivity.this, "Cập nhật memo thành công", Toast.LENGTH_SHORT).show();
+                       Intent intent = new Intent();
+                       intent.putExtra("update_memo", viewModel.getUploadDiary());
+                       setResult(Activity.RESULT_OK, intent);
+                       finish();
+                       break;
+                   case FAILURE:
+                       Toast.makeText(UploadActivity.this, "Cập nhật memo không thành công", Toast.LENGTH_SHORT).show();
+                       break;
+                   case NO_INTERNET:
+                       Toast.makeText(UploadActivity.this, "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
+                       break;
                }
            }
        });
@@ -295,7 +288,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
 
             @Override
             public void onNext(@NonNull Integer position) {
-                Tags tag = viewModel.getUploadDiary().getTags().get(position);
+                Tags tag = (Tags) viewModel.getUploadDiary().getTags().get(position);
                 viewModel.getUploadDiary().getTags().remove(tag);
 
             }
@@ -319,7 +312,18 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GET_FILE_CODE) {
             if (resultCode == RESULT_OK && data.getData() != null) {
-                viewModel.uploadFile(data.getData());
+                FileMetaData fileMetaData = FileMetaData.getFileMetaData(this, data.getData());
+                Resource resource = new Resource();
+                if (fileMetaData != null) {
+                    resource.setName(fileMetaData.displayName);
+                    resource.setType(fileMetaData.mimeType);
+                    resource.setUploading(true);
+                    resourceAdapter.addItem(resource);
+                    viewModel.getUploadDiary().getResources().add(resource);
+                    viewModel.uploadFile(fileMetaData, data.getData());
+                } else {
+                    Toast.makeText(this, "Lỗi tải file vui lòng thử lại sau", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Log.d(TAG, "onActivityResult: failure");
             }
@@ -415,6 +419,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
 
 
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

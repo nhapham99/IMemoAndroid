@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
+import com.lnb.imemo.Data.Repository.Model.ResultSharedDiaries;
 import com.lnb.imemo.Data.Repository.Model.ResultSharedUser;
 import com.lnb.imemo.Data.Repository.Model.SharedUser;
 import com.lnb.imemo.Data.Repository.PreviewLink.PreviewLinkRepository;
@@ -57,7 +58,6 @@ public class HomeViewModel extends ViewModel {
     public String filterTimeName = "";
     public String filterHighLight = "";
     public ArrayList<String> filterTagName = new ArrayList<>();
-    private static HomeViewModel mInstance;
     public Boolean getTotalMemoInStart = true;
     private int totalMemo;
     private int totalFilterMemo;
@@ -83,7 +83,7 @@ public class HomeViewModel extends ViewModel {
     private Boolean isUpdateForPinMemo = null;
 
 
-    private HomeViewModel() {
+    public HomeViewModel() {
         tagsRepository = new TagsRepository();
         diaryRepository = new DiaryRepository();
         previewLinkRepository = new PreviewLinkRepository();
@@ -95,23 +95,8 @@ public class HomeViewModel extends ViewModel {
         subscribeAuthObservable();
     }
 
-    public static HomeViewModel getHomeViewModel(Boolean isStart) {
-        if (mInstance == null || isStart) {
-            mInstance = new HomeViewModel();
-        }
-        return mInstance;
-    }
-
     protected void getAllTags() {
         tagsRepository.getAllTagAction(mUser.getToken());
-    }
-
-    protected void getTagById(String id) {
-        tagsRepository.getTagById(mUser.getToken(), id);
-    }
-
-    protected void getPreviewLink(String url) {
-        previewLinkRepository.getPreViewLink(url);
     }
 
     public void getSharedUser(int position) {
@@ -126,12 +111,13 @@ public class HomeViewModel extends ViewModel {
 
     protected void getDiaries(@Nullable String query,
                               @Nullable List<String> tags,
-                              @NonNull int page,
-                              @NonNull int pageSize,
+                              int page,
+                              int pageSize,
                               @Nullable String fromDate,
                               @Nullable String toDate,
                               @Nullable String lastId,
                               @Nullable Boolean pinned) {
+
         String tagIds = null;
         if (tags != null) {
             tagIds = "";
@@ -145,8 +131,8 @@ public class HomeViewModel extends ViewModel {
 
     protected void getDiariesSharedWithMe(@Nullable String query,
                               @Nullable List<String> tags,
-                              @NonNull int page,
-                              @NonNull int pageSize,
+                              int page,
+                              int pageSize,
                               @Nullable String fromDate,
                               @Nullable String toDate,
                               @Nullable String lastId,
@@ -162,7 +148,7 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.getDiariesSharedWithMe(mUser.getToken(), query, tagIds, page, pageSize, fromDate, toDate, lastId, pinned);
     }
 
-    protected void createDiary(Diary diary) {
+    protected void createDiary(Diary<String> diary) {
         diaryRepository.createDiary(mUser.getToken(), diary);
     }
 
@@ -170,13 +156,13 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.deleteDiary(mUser.getToken(), listDiary.get(diaryPosition).getId());
     }
 
-    public void publicDiary(Diary diary) {
+    public void publicDiary(Diary<String> diary) {
         isUpdateForPublic = true;
         diary.setStatus("public");
         diaryRepository.updateDiary(mUser.getToken(), diary);
     }
 
-    public void privateDiary(Diary diary) {
+    public void privateDiary(Diary<String> diary) {
         isUpdateForPublic = false;
         diary.setStatus("private");
         diaryRepository.updateDiary(mUser.getToken(), diary);
@@ -184,14 +170,14 @@ public class HomeViewModel extends ViewModel {
 
     public void pinDiary(int position) {
         isUpdateForPinMemo = true;
-        Diary diary = listDiary.get(position);
+        Diary<String> diary = listDiary.get(position);
         diary.setPinned(true);
         diaryRepository.updateDiary(mUser.getToken(), diary);
     }
 
     public void unpinDiary(int position) {
         isUpdateForPinMemo = false;
-        Diary diary = listDiary.get(position);
+        Diary<String> diary = listDiary.get(position);
         diary.setPinned(false);
         diaryRepository.updateDiary(mUser.getToken(), diary);
     }
@@ -207,15 +193,12 @@ public class HomeViewModel extends ViewModel {
     }
 
     private void subscribeAuthObservable() {
-        authObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key.equals(Constant.GET_SHARED_EMAILS)) {
-                    ResponseRepo<ArrayList<String>> response = new ResponseRepo<>();
-                    listSharedEmail = (ArrayList<String>) responseRepo.getData();
-                    sharedEmailPublishSubject.onNext(listSharedEmail);
-                }
+        authObservable = responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.GET_SHARED_EMAILS)) {
+                ResponseRepo<ArrayList<String>> response = new ResponseRepo<>();
+                listSharedEmail = (ArrayList<String>) responseRepo.getData();
+                sharedEmailPublishSubject.onNext(listSharedEmail);
             }
         };
         authRepository.observableAuthRepo().observeForever(authObservable);
@@ -248,101 +231,96 @@ public class HomeViewModel extends ViewModel {
     }
 
     private void subscribeDiary() {
-        diaryObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key.equals(Constant.GET_DIARIES_KEY)) {
-                    ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
-                    Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
-                    Pagination pagination = pair.second.getPagination();
-                    totalFilterMemo = pagination.getTotalItems();
-                    if (getTotalMemoInStart) {
-                        totalMemo = pagination.getTotalItems();
-                        getTotalMemoInStart = false;
+        diaryObservable = responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.GET_DIARIES_KEY)) {
+                ResponseRepo<Pair<Utils.State, ArrayList<Diary<String>>>> response = new ResponseRepo<>();
+                Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
+                Pagination pagination = pair.second.getPagination();
+                totalFilterMemo = pagination.getTotalItems();
+                if (getTotalMemoInStart) {
+                    totalMemo = pagination.getTotalItems();
+                    getTotalMemoInStart = false;
+                }
+                response.setData(new Pair<>(pair.first, (ArrayList<Diary<String>>) pair.second.getDiaries()));
+                response.setKey(Constant.GET_DIARIES_KEY);
+                viewModelLiveData.setValue(response);
+            } else if (key.equals(Constant.DELETE_DIARY_KEY)) {
+                deleteDiaryLiveData.setValue((Utils.State) responseRepo.getData());
+            } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
+                Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                ResponseRepo<Pair<Utils.State, Diary<String>>> response = new ResponseRepo<>();
+                switch (pair.first) {
+                    case SUCCESS:
+                        Log.d(TAG, "onChanged: " + pair.second.toString());
+                        String id = pair.second.get("id").getAsString();
+                        isGetDairyForCreate = true;
+                        getDiaryById(id);
+                        break;
+                    case FAILURE:
+                        response.setData(new Pair<>(Utils.State.FAILURE, null));
+                        response.setKey(Constant.CREATE_DIARY_KEY);
+                        viewModelLiveData.setValue(response);
+                        break;
+                    case NO_INTERNET:
+                        response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                        response.setKey(Constant.CREATE_DIARY_KEY);
+                        viewModelLiveData.setValue(response);
+                        break;
+                }
+            } else if (key.equals(Constant.GET_DIARY_BY_ID_KEY)) {
+                Pair<Utils.State, Diary<PersonProfile>> pair = (Pair<Utils.State, Diary<PersonProfile>>) responseRepo.getData();
+                ResponseRepo<Pair<Utils.State, Diary<PersonProfile>>> response = new ResponseRepo<>();
+                response.setKey(Constant.GET_DIARY_BY_ID_KEY);
+                if (pair.first == Utils.State.SUCCESS) {
+                    isGetDairyForCreate = false;
+                    response.setKey(Constant.CREATE_DIARY_KEY);
+                }
+                response.setData(pair);
+                viewModelLiveData.setValue(response);
+            } else if (key.equals(Constant.SHARE_DIARY)) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                response.setData(state);
+                response.setKey(Constant.SHARE_DIARY);
+                viewModelLiveData.setValue(response);
+            } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
+                Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                if (isUpdateForPublic != null) {
+                    if (isUpdateForPublic) {
+                        response.setKey("public_diary");
+                    } else {
+                        response.setKey("private_diary");
                     }
-                    response.setData(new Pair<>(pair.first, (ArrayList<Diary>) pair.second.getDiaries()));
-                    response.setKey(Constant.GET_DIARIES_KEY);
-                    viewModelLiveData.setValue(response);
-                } else if (key.equals(Constant.DELETE_DIARY_KEY)) {
-                    deleteDiaryLiveData.setValue((Utils.State) responseRepo.getData());
-                } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
-                    Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
-                    ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
-                    switch (pair.first) {
-                        case SUCCESS:
-                            Log.d(TAG, "onChanged: " + pair.second.toString());
-                            String id = pair.second.get("id").getAsString();
-                            isGetDairyForCreate = true;
-                            getDiaryById(id);
-                            break;
-                        case FAILURE:
-                            response.setData(new Pair<>(Utils.State.FAILURE, null));
-                            response.setKey(Constant.CREATE_DIARY_KEY);
-                            viewModelLiveData.setValue(response);
-                            break;
-                        case NO_INTERNET:
-                            response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
-                            response.setKey(Constant.CREATE_DIARY_KEY);
-                            viewModelLiveData.setValue(response);
-                            break;
-                    }
-                } else if (key.equals(Constant.GET_DIARY_BY_ID_KEY)) {
-                    Pair<Utils.State, Diary> pair = (Pair<Utils.State, Diary>) responseRepo.getData();
-                    ResponseRepo<Pair<Utils.State, Diary>> response = new ResponseRepo<>();
-                    response.setKey(Constant.GET_DIARY_BY_ID_KEY);
-                    switch (pair.first) {
-                        case SUCCESS:
-                            isGetDairyForCreate = false;
-                            response.setKey(Constant.CREATE_DIARY_KEY);
-                            break;
-                    }
-                    response.setData(pair);
-                    viewModelLiveData.setValue(response);
-                } else if (key.equals(Constant.SHARE_DIARY)) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    ResponseRepo<Utils.State> response = new ResponseRepo<>();
-                    response.setData(state);
-                    response.setKey(Constant.SHARE_DIARY);
-                    viewModelLiveData.setValue(response);
-                } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
-                    Pair<Utils.State, JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
-                    ResponseRepo<Utils.State> response = new ResponseRepo<>();
-                    if (isUpdateForPublic != null) {
-                        if (isUpdateForPublic) {
-                            response.setKey("public_diary");
-                        } else {
-                            response.setKey("private_diary");
-                        }
-                    }
+                }
 
-                    if (isUpdateForPinMemo != null) {
-                        if (isUpdateForPinMemo) {
-                            response.setKey("pin_diary");
-                        } else {
-                            response.setKey("unpin_diary");
-                        }
+                if (isUpdateForPinMemo != null) {
+                    if (isUpdateForPinMemo) {
+                        response.setKey("pin_diary");
+                    } else {
+                        response.setKey("unpin_diary");
                     }
-                    response.setData(pair.first);
-                    viewModelLiveData.setValue(response);
-                } else if (key.equals(Constant.GET_DIARIES_SHARED_WITH_ME)) {
-                    Log.d(TAG, "onChanged: get toatal memo " + getTotalMemoInStart);
-                    ResponseRepo<Pair<Utils.State, ArrayList<Diary>>> response = new ResponseRepo<>();
-                    Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
-                    Pagination pagination = pair.second.getPagination();
-                    totalFilterMemo = pagination.getTotalItems();
-                    if (getTotalMemoInStart) {
-                        totalMemo = pagination.getTotalItems();
-                        getTotalMemoInStart = false;
-                    }
-                    response.setData(new Pair<>(pair.first, (ArrayList<Diary>) pair.second.getDiaries()));
-                    response.setKey(Constant.GET_DIARIES_SHARED_WITH_ME);
-                    viewModelLiveData.setValue(response);
-                } else if (key.equals(Constant.GET_SHARED_USERS)) {
-                    Pair<Utils.State, List<SharedUser>> pair = (Pair<Utils.State, List<SharedUser>>) responseRepo.getData();
-                    if (pair.first == Utils.State.SUCCESS) {
-                        sharedUserPublishSubject.onNext(pair.second);
-                    }
+                }
+                response.setData(pair.first);
+                viewModelLiveData.setValue(response);
+            } else if (key.equals(Constant.GET_DIARIES_SHARED_WITH_ME)) {
+                Log.d(TAG, "onChanged: get toatal memo " + getTotalMemoInStart);
+                ResponseRepo<Pair<Utils.State, ArrayList<Diary<PersonProfile>>>> response = new ResponseRepo<>();
+                Pair<Utils.State, ResultSharedDiaries> pair = (Pair<Utils.State, ResultSharedDiaries>) responseRepo.getData();
+                Pagination pagination = pair.second.getPagination();
+                totalFilterMemo = pagination.getTotalItems();
+                if (getTotalMemoInStart) {
+                    totalMemo = pagination.getTotalItems();
+                    getTotalMemoInStart = false;
+                }
+                response.setData(new Pair<>(pair.first, (ArrayList<Diary<PersonProfile>>) pair.second.getDiaries()));
+                response.setKey(Constant.GET_DIARIES_SHARED_WITH_ME);
+                viewModelLiveData.setValue(response);
+            } else if (key.equals(Constant.GET_SHARED_USERS)) {
+                Pair<Utils.State, List<SharedUser>> pair = (Pair<Utils.State, List<SharedUser>>) responseRepo.getData();
+                if (pair.first == Utils.State.SUCCESS) {
+                    sharedUserPublishSubject.onNext(pair.second);
                 }
             }
         };
@@ -397,6 +375,5 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.observableDiaryRepo().removeObserver(diaryObservable);
         authRepository.observableAuthRepo().removeObserver(authObservable);
     }
-
 
 }

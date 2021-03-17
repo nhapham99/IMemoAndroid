@@ -2,26 +2,27 @@ package com.lnb.imemo.Data.Repository.Model;
 
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Pagination;
+import com.lnb.imemo.Model.PersonProfile;
 
 import java.util.List;
 
-public class ResultDiaries {
-    public List<Diary<String>> diaries;
+public class ResultSharedDiaries {
+    public List<Diary<PersonProfile>> diaries;
     public Pagination pagination;
 
-    public ResultDiaries(List<Diary<String>> diaries, Pagination pagination) {
+    public ResultSharedDiaries(List<Diary<PersonProfile>> diaries, Pagination pagination) {
         this.diaries = diaries;
         this.pagination = pagination;
     }
 
-    public ResultDiaries() {
+    public ResultSharedDiaries() {
     }
 
-    public List<Diary<String>> getDiaries() {
+    public List<Diary<PersonProfile>> getDiaries() {
         return diaries;
     }
 
-    public void setDiaries(List<Diary<String>> diaries) {
+    public void setDiaries(List<Diary<PersonProfile>> diaries) {
         this.diaries = diaries;
     }
 

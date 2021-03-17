@@ -6,8 +6,10 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.Observer;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -40,17 +42,14 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
     // ui
     private static final String TAG = "PersonalSettingActivity";
     private CircleImageView user_avatar;
-    private TextView change_avatar_button;
     private TextInputLayout user_email;
     private TextInputLayout user_account_name;
     private TextInputLayout user_username;
     private RadioGroup genderRadioGroup;
     private TextView user_dateOfBirth;
-    private Button user_saveProfileButton;
     private RadioButton maleRadioButton;
     private RadioButton femaleRadioButton;
     private RadioButton unknownRadioButton;
-    private ImageButton backButton;
     private SwipeRefreshLayout swipeRefreshLayout;
 
     // var
@@ -68,17 +67,17 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
 
     private void init() {
         user_avatar = findViewById(R.id.user_avatar);
-        change_avatar_button = findViewById(R.id.change_avatar_button);
+        TextView change_avatar_button = findViewById(R.id.change_avatar_button);
         user_email = findViewById(R.id.email_textfield);
         user_account_name = findViewById(R.id.account_name_textfield);
         user_username = findViewById(R.id.username_textfield);
         genderRadioGroup = findViewById(R.id.gender_radioGroup);
         user_dateOfBirth = findViewById(R.id.date_of_birth_textInputLayout);
-        user_saveProfileButton = findViewById(R.id.save_profile_button);
+        Button user_saveProfileButton = findViewById(R.id.save_profile_button);
         maleRadioButton = findViewById(R.id.gender_male_radioButton);
         femaleRadioButton = findViewById(R.id.gender_female_radioButton);
         unknownRadioButton = findViewById(R.id.gender_unknown_Radiobutton);
-        backButton = findViewById(R.id.back_button);
+        ImageButton backButton = findViewById(R.id.back_button);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -99,51 +98,48 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
     }
 
     private void personalSettingObservable() {
-        viewModel.getPersonalSettingObservable().observe(this, new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key == Constant.GET_PERSON_PROFILE) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    switch (state) {
-                        case SUCCESS:
-                            swipeRefreshLayout.setRefreshing(false);
-                            updateUI();
-                            break;
-                        case FAILURE:
-                            Toast.makeText(PersonalSettingActivity.this, "Lấy dữ liệu lỗi", Toast.LENGTH_SHORT).show();
-                            break;
-                        case NO_INTERNET:
-                            Toast.makeText(PersonalSettingActivity.this, "Lỗi kết nối internet. Xin vùi lòng kiểm tra lại.", Toast.LENGTH_SHORT).show();
-                    }
-                } else if (key == Constant.UPDATE_PERSON_PROFILE) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    switch (state) {
-                        case SUCCESS:
-                            Toast.makeText(PersonalSettingActivity.this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                            break;
-                        case FAILURE:
-                            Toast.makeText(PersonalSettingActivity.this, "Cập nhật dữ liệu lỗi", Toast.LENGTH_SHORT).show();
-                            break;
-                        case NO_INTERNET:
-                            Toast.makeText(PersonalSettingActivity.this, "Lỗi kết nối internet. Xin vùi lòng kiểm tra lại.", Toast.LENGTH_SHORT).show();
-                    }
-                } else if (key == Constant.UPDATE_IMAGE_PERSON_PROFILE) {
-                    Utils.State state = (Utils.State) responseRepo.getData();
-                    switch (state) {
-                        case SUCCESS:
-                            Toast.makeText(PersonalSettingActivity.this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                            Glide.with(PersonalSettingActivity.this).load(viewModel.personProfile.getPicture()).into(user_avatar);
-                            break;
-                        case FAILURE:
-                            Toast.makeText(PersonalSettingActivity.this, "Cập nhật dữ liệu lỗi", Toast.LENGTH_SHORT).show();
-                            break;
-                        case NO_INTERNET:
-                            Toast.makeText(PersonalSettingActivity.this, "Lỗi kết nối internet. Xin vùi lòng kiểm tra lại.", Toast.LENGTH_SHORT).show();
-                    }
+        viewModel.getPersonalSettingObservable().observe(this, responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.GET_PERSON_PROFILE)) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        swipeRefreshLayout.setRefreshing(false);
+                        updateUI();
+                        break;
+                    case FAILURE:
+                        Toast.makeText(PersonalSettingActivity.this, "Lấy dữ liệu lỗi", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        Toast.makeText(PersonalSettingActivity.this, "Lỗi kết nối internet. Xin vùi lòng kiểm tra lại.", Toast.LENGTH_SHORT).show();
                 }
-
+            } else if (key.equals(Constant.UPDATE_PERSON_PROFILE)) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        Toast.makeText(PersonalSettingActivity.this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                        break;
+                    case FAILURE:
+                        Toast.makeText(PersonalSettingActivity.this, "Cập nhật dữ liệu lỗi", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        Toast.makeText(PersonalSettingActivity.this, "Lỗi kết nối internet. Xin vùi lòng kiểm tra lại.", Toast.LENGTH_SHORT).show();
+                }
+            } else if (key.equals(Constant.UPDATE_IMAGE_PERSON_PROFILE)) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        Toast.makeText(PersonalSettingActivity.this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                        Glide.with(PersonalSettingActivity.this).load(viewModel.personProfile.getPicture()).into(user_avatar);
+                        break;
+                    case FAILURE:
+                        Toast.makeText(PersonalSettingActivity.this, "Cập nhật dữ liệu lỗi", Toast.LENGTH_SHORT).show();
+                        break;
+                    case NO_INTERNET:
+                        Toast.makeText(PersonalSettingActivity.this, "Lỗi kết nối internet. Xin vùi lòng kiểm tra lại.", Toast.LENGTH_SHORT).show();
+                }
             }
+
         });
     }
 
@@ -151,7 +147,7 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
         viewModel.getUploadLiveData().observe(this, new Observer<ResponseRepo<Pair<Utils.State, String>>>() {
             @Override
             public void onChanged(ResponseRepo<Pair<Utils.State, String>> responseRepo) {
-                if (responseRepo.getKey() == Constant.UPLOAD_FILE_KEY) {
+                if (responseRepo.getKey().equals(Constant.UPLOAD_FILE_KEY)) {
                     Pair<Utils.State, String> response = responseRepo.getData();
                     switch (response.first) {
                         case SUCCESS:
@@ -169,6 +165,7 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
         });
     }
     
+    @SuppressLint("NonConstantResourceId")
     private void updateUI() {
         PersonProfile personProfile = viewModel.personProfile;
         if (personProfile.getPicture() != null) {
@@ -191,20 +188,17 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
             }
         }
 
-        genderRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.gender_male_radioButton:
-                        viewModel.newPersonProfile.setGender("MALE");
-                        break;
-                    case R.id.gender_female_radioButton:
-                        viewModel.newPersonProfile.setGender("FEMALE");
-                        break;
-                    case R.id.gender_unknown_Radiobutton:
-                        viewModel.newPersonProfile.setGender("UNKNOWN");
-                        break;
-                }
+        genderRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.gender_male_radioButton:
+                    viewModel.newPersonProfile.setGender("MALE");
+                    break;
+                case R.id.gender_female_radioButton:
+                    viewModel.newPersonProfile.setGender("FEMALE");
+                    break;
+                case R.id.gender_unknown_Radiobutton:
+                    viewModel.newPersonProfile.setGender("UNKNOWN");
+                    break;
             }
         });
         Date dateTime = null;
@@ -256,6 +250,7 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void updatePersonProfile() {
         viewModel.newPersonProfile.setEmail(user_email.getEditText().getText().toString());
         viewModel.newPersonProfile.setName(user_username.getEditText().getText().toString());
@@ -279,6 +274,14 @@ public class PersonalSettingActivity extends AppCompatActivity implements View.O
         viewModel.updatePersonProfile();
     }
 
+    private void savePrefData(String googleToken) {
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("googleToken", googleToken);
+        editor.apply();
+    }
+
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

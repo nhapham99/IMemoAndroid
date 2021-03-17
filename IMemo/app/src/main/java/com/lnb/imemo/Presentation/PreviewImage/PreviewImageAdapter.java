@@ -1,10 +1,17 @@
 package com.lnb.imemo.Presentation.PreviewImage;
 
+import android.annotation.SuppressLint;
+import android.app.DownloadManager;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,21 +21,30 @@ import com.github.chrisbanes.photoview.PhotoView;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
-import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.util.ArrayList;
 
 public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapter.PreviewImageViewHolder> {
 
-    private ArrayList<Resource> listResource;
+    private final ArrayList<Resource> listResource;
     private Context mContext;
+    private SimpleExoPlayer player;
+    private final PreviewImageActivity activity;
 
-    public PreviewImageAdapter(ArrayList<Resource> listResource) {
+    public PreviewImageAdapter(ArrayList<Resource> listResource, PreviewImageActivity activity) {
         this.listResource = listResource;
+        this.activity = activity;
+    }
+
+    public void destroyMedia() {
+        if (player != null && player.isPlaying()) {
+            player.release();
+        }
     }
 
     @NonNull
@@ -48,16 +64,60 @@ public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapte
                 imageUrl = Utils.storeUrl + imageUrl;
             }
             Glide.with(mContext).load(imageUrl).into(holder.imageView);
+            holder.imageView.setOnLongClickListener(v -> {
+                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(mContext);
+                @SuppressLint("InflateParams") View view = LayoutInflater.from(mContext).inflate(R.layout.preview_image_bottom_dialog, null);
+                TextView saveImageToDevice = view.findViewById(R.id.save_to_device);
+                saveImageToDevice.setOnClickListener(v1 -> {
+                    startDownloadFile(position);
+                    bottomSheetDialog.dismiss();
+                });
+                bottomSheetDialog.setContentView(view);
+                bottomSheetDialog.show();
+                return false;
+            });
         } else if (resource.getType().contains(Constant.videoType)){
             String videoUrl = resource.getUrl();
             if (!videoUrl.contains("https")) {
                 videoUrl = Utils.storeUrl + videoUrl;
             }
-            SimpleExoPlayer player = new SimpleExoPlayer.Builder(mContext).build();
+
+            player = new SimpleExoPlayer.Builder(mContext).build();
             MediaItem mediaItem = MediaItem.fromUri(videoUrl);
             player.setMediaItem(mediaItem);
+            player.prepare();
             holder.playerView.setPlayer(player);
+
+            holder.playerView.setOnLongClickListener(v -> {
+                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(mContext);
+                @SuppressLint("InflateParams") View view = LayoutInflater.from(mContext).inflate(R.layout.preview_image_bottom_dialog, null);
+                TextView saveImageToDevice = view.findViewById(R.id.save_to_device);
+                saveImageToDevice.setOnClickListener(v1 -> {
+                    startDownloadFile(position);
+                    bottomSheetDialog.dismiss();
+                });
+                bottomSheetDialog.setContentView(view);
+                bottomSheetDialog.show();
+                return false;
+            });
         }
+    }
+
+    private void startDownloadFile(int position) {
+        String url = listResource.get(position).getUrl();
+        if (!url.contains("https")) {
+            url = Utils.storeUrl + url;
+        }
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
+        request.setTitle(listResource.get(position).getName());
+        request.setDescription("Downloading " + listResource.get(position).getName());
+        request.allowScanningByMediaScanner();
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "" + listResource.get(position).getName());
+        DownloadManager downloadManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+        assert downloadManager != null;
+        downloadManager.enqueue(request);
     }
 
     @Override
@@ -65,7 +125,7 @@ public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapte
         return listResource.size();
     }
 
-    class PreviewImageViewHolder extends RecyclerView.ViewHolder {
+    static class PreviewImageViewHolder extends RecyclerView.ViewHolder {
         PhotoView imageView;
         PlayerView playerView;
         View blackLayout;

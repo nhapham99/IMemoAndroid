@@ -28,17 +28,13 @@ import retrofit2.Retrofit;
 
 public class AuthRepository {
     private static final String TAG = "AuthRepository";
-    private Retrofit retrofit;
-    private AuthApi authAPI;
-    private MediatorLiveData<ResponseRepo> authRepoLiveData;
-    private Gson gsonBuilder;
-
+    private final AuthApi authAPI;
+    private final MediatorLiveData<ResponseRepo> authRepoLiveData;
 
     public AuthRepository() {
-        retrofit = APIClient.getInstance();
+        Retrofit retrofit = APIClient.getInstance();
         authAPI = retrofit.create(AuthApi.class);
         authRepoLiveData = new MediatorLiveData<>();
-        gsonBuilder = new GsonBuilder().create();
     }
 
     public void getTokenFromGoogleToken(String ggToken) {
@@ -46,21 +42,18 @@ public class AuthRepository {
         body.addProperty(Constant.ID_TOKEN, ggToken);
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
                 authAPI.getTokenFromGoogleToken(body)
-                        .onErrorReturn(new Function<Throwable, JsonObject>() {
-                            @Override
-                            public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                throwable.printStackTrace();
-                                String message = throwable.getMessage();
-                                JsonObject jsonObject = new JsonObject();
-                                if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, 409);
-                                } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -1);
-                                } else {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -2);
-                                }
-                                return jsonObject;
+                        .onErrorReturn(throwable -> {
+                            throwable.printStackTrace();
+                            String message = throwable.getMessage();
+                            JsonObject jsonObject = new JsonObject();
+                            if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                jsonObject.addProperty(Constant.STATUS_CODE, 409);
+                            } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                jsonObject.addProperty(Constant.STATUS_CODE, -1);
+                            } else {
+                                jsonObject.addProperty(Constant.STATUS_CODE, -2);
                             }
+                            return jsonObject;
                         })
                         .subscribeOn(Schedulers.io())
         );
@@ -94,20 +87,17 @@ public class AuthRepository {
 
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
                 authAPI.register(body)
-                        .onErrorReturn(new Function<Throwable, JsonObject>() {
-                            @Override
-                            public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                String message = throwable.getMessage();
-                                JsonObject jsonObject = new JsonObject();
-                                if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, 409);
-                                } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -1);
-                                } else {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -2);
-                                }
-                                return jsonObject;
+                        .onErrorReturn(throwable -> {
+                            String message = throwable.getMessage();
+                            JsonObject jsonObject = new JsonObject();
+                            if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                jsonObject.addProperty(Constant.STATUS_CODE, 409);
+                            } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                jsonObject.addProperty(Constant.STATUS_CODE, -1);
+                            } else {
+                                jsonObject.addProperty(Constant.STATUS_CODE, -2);
                             }
+                            return jsonObject;
                         })
                         .subscribeOn(Schedulers.io())
         );
@@ -138,20 +128,17 @@ public class AuthRepository {
 
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
                 authAPI.login(body)
-                        .onErrorReturn(new Function<Throwable, JsonObject>() {
-                            @Override
-                            public JsonObject apply(@NonNull Throwable throwable) throws Exception {
-                                String message = throwable.getMessage();
-                                JsonObject jsonObject = new JsonObject();
-                                if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, 409);
-                                } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -1);
-                                } else {
-                                    jsonObject.addProperty(Constant.STATUS_CODE, -2);
-                                }
-                                return jsonObject;
+                        .onErrorReturn(throwable -> {
+                            String message = throwable.getMessage();
+                            JsonObject jsonObject = new JsonObject();
+                            if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                jsonObject.addProperty(Constant.STATUS_CODE, 409);
+                            } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                jsonObject.addProperty(Constant.STATUS_CODE, -1);
+                            } else {
+                                jsonObject.addProperty(Constant.STATUS_CODE, -2);
                             }
+                            return jsonObject;
                         })
                         .subscribeOn(Schedulers.io())
         );
@@ -163,7 +150,8 @@ public class AuthRepository {
                 String token = jsonObject.getAsJsonObject(Constant.RESULT)
                         .get(Constant.TOKEN)
                         .toString();
-                response.setData(new Pair<>(Utils.State.SUCCESS, token));
+                String tokenSub = "Bearer " + token.substring(1, token.length() - 1);
+                response.setData(new Pair<>(Utils.State.SUCCESS, tokenSub));
             } else if (statusCode == -1) {
                 response.setData(new Pair<>(Utils.State.NO_INTERNET, ""));
             } else {

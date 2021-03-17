@@ -17,9 +17,7 @@ import com.lnb.imemo.R;
 import java.util.ArrayList;
 
 public class FileFragment extends Fragment {
-    private RecyclerView fileRecyclerView;
-    private FileRecyclerViewAdapter fileAdapter;
-    private ArrayList<Resource> listFile = new ArrayList<>();
+    private final ArrayList<Resource> listFile;
     public FileFragment(ArrayList<Resource> listFile) {
         this.listFile = listFile;
     }
@@ -34,8 +32,8 @@ public class FileFragment extends Fragment {
     }
 
     private void init(View view) {
-        fileRecyclerView = view.findViewById(R.id.file_recyclerView);
-        fileAdapter = new FileRecyclerViewAdapter(listFile);
+        RecyclerView fileRecyclerView = view.findViewById(R.id.file_recyclerView);
+        FileRecyclerViewAdapter fileAdapter = new FileRecyclerViewAdapter(listFile);
         fileRecyclerView.setAdapter(fileAdapter);
         fileRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
     }

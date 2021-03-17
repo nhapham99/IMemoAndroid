@@ -44,23 +44,15 @@ import io.reactivex.subjects.PublishSubject;
 
 public class NavigationActivity extends AppCompatActivity {
     private static final String TAG = "NavigationActivity";
-    private PublishSubject<Pair<String, Object>> centerObservable;
-    {
-        if (centerObservable == null) {
-            centerObservable = PublishSubject.create();
-        }
-    }
-
-
+    private final PublishSubject<Pair<String, Object>> centerObservable = PublishSubject.create();
     private BottomNavigationView bottomNavigationView;
-    private Fragment homeFragment = HomeFragment.getHomeFragment(true, centerObservable);
-    private Fragment mailFragment = MailFragment.getMailFragment();
-    private PersonFragment personFragment = PersonFragment.getPersonFragment(centerObservable);
-    private Gson gsonBuilder = new GsonBuilder().create();
-    private NavigationViewModel viewModel = new NavigationViewModel();
+    private final Fragment homeFragment = new HomeFragment(centerObservable);
+    private final Fragment mailFragment = MailFragment.getMailFragment();
+    private final PersonFragment personFragment = PersonFragment.getPersonFragment(centerObservable);
+    private final Gson gsonBuilder = new GsonBuilder().create();
+    private final NavigationViewModel viewModel = new NavigationViewModel();
     private int totalNotSeen = 0;
     private Fragment currentFragment;
-    private Boolean setupStart = true;
     private PublishSubject<Pair<String, Notification>> notificationObservable;
     {
         if (notificationObservable == null) {
@@ -73,18 +65,24 @@ public class NavigationActivity extends AppCompatActivity {
             disposable = new CompositeDisposable();
         }
     }
-    private Fragment notificationFragment = NotificationFragment.getNotificationFragment(true, notificationObservable, centerObservable);
+    private final Fragment notificationFragment = new NotificationFragment(notificationObservable, centerObservable);
 
 
 
     public static Socket mSocket;
     {
         try {
-            mSocket = IO.socket(Utils.baseUrls);
+            if (mSocket == null) {
+                mSocket = IO.socket(Utils.baseUrls);
+            }
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
 
+    }
+    private final FragmentManager fragmentManager = getSupportFragmentManager();
+    {
+        Log.d(TAG, "instance initializer: ");
     }
 
     @Override
@@ -99,31 +97,29 @@ public class NavigationActivity extends AppCompatActivity {
         mSocket.connect();
         mSocket.emit("user-join", PersonProfile.getInstance().getId());
         mSocket.on("push-noti", onNewNotification);
+
     }
 
     private void subscribeViewModelObservable() {
-        viewModel.getViewModelLiveDate().observe(this, new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key.equals(Constant.GET_ALL_NOTIFICATION_FOR_COUNT)) {
-                    Pair<Utils.State, Integer> pair = (Pair<Utils.State, Integer>) responseRepo.getData();
-                    switch (pair.first) {
-                        case SUCCESS:
-                            totalNotSeen = pair.second;
-                            if (totalNotSeen != 0) {
-                                BadgeDrawable badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.notification);
-                                badgeDrawable.setVisible(true);
-                                badgeDrawable.setBackgroundColor(Color.parseColor("#E22A49"));
-                                badgeDrawable.setMaxCharacterCount(2);
-                                badgeDrawable.setNumber(totalNotSeen);
-                            }
-                            break;
-                        case FAILURE:
-                            break;
-                        case NO_INTERNET:
-                            break;
-                    }
+        viewModel.getViewModelLiveDate().observe(this, responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.GET_ALL_NOTIFICATION_FOR_COUNT)) {
+                Pair<Utils.State, Integer> pair = (Pair<Utils.State, Integer>) responseRepo.getData();
+                switch (pair.first) {
+                    case SUCCESS:
+                        totalNotSeen = pair.second;
+                        if (totalNotSeen != 0) {
+                            BadgeDrawable badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.notification);
+                            badgeDrawable.setVisible(true);
+                            badgeDrawable.setBackgroundColor(Color.parseColor("#E22A49"));
+                            badgeDrawable.setMaxCharacterCount(2);
+                            badgeDrawable.setNumber(totalNotSeen);
+                        }
+                        break;
+                    case FAILURE:
+                        break;
+                    case NO_INTERNET:
+                        break;
                 }
             }
         });
@@ -170,66 +166,89 @@ public class NavigationActivity extends AppCompatActivity {
         super.onBackPressed();
         if (!(currentFragment instanceof HomeFragment)) {
             bottomNavigationView.setSelectedItemId(R.id.home);
+            for (int i = fragmentManager.getBackStackEntryCount(); i >= 1; i--) {
+                fragmentManager.popBackStack(String.valueOf(i), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            }
+            loadFragment(homeFragment);
             currentFragment = homeFragment;
         } else {
             finish();
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void init() {
-        loadFragment(homeFragment);
+        fragmentManager.beginTransaction().add(R.id.fragment_container, personFragment,  "3").hide(personFragment).commit();
+        fragmentManager.popBackStack();
+        fragmentManager.beginTransaction().add(R.id.fragment_container, notificationFragment,  "2").hide(notificationFragment).commit();
+        fragmentManager.popBackStack();
+        fragmentManager.beginTransaction().add(R.id.fragment_container, homeFragment, "1").addToBackStack("root").commit();
         currentFragment = homeFragment;
+
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @SuppressLint("NonConstantResourceId")
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.home:
-                        if (!(currentFragment instanceof HomeFragment)) {
-                            loadFragment(homeFragment);
-                        } else {
-                            centerObservable.onNext(new Pair<>("on_top_home_recyclerView", true));
-                        }
-                        return true;
-//                    case R.id.mail:
-//                        loadFragment(mailFragment);
-//                        return true;
-                    case R.id.notification:
-                        if (!(currentFragment instanceof NotificationFragment)) {
-                            loadFragment(notificationFragment);
-                        }
-                        return true;
-                    case R.id.person:
-                        if (!(currentFragment instanceof PersonFragment)) {
-                            loadFragment(personFragment);
-                        }
-                        return true;
-                }
-                return false;
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.home:
+                    if (!(currentFragment instanceof HomeFragment)) {
+                       loadFragment(homeFragment);
+                    } else {
+                        centerObservable.onNext(new Pair<>("on_top_home_recyclerView", true));
+                    }
+                    return true;
+                case R.id.notification:
+                    if (!(currentFragment instanceof NotificationFragment)) {
+                        loadFragment(notificationFragment);
+                    }
+                    return true;
+                case R.id.person:
+                    if (!(currentFragment instanceof PersonFragment)) {
+                        loadFragment(personFragment);
+                    }
+                    return true;
             }
+            return false;
         });
+    }
+
+    private void loadFragment(Fragment fragment) {
+        Log.d(TAG, "loadFragment: " + fragment.getTag());
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Log.d(TAG, "loadFragment: " + positionOfFragment(fragment));
+        Log.d(TAG, "loadFragment: " + positionOfFragment(currentFragment));
+        if (positionOfFragment(currentFragment) < positionOfFragment(fragment)) {
+            Log.d(TAG, "loadFragment: right");
+            transaction.setCustomAnimations(R.anim.tab_right_in, R.anim.tab_right_out);
+        } else {
+            Log.d(TAG, "loadFragment: left");
+            transaction.setCustomAnimations(R.anim.tab_left_in, R.anim.tab_left_out);
+        }
+
+        transaction.addToBackStack(String.valueOf(fragmentManager.getBackStackEntryCount()));
+
+        if (currentFragment instanceof HomeFragment) {
+            centerObservable.onNext(new Pair<>("clear_home_fragment", null));
+        } else if (currentFragment instanceof NotificationFragment) {
+             centerObservable.onNext(new Pair<>("clear_notification_fragment", null));
+         }
+        transaction.hide(currentFragment).show(fragment).commit();
+        Log.d(TAG, "loadFragment: " + fragmentManager.getBackStackEntryCount());
+        currentFragment = fragment;
     }
 
     private final Emitter.Listener onNewNotification = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    String objectStr = args[0].toString();
-                    Notification<String> notification = gsonBuilder.fromJson(objectStr, Notification.class);
-                    if (currentFragment == notificationFragment) {
-                        Log.d(TAG, "run: " + notification.toString());
-                        notificationObservable.onNext(new Pair<>("push_notification", notification));
-                    }
-                    BadgeDrawable badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.notification);
-                    badgeDrawable.setVisible(true);
-                    badgeDrawable.setBackgroundColor(Color.parseColor("#E22A49"));
-                    badgeDrawable.setMaxCharacterCount(2);
-                    totalNotSeen++;
-                    badgeDrawable.setNumber(totalNotSeen);
-                }
+            runOnUiThread(() -> {
+                String objectStr = args[0].toString();
+                Notification<String> notification = gsonBuilder.fromJson(objectStr, Notification.class);
+                Log.d(TAG, "call: " + notification);
+                notificationObservable.onNext(new Pair<>("push_notification", notification));
+                BadgeDrawable badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.notification);
+                badgeDrawable.setVisible(true);
+                badgeDrawable.setBackgroundColor(Color.parseColor("#E22A49"));
+                badgeDrawable.setMaxCharacterCount(2);
+                totalNotSeen++;
+                badgeDrawable.setNumber(totalNotSeen);
             });
         }
     };
@@ -243,28 +262,5 @@ public class NavigationActivity extends AppCompatActivity {
             return 3;
         }
         return 0;
-    }
-
-    private void loadFragment(Fragment fragment) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        Log.d(TAG, "loadFragment: " + positionOfFragment(currentFragment));
-        if (positionOfFragment(currentFragment) < positionOfFragment(fragment)) {
-            Log.d(TAG, "loadFragment: right");
-            transaction.setCustomAnimations(R.anim.tab_right_in, R.anim.tab_right_out);
-        } else {
-            Log.d(TAG, "loadFragment: left");
-            transaction.setCustomAnimations(R.anim.tab_left_in, R.anim.tab_left_out);
-        }
-        currentFragment = fragment;
-        transaction.replace(R.id.fragment_container, fragment);
-
-        FragmentManager fm = getSupportFragmentManager();
-        if (fm.getBackStackEntryCount() > 1) {
-            for (int i = 0; i < fm.getBackStackEntryCount() - 1; i++) {
-                fm.popBackStack();
-            }
-        }
-        transaction.addToBackStack(null);
-        transaction.commit();
     }
 }

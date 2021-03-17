@@ -36,6 +36,7 @@ public class DateHelper {
 
     public static String timeAgoInWords(Date from) {
         Date now = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd 'tháng' mm 'năm' yyyy");
         long difference = now.getTime() - from.getTime();
         long distanceInMin = difference / 60000;
 
@@ -50,14 +51,14 @@ public class DateHelper {
         } else if ( 1440 <= distanceInMin && distanceInMin <= 2529 ) {
             return "1 Ngày trước";
         } else if ( 2530 <= distanceInMin && distanceInMin <= 43199 ) {
-            return (distanceInMin / 1440) + " ngày trước";
+            return (distanceInMin / 1440) + " ngày trước | " + simpleDateFormat.format(from);
         } else if ( 43200 <= distanceInMin && distanceInMin <= 86399 ) {
-            return "1 tháng trước";
+            return "1 tháng trước | " + simpleDateFormat.format(from);
         } else if ( 86400 <= distanceInMin && distanceInMin <= 525599 ) {
-            return (distanceInMin / 43200) + " tháng trước";
+            return (distanceInMin / 43200) + " tháng trước | " + simpleDateFormat.format(from);
         } else {
             long distanceInYears = distanceInMin / 525600;
-            return "Khoảng " + distanceInYears + " năm trước";
+            return "Khoảng " + distanceInYears + " năm trước | " + simpleDateFormat.format(from);
         }
     }
 
