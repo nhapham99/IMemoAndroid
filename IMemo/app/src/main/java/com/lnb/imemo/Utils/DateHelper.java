@@ -36,7 +36,7 @@ public class DateHelper {
 
     public static String timeAgoInWords(Date from) {
         Date now = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd 'tháng' mm 'năm' yyyy");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd 'tháng' MM 'năm' yyyy");
         long difference = now.getTime() - from.getTime();
         long distanceInMin = difference / 60000;
 

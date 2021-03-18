@@ -2,6 +2,7 @@ package com.lnb.imemo.Presentation.Home.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.Html;
 import android.text.TextUtils;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
@@ -228,8 +229,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         holder.setText(diary.getContent());
         holder.ExpandCollapse(holder.content, holder.itemView, position);
-
-        holder.sharedByTextView.setText("Chia sẻ bởi " + ((PersonProfile) diary.getUser()).getName());
+        String sourceString = "Chia sẻ bởi " + "<b>" + ((PersonProfile) diary.getUser()).getName() + "</b> ";
+        holder.sharedByTextView.setText(Html.fromHtml(sourceString));
 
         holder.sharedByTextView.setVisibility(View.VISIBLE);
     }
@@ -341,7 +342,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         listFragmentNeedClearMedia.put(position, listFragmentsToClear);
         // end setup resource tab view
 
-        holder.sharedByTextView.setText("Chia sẻ bởi " + ((PersonProfile) diary.getUser()).getName());
+        String sourceString = "Chia sẻ bởi " + "<b>" + ((PersonProfile) diary.getUser()).getName() + "</b> ";
+        holder.sharedByTextView.setText(Html.fromHtml(sourceString));
 
     }
 
@@ -363,8 +365,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         holder.ExpandCollapse(holder.content, holder.itemView, position);
         // end setup diary content
 
-        holder.sharedByTextView.setText("Chia sẻ bởi " + ((PersonProfile) diary.getUser()).getName());
-        holder.sharedByTextView.setVisibility(View.VISIBLE);
+        String sourceString = "Chia sẻ bởi " + "<b>" + ((PersonProfile) diary.getUser()).getName() + "</b> ";
+        holder.sharedByTextView.setText(Html.fromHtml(sourceString));
     }
 
     private void initViewForSharedItem(SharedWithMeViewHolder holder, int position) {
@@ -472,8 +474,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         listFragmentNeedClearMedia.put(position, listFragmentsToClear);
         // end setup resource tab view
 
-        holder.sharedByTextView.setText("Chia sẻ bởi " + ((PersonProfile) diary.getUser()).getName());
-        holder.sharedByTextView.setVisibility(View.VISIBLE);
+        String sourceString = "Chia sẻ bởi " + "<b>" + ((PersonProfile) diary.getUser()).getName() + "</b> ";
+        holder.sharedByTextView.setText(Html.fromHtml(sourceString));
     }
 
     private void initViewForHomeFilter(HomeFilterViewHolder holder) {
