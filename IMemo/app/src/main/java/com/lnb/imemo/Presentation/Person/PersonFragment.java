@@ -93,10 +93,8 @@ public class PersonFragment extends Fragment implements View.OnClickListener {
     private void savePrefData() {
         SharedPreferences pref = getActivity().getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString("googleToken", null);
-        editor.putString("email", "");
         try {
-            editor.putString("password", AESCrypt.encrypt(""));
+            editor.putString("token", AESCrypt.encrypt(""));
         } catch (Exception e) {
             e.printStackTrace();
         }

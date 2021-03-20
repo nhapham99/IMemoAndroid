@@ -77,7 +77,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private DrawerLayout drawerLayout;
 
     // slide bar
-    private TextView filterMemoTotal, filerMemoByFilter, filterMemoToday;
+    private TextView filterMemoTotal, filerMemoByFilter;
     private LinearLayout filterMemoResetHighLight, filterMemoResetTime, filterMemoResetTag;
     private RecyclerView filterMemoHighLightRecyclerView, filterMemoTimeRecyclerView, filterMemoTagRecyclerView;
     private Button filterButton;
@@ -145,7 +145,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         drawerLayout.setDrawerListener(this);
         filterMemoTotal = view.findViewById(R.id.filter_memo_total);
         filerMemoByFilter = view.findViewById(R.id.filter_memo_by_filter);
-        filterMemoToday = view.findViewById(R.id.filter_memo_today);
         filterMemoResetHighLight = view.findViewById(R.id.reset_filter_highlight);
         filterMemoResetTime = view.findViewById(R.id.reset_filter_time);
         filterMemoResetTag = view.findViewById(R.id.reset_filter_tag);
@@ -377,6 +376,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         filterHighLightObservable.onNext(new Pair<>("update_filter", viewModel.filterHighLight));
                         viewModel.filterHighLight = "";
                         searchKey = null;
+                        viewModel.filterTagName = new ArrayList<>();
+                        tagFilterAdapter.reset();
                         filterDiary();
                         break;
                 }
@@ -450,14 +451,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             @Override
             public void onNext(@io.reactivex.annotations.NonNull Pair<String, Object> pair) {
                 String key = pair.first;
-                if (key.equals("refresh_tag")) {
-                    Log.d(TAG, "onNext: ");
-                    viewModel.getAllTags();
-                } else if (key.equals("on_top_home_recyclerView")) {
-                    Log.d(TAG, "onNext: on_top_home_recyclerView");
-                    homeNestedScrollView.smoothScrollTo(0,0);
-                } else if (key.equals("clear_home_fragment")) {
-                    adapter.clearMedia();
+                switch (key) {
+                    case "refresh_tag":
+                        Log.d(TAG, "onNext: refresh tag");
+                        viewModel.getAllTags();
+                        break;
+                    case "on_top_home_recyclerView":
+                        Log.d(TAG, "onNext: on_top_home_recyclerView");
+                        homeNestedScrollView.smoothScrollTo(0, 0);
+                        break;
+                    case "clear_home_fragment":
+                        adapter.clearMedia();
+                        break;
                 }
             }
 
@@ -945,6 +950,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) responseRepo.getData();
                 if (pair.first == Utils.State.SUCCESS) {
                     viewModel.listTags = pair.second;
+                    Log.d(TAG, "subscribeViewModelObservable: get all tags key " + pair.second);
                     ArrayList<String> listTags = new ArrayList<>();
                     for (Tags tags : pair.second) {
                         if (tags.getIsDefault()) {

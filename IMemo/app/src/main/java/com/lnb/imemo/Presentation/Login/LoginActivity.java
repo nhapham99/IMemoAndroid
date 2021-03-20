@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -26,7 +25,6 @@ import com.lnb.imemo.Presentation.ForgotPassword.ForgotPasswordActivity;
 import com.lnb.imemo.Presentation.NavigationActivity.NavigationActivity;
 import com.lnb.imemo.Presentation.Register.RegisterActivity;
 import com.lnb.imemo.R;
-import com.lnb.imemo.Utils.AESCrypt;
 import com.lnb.imemo.Utils.Utils;
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
@@ -233,6 +231,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
+            Log.d(TAG, "onActivityResult: " + data);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
@@ -243,25 +242,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             // if login success
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             blurScreen();
-            savePrefData(account.getIdToken());
             viewModel.signInWithGoogle(account);
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
         }
-    }
-
-
-    private void savePrefData(String googleToken) {
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = pref.edit();
-        try {
-            editor.putString("googleToken", AESCrypt.encrypt(googleToken));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        editor.apply();
     }
 
     // for watch text field

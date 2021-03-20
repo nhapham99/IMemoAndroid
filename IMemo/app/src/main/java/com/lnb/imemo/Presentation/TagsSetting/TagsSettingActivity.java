@@ -199,6 +199,7 @@ public class TagsSettingActivity extends AppCompatActivity implements View.OnCli
                 switch (state) {
                     case SUCCESS:
                         centerObserver.onNext(new Pair<>("refresh_tag", true));
+                        Log.d(TAG, "subscribeGetAllTagsObservable: delete tag");
                         Toast.makeText(TagsSettingActivity.this, "Xóa thẻ thành công", Toast.LENGTH_SHORT).show();
                         break;
                     case FAILURE:

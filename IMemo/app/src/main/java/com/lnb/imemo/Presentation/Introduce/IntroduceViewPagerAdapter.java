@@ -51,7 +51,7 @@ public class IntroduceViewPagerAdapter extends RecyclerView.Adapter<IntroduceVie
         return 2;
     }
 
-    class ImageAndVideoViewHolder extends RecyclerView.ViewHolder {
+    static class ImageAndVideoViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         Button startMemo;
         public ImageAndVideoViewHolder(@NonNull View itemView) {

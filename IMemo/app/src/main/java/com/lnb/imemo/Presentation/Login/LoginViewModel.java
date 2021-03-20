@@ -33,8 +33,6 @@ class LoginViewModel extends ViewModel {
     private final MediatorLiveData<Utils.State> forgotPasswordLiveData = new MediatorLiveData<>();
     @SuppressLint("StaticFieldLeak")
     private final Context mContext;
-    private String tempEmail = "";
-    private String tempPassword = "";
 
     public LoginViewModel(Context mContext) {
         mUser = User.getUser();
@@ -56,8 +54,6 @@ class LoginViewModel extends ViewModel {
     }
 
     protected void signIn(String usernameOrEmail, String password) {
-        tempEmail = usernameOrEmail;
-        tempPassword = password;
         authRepository.login(usernameOrEmail, password);
     }
 
@@ -67,12 +63,12 @@ class LoginViewModel extends ViewModel {
             if (key.equals(Constant.LOGIN_GOOGLE_KEY)) {
                 Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
                 mUser.setToken(pair.second);
+                savePrefData(pair.second);
                 getPersonProfile();
             } else if (key.equals(Constant.LOGIN_KEY)) {
                 Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
                 mUser.setToken(pair.second);
-                Log.d(TAG, "subscribeAuthRepo: " + pair.second);
-                savePrefData(tempEmail, tempPassword);
+                savePrefData(pair.second);
                 getPersonProfile();
             } else if (key.equals(Constant.FORGOT_PASSWORD_KEY)) {
                 forgotPasswordLiveData.setValue((Utils.State) response.getData());
@@ -95,12 +91,12 @@ class LoginViewModel extends ViewModel {
         authRepository.observableAuthRepo().observeForever(authObserver);
     }
 
-    private void savePrefData(String email, String password) {
+
+    private void savePrefData(String token) {
         SharedPreferences pref = mContext.getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         try {
-            editor.putString("email", AESCrypt.encrypt(email));
-            editor.putString("password", AESCrypt.encrypt(password));
+            editor.putString("token", AESCrypt.encrypt(token));
         } catch (Exception e) {
             e.printStackTrace();
         }

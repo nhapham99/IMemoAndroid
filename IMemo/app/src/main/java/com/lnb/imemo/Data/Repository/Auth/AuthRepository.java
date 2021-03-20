@@ -40,6 +40,7 @@ public class AuthRepository {
     public void getTokenFromGoogleToken(String ggToken) {
         JsonObject body = new JsonObject();
         body.addProperty(Constant.ID_TOKEN, ggToken);
+        Log.d(TAG, "getTokenFromGoogleToken: " + body);
         LiveData<JsonObject> source = LiveDataReactiveStreams.fromPublisher(
                 authAPI.getTokenFromGoogleToken(body)
                         .onErrorReturn(throwable -> {

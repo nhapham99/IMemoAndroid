@@ -10,10 +10,43 @@
         android:scaleType="fitXY"/>
 
     <ProgressBar
+        android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="@dimen/length_200dp"
         android:indeterminateTint="@color/white"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="150dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/autoLoginAgain_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thử lại"
+            android:fontFamily="@font/roboto_regular"
+            android:textSize="17sp"
+            android:textColor="@color/white"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/goToLogin_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vào Đăng nhập"
+            android:fontFamily="@font/roboto_regular"
+            android:textSize="17sp"
+            android:textColor="@color/white"
+            android:layout_marginTop="@dimen/length_10dp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
 </RelativeLayout>

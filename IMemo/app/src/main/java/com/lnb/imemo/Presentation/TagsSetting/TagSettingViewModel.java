@@ -93,6 +93,10 @@ public class TagSettingViewModel extends ViewModel {
     }
 
     public void createNewTag() {
+        Log.d(TAG, "createNewTag: " + newTag.toString());
+        if (newTag.getIsDefault() == null) {
+            newTag.setIsDefault(false);
+        }
         tagsRepository.createTags(mUser.getToken(), newTag);
     }
 
