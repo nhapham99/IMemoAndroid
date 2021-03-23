@@ -3,7 +3,6 @@ package com.lnb.imemo.Presentation.Login;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.lifecycle.LiveData;
@@ -16,7 +15,6 @@ import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
 import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.User;
-import com.lnb.imemo.Utils.AESCrypt;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.Utils;
 
@@ -96,7 +94,7 @@ class LoginViewModel extends ViewModel {
         SharedPreferences pref = mContext.getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         try {
-            editor.putString("token", AESCrypt.encrypt(token));
+            editor.putString("token", token);
         } catch (Exception e) {
             e.printStackTrace();
         }

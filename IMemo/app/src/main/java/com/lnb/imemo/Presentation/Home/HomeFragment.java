@@ -87,7 +87,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private EditText searchText;
     private TextView allMyMemo, allMemoSharedWithMe;
     private LinearLayout filterArea;
-    private RecyclerView homeRecyclerView;
     private NestedScrollView homeNestedScrollView;
 
 
@@ -136,7 +135,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private void init(View view) {
         subscribeCenterObservable();
 
-        homeRecyclerView = view.findViewById(R.id.home_recyclerView);
+        RecyclerView homeRecyclerView = view.findViewById(R.id.home_recyclerView);
         homeSwipeRefreshLayout = view.findViewById(R.id.home_refresh_layout);
         CircleImageView userAvatar = view.findViewById(R.id.home_user_avatar);
         ImageView homeFilter = view.findViewById(R.id.home_filter);

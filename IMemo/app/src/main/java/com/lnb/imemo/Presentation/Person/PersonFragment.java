@@ -21,7 +21,6 @@ import com.lnb.imemo.Presentation.Login.LoginActivity;
 import com.lnb.imemo.Presentation.PersonalSetting.PersonalSettingActivity;
 import com.lnb.imemo.Presentation.TagsSetting.TagsSettingActivity;
 import com.lnb.imemo.R;
-import com.lnb.imemo.Utils.AESCrypt;
 import com.lnb.imemo.Utils.Utils;
 
 import io.reactivex.subjects.PublishSubject;
@@ -94,7 +93,7 @@ public class PersonFragment extends Fragment implements View.OnClickListener {
         SharedPreferences pref = getActivity().getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         try {
-            editor.putString("token", AESCrypt.encrypt(""));
+            editor.putString("token", null);
         } catch (Exception e) {
             e.printStackTrace();
         }

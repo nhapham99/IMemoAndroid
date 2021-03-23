@@ -13,9 +13,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.lnb.imemo.Presentation.Introduce.IntroduceActivity;
+import com.lnb.imemo.Presentation.Login.LoginActivity;
 import com.lnb.imemo.Presentation.NavigationActivity.NavigationActivity;
 import com.lnb.imemo.R;
-import com.lnb.imemo.Utils.AESCrypt;
 
 public class SplashActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "SplashActivity";
@@ -40,6 +40,10 @@ public class SplashActivity extends AppCompatActivity implements View.OnClickLis
         if (restorePrefData()) {
             if (restoreToken() != null && !restoreToken().equals("")) {
                 viewModel.getPersonProfile(restoreToken());
+            } else {
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
             }
         } else {
             Intent intent = new Intent(getApplicationContext(), IntroduceActivity.class);
@@ -77,12 +81,7 @@ public class SplashActivity extends AppCompatActivity implements View.OnClickLis
 
     private String restoreToken() {
         SharedPreferences pref = getApplicationContext().getSharedPreferences("myPrefs", MODE_PRIVATE);
-        try {
-            return AESCrypt.decrypt(pref.getString("token", null));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        return pref.getString("token", null);
     }
 
 
