@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/length_20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chuyển âm thanh thành văn bản"
+        android:layout_gravity="center_horizontal"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto_medium"
+        android:layout_marginTop="@dimen/length_5dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:background="@color/grey_light"/>
+
+    <TextView
+        android:id="@+id/speech_to_text_from_mic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chuyển trực tiếp"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/blue_dark"
+        android:textSize="15sp"
+        android:layout_marginTop="@dimen/length_10dp"
+        android:fontFamily="@font/roboto_medium"
+        android:gravity="center"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/length_10dp"
+        android:background="@color/grey_light"/>
+
+    <TextView
+        android:id="@+id/speech_to_text_from_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chuyển từ file audio"
+        android:layout_gravity="center_horizontal"
+        android:textSize="15sp"
+        android:textColor="@color/blue_dark"
+        android:layout_marginTop="@dimen/length_10dp"
+        android:fontFamily="@font/roboto_medium"
+        android:gravity="center"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:background="@color/grey_light"/>
+
+    <TextView
+        android:id="@+id/cancel_speech_to_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hủy"
+        android:layout_gravity="center_horizontal"
+        android:textSize="15sp"
+        android:layout_marginTop="@dimen/length_20dp"
+        android:fontFamily="@font/roboto_medium"
+        android:gravity="center"/>
+</LinearLayout>

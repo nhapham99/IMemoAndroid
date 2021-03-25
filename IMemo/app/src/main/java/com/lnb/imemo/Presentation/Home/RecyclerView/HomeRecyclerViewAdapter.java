@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -542,6 +543,10 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pick link
         holder.memoUpLoadLink.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.GET_LINKS_CODE, null)));
         // end setup pick link
+
+        // start setup click speech to text button
+        holder.speechToTextButton.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.SPEECH_TO_TEXT_CODE, null)));
+
     }
 
     @SuppressLint({"NonConstantResourceId", "SetTextI18n"})
@@ -699,16 +704,25 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
         // end setup diary is uploading
 
-        // start setup pop down menu
+        // start handle pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu_pin);
+            if (diary.getPinned() != null && diary.getPinned()) {
+                popupMenu.inflate(R.menu.pop_down_menu_unpin);
+            } else {
+                popupMenu.inflate(R.menu.pop_down_menu_pin);
+            }
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
                         actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                         break;
                     case R.id.pop_down_pin:
+                        if (diary.getPinned()) {
+                            actionObservable.setValue(new Pair<>("unpin_diary", position));
+                        } else {
+                            actionObservable.setValue(new Pair<>("pin_diary", position));
+                        }
                         break;
                     case R.id.pop_down_delete:
                         actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -718,7 +732,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             });
             popupMenu.show();
         });
-        // end setup pop down menu
+        // end handle pop down menu
 
 
         // start setup resource view
@@ -752,16 +766,25 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // end setup is diary uploading
 
 
-        // start setup pop down menu
+        // start handle pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu_pin);
+            if (diary.getPinned() != null && diary.getPinned()) {
+                popupMenu.inflate(R.menu.pop_down_menu_unpin);
+            } else {
+                popupMenu.inflate(R.menu.pop_down_menu_pin);
+            }
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
                         actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                         break;
                     case R.id.pop_down_pin:
+                        if (diary.getPinned()) {
+                            actionObservable.setValue(new Pair<>("unpin_diary", position));
+                        } else {
+                            actionObservable.setValue(new Pair<>("pin_diary", position));
+                        }
                         break;
                     case R.id.pop_down_delete:
                         actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -771,7 +794,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             });
             popupMenu.show();
         });
-        // end setup pop down menu
+        // end handle pop down menu
 
         // start setup tags
         if (diary.getTags().size() == 0) {
@@ -885,16 +908,25 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
         // end setup diary is uploading
 
-        // start setup pop down menu
+        // start handle pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu_pin);
+            if (diary.getPinned() != null && diary.getPinned()) {
+                popupMenu.inflate(R.menu.pop_down_menu_unpin);
+            } else {
+                popupMenu.inflate(R.menu.pop_down_menu_pin);
+            }
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
                         actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                         break;
                     case R.id.pop_down_pin:
+                        if (diary.getPinned()) {
+                            actionObservable.setValue(new Pair<>("unpin_diary", position));
+                        } else {
+                            actionObservable.setValue(new Pair<>("pin_diary", position));
+                        }
                         break;
                     case R.id.pop_down_delete:
                         actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -904,7 +936,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             });
             popupMenu.show();
         });
-        // end setup pop down menu
+        // end handle pop down menu
 
         // start setup diary content
         holder.setText(diary.getContent());
@@ -1594,6 +1626,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         private final LinearLayout memoUploadTag;
         private final LinearLayout memoUpLoadLink;
         private final TextView homeNewMemo;
+        private final RelativeLayout speechToTextButton;
 
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -1601,6 +1634,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             memoUploadFile = itemView.findViewById(R.id.upload_memo_file);
             memoUploadTag = itemView.findViewById(R.id.upload_memo_tag);
             memoUpLoadLink = itemView.findViewById(R.id.upload_memo_link);
+            speechToTextButton = itemView.findViewById(R.id.speech_to_text_button);
         }
     }
 

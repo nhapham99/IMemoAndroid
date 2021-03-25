@@ -1,6 +1,7 @@
 package com.lnb.imemo.Presentation.UploadActivity;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.Observer;
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,7 +25,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -56,6 +60,7 @@ import io.reactivex.functions.Consumer;
 
 public class UploadActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "UploadActivity";
+
     private TextView createMemoDate;
     private TextView createMemoTitle;
     private TextView createMemoContent;
@@ -70,6 +75,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     private final int GET_FILE_CODE = 1;
     private final int GET_TAGS = 2;
     private final int GET_PREVIEW_LINK = 3;
+    private static final int SPEECH_TO_TEXT_FROM_FILE_CODE = 4;
     private UploadViewModel viewModel;
     private UploadRecyclerViewAdapter resourceAdapter;
 
@@ -83,8 +89,6 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
 
     @SuppressLint("SetTextI18n")
     private void init() {
-        // init ui
-        // ui
         ImageButton escapeButton = findViewById(R.id.create_memo_escape);
         escapeButton.setOnClickListener(this);
         LinearLayout datePicker = findViewById(R.id.create_memo_date);
@@ -106,6 +110,11 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         LinearLayout uploadLinks = findViewById(R.id.upload_memo_link);
         uploadLinks.setOnClickListener(this);
         createMemoTagsRecyclerView = findViewById(R.id.upload_memo_item_tag_list);
+        RelativeLayout speechToTextTitleMemo = findViewById(R.id.memo_title_speech_to_text_button);
+        speechToTextTitleMemo.setOnClickListener(this);
+        RelativeLayout speechToTextContentMemo = findViewById(R.id.memo_content_speech_to_text_button);
+        speechToTextContentMemo.setOnClickListener(this);
+
 
         createMemoTitle.addTextChangedListener(new TextWatcher() {
             @Override
@@ -359,29 +368,23 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void showDatePicker() {
-        DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                diaryTime.set(Calendar.YEAR, year);
-                diaryTime.set(Calendar.MONTH, month);
-                diaryTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, dayOfMonth) -> {
+            diaryTime.set(Calendar.YEAR, year);
+            diaryTime.set(Calendar.MONTH, month);
+            diaryTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        diaryTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        diaryTime.set(Calendar.MINUTE, minute);
+            TimePickerDialog.OnTimeSetListener timeSetListener = (view1, hourOfDay, minute) -> {
+                diaryTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                diaryTime.set(Calendar.MINUTE, minute);
 
-                        SimpleDateFormat simpledateformat = new SimpleDateFormat("EEEE");
-                        Date date = new Date(year, month, dayOfMonth);
-                        String dayOfWeek = simpledateformat.format(date);
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
-                        createMemoDate.setText(DateHelper.convertDate(dayOfWeek) + simpleDateFormat.format(diaryTime.getTime()));
+                SimpleDateFormat simpledateformat = new SimpleDateFormat("EEEE");
+                Date date = new Date(year, month, dayOfMonth);
+                String dayOfWeek = simpledateformat.format(date);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
+                createMemoDate.setText(DateHelper.convertDate(dayOfWeek) + simpleDateFormat.format(diaryTime.getTime()));
 
-                    }
-                };
-                new android.app.TimePickerDialog(UploadActivity.this, timeSetListener, diaryTime.get(Calendar.HOUR_OF_DAY), diaryTime.get(Calendar.MINUTE), true).show();
-            }
+            };
+            new TimePickerDialog(UploadActivity.this, timeSetListener, diaryTime.get(Calendar.HOUR_OF_DAY), diaryTime.get(Calendar.MINUTE), true).show();
         };
         new DatePickerDialog(UploadActivity.this, dateSetListener, diaryTime.get(Calendar.YEAR), diaryTime.get(Calendar.MONTH), diaryTime.get(Calendar.DAY_OF_MONTH)).show();
     }
@@ -417,6 +420,33 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         viewModel.updateDiary();
     }
 
+    private void showSpeechToTextAlert() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.speech_to_text_alert_layout, null);
+        dialogBuilder.setView(view);
+        TextView speechToTextFromMic = view.findViewById(R.id.speech_to_text_from_mic);
+        speechToTextFromMic.setOnClickListener(v -> {
+            Log.d(TAG, "showSpeechToTextAlert: speech to text from mic" );
+        });
+        TextView speechToTextFromFile = view.findViewById(R.id.speech_to_text_from_file);
+        speechToTextFromFile.setOnClickListener(v -> {
+            startGetAudioFile();
+            Log.d(TAG, "showSpeechToTextAlert: speech to text from file, show file picker");
+        });
+        Dialog dialog = dialogBuilder.create();
+        dialog.show();
+        TextView cancelSpeechToText = view.findViewById(R.id.cancel_speech_to_text);
+        cancelSpeechToText.setOnClickListener(v -> {
+            Log.d(TAG, "showSpeechToTextAlert: cancel");
+            dialog.dismiss();
+        });
+    }
+
+    private void startGetAudioFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/*");
+        startActivityForResult(intent, SPEECH_TO_TEXT_FROM_FILE_CODE);
+    }
 
 
     @SuppressLint("NonConstantResourceId")
@@ -444,6 +474,12 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.upload_memo_link:
                 startAddLink();
+                break;
+            case R.id.memo_content_speech_to_text_button:
+                showSpeechToTextAlert();
+                break;
+            case R.id.memo_title_speech_to_text_button:
+                showSpeechToTextAlert();
                 break;
 
         }

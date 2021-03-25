@@ -1,6 +1,7 @@
 package com.lnb.imemo.Presentation.Home;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -98,6 +99,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private final int GET_TAGS = 2;
     private final int GET_PREVIEW_LINK = 3;
     private final int UPLOAD_MEMO_CODE = 4;
+    private static final int SPEECH_TO_TEXT_FROM_FILE_CODE = 5;
     private final PublishSubject<Pair<String, Object>> centerObserver;
     private final PublishSubject<Pair<String, String>>  filterTimeObservable = PublishSubject.create();
     private final PublishSubject<Pair<String, String>> filterTagObservable = PublishSubject.create();
@@ -303,7 +305,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             if (key.equals(Constant.DELETE_DIARY_KEY)) {
                 Log.d(TAG, "onChanged: " + adapterAction.second);
                 showDeleteAlert(adapterAction.second);
-
             } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                 Intent intent = new Intent(getActivity(), UploadActivity.class);
                 startActivityForResult(intent, UPLOAD_MEMO_CODE);
@@ -313,6 +314,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 startPickTags();
             } else if (key.equals(Constant.GET_LINKS_CODE)) {
                 startAddLink();
+            } else if (key.equals(Constant.SPEECH_TO_TEXT_CODE)) {
+                showSpeechToTextAlert();
             } else if (key.equals("share_action")) {
                 showShareDialog(adapterAction.second);
             } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
@@ -417,6 +420,28 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             @Override
             public void onComplete() {
             }
+        });
+    }
+
+    private void showSpeechToTextAlert() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        View view = getLayoutInflater().inflate(R.layout.speech_to_text_alert_layout, null);
+        dialogBuilder.setView(view);
+        TextView speechToTextFromMic = view.findViewById(R.id.speech_to_text_from_mic);
+        speechToTextFromMic.setOnClickListener(v -> {
+            Log.d(TAG, "showSpeechToTextAlert: speech to text from mic" );
+        });
+        TextView speechToTextFromFile = view.findViewById(R.id.speech_to_text_from_file);
+        speechToTextFromFile.setOnClickListener(v -> {
+            Log.d(TAG, "showSpeechToTextAlert: speech to text from file, show file picker");
+            startGetAudioFile();
+        });
+        Dialog dialog = dialogBuilder.create();
+        dialog.show();
+        TextView cancelSpeechToText = view.findViewById(R.id.cancel_speech_to_text);
+        cancelSpeechToText.setOnClickListener(v -> {
+            Log.d(TAG, "showSpeechToTextAlert: cancel");
+            dialog.dismiss();
         });
     }
 
@@ -811,7 +836,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         });
     }
 
-
+    private void startGetAudioFile() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/*");
+        startActivityForResult(intent, SPEECH_TO_TEXT_FROM_FILE_CODE);
+    }
 
     private void startUploadFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -943,8 +972,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
                         break;
                 }
-            } else if (key.equals(Constant.GET_DIARY_BY_ID_KEY)) {
-
             } else if (key.equals(Constant.GET_ALL_TAGS_KEY)) {
                 Pair<Utils.State, ArrayList<Tags>> pair = (Pair<Utils.State, ArrayList<Tags>>) responseRepo.getData();
                 if (pair.first == Utils.State.SUCCESS) {
