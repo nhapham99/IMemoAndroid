@@ -22,7 +22,6 @@
             android:layout_marginStart="@dimen/length_10dp"
             android:layout_weight="1"
             android:fontFamily="@font/roboto_medium"
-            android:text="Memo title detail here"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:singleLine="true"/>
@@ -47,7 +46,6 @@
         android:layout_marginStart="@dimen/length_10dp"
         android:layout_marginTop="@dimen/length_5dp"
         android:fontFamily="@font/roboto_regular"
-        android:text="Yesterday at 14:03"
         android:textColor="@color/memo_time_color"
         android:textSize="@dimen/text_12sp" />
 

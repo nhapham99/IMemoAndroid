@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -645,6 +646,8 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pick link
         holder.memoUpLoadLink.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.GET_LINKS_CODE, null)));
         // end setup pick link
+
+        holder.speechToTextButton.setOnClickListener(v -> actionObservable.setValue(new Pair<>(Constant.SPEECH_TO_TEXT_CODE, null)));
     }
 
     @SuppressLint({"NonConstantResourceId", "SetTextI18n"})
@@ -1706,6 +1709,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         private final LinearLayout memoUploadTag;
         private final LinearLayout memoUpLoadLink;
         private final TextView homeNewMemo;
+        private RelativeLayout speechToTextButton;
 
         public HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -1713,6 +1717,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             memoUploadFile = itemView.findViewById(R.id.upload_memo_file);
             memoUploadTag = itemView.findViewById(R.id.upload_memo_tag);
             memoUpLoadLink = itemView.findViewById(R.id.upload_memo_link);
+            speechToTextButton = itemView.findViewById(R.id.speech_to_text_button);
         }
     }
 

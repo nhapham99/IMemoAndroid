@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#C9CCD1"
-    tools:context=".Presentation.Home.HomeFragment">
+    tools:context=".Presentation.Home.HomeFragment"
+    android:id="@+id/frame_layout">
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawerLayout"
@@ -73,7 +74,7 @@
                                 android:textSize="14sp"
                                 android:imeOptions="actionSearch"
                                 android:inputType="text"
-                                android:cursorVisible="false"/>
+                                android:focusableInTouchMode="true"/>
 
                             <ImageView
                                 android:id="@+id/search_icon"

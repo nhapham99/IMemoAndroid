@@ -33,10 +33,10 @@
         <activity
             android:name=".Presentation.NavigationActivity.NavigationActivity"
             android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Presentation.UploadActivity.UploadActivity"
-            android:windowSoftInputMode="adjustResize" />
+            android:name=".Presentation.UploadActivity.UploadActivity"/>
         <activity
             android:name=".Presentation.Splash.SplashActivity"
             android:theme="@style/SplashTheme"

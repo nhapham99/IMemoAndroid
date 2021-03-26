@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -24,6 +25,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -58,6 +60,8 @@ import io.reactivex.functions.Consumer;
 
 public class UploadActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "UploadActivity";
+    private static final int SPEECH_TO_TEXT_CONTENT = 4;
+    private static final int SPEECH_TO_TEXT_TITLE = 5;
     private TextView createMemoDate;
     private TextView createMemoTitle;
     private TextView createMemoContent;
@@ -75,6 +79,8 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     private UploadViewModel viewModel;
     private UploadRecyclerViewAdapter resourceAdapter;
     private Boolean isSharedMemo;
+    private RelativeLayout speechToTextTitle;
+    private RelativeLayout speechToTextContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +114,11 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         uploadTags.setOnClickListener(this);
         LinearLayout uploadLinks = findViewById(R.id.upload_memo_link);
         uploadLinks.setOnClickListener(this);
+        speechToTextContent = findViewById(R.id.memo_content_speech_to_text_button);
+        speechToTextContent.setOnClickListener(this);
+        speechToTextTitle = findViewById(R.id.memo_title_speech_to_text_button);
+        speechToTextTitle.setOnClickListener(this);
+
         createMemoTagsRecyclerView = findViewById(R.id.upload_memo_item_tag_list);
 
         createMemoTitle.addTextChangedListener(new TextWatcher() {
@@ -175,8 +186,14 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 assert diary != null;
                 setupViewForEdit(diary);
             }
-
         }
+
+        if (getIntent().getStringExtra("content_memo") != null) {
+            String content = getIntent().getStringExtra("content_memo");
+            viewModel.getUploadDiary().setContent(content);
+            createMemoContent.setText(content);
+        }
+
         subscribeUploadRecyclerViewObservable();
     }
 
@@ -414,6 +431,18 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             } else {
                 Log.d(TAG, "onActivityResult: failure");
             }
+        } else if (requestCode == SPEECH_TO_TEXT_TITLE) {
+            if (resultCode == RESULT_OK) {
+                ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                viewModel.getUploadDiary().setTitle(matches.get(0));
+                createMemoTitle.setText(matches.get(0));
+            }
+        } else if (requestCode == SPEECH_TO_TEXT_CONTENT) {
+            if (resultCode == RESULT_OK) {
+                ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                viewModel.getUploadDiary().setContent(matches.get(0));
+                createMemoContent.setText(matches.get(0));
+            }
         }
 
     }
@@ -478,6 +507,13 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    private void startSpeechToText(int code) {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speech to text");
+        startActivityForResult(intent, code);
+    }
+
 
 
     @SuppressLint("NonConstantResourceId")
@@ -505,6 +541,12 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.upload_memo_link:
                 startAddLink();
+                break;
+            case R.id.memo_title_speech_to_text_button:
+                startSpeechToText(SPEECH_TO_TEXT_TITLE);
+                break;
+            case R.id.memo_content_speech_to_text_button:
+                startSpeechToText(SPEECH_TO_TEXT_CONTENT);
                 break;
 
         }

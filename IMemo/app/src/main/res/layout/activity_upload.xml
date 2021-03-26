@@ -7,11 +7,8 @@
     android:layout_height="match_parent"
     android:overScrollMode="never">
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         tools:context=".Presentation.UploadActivity.UploadActivity"
         android:orientation="vertical">
 
@@ -28,7 +25,7 @@
                 android:background="@drawable/round_button"
                 android:backgroundTint="#F0F2F5"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/length_10dp" />
+                android:layout_marginStart="@dimen/length_10dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -93,10 +90,10 @@
             android:layout_marginTop="@dimen/length_20dp"
             android:gravity="center_vertical">
 
-
             <EditText
+                android:layout_weight="1"
                 android:id="@+id/create_memo_title"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:hint="Đặt tên memo"
                 android:fontFamily="@font/roboto_regular"
@@ -105,10 +102,22 @@
                 android:layout_marginRight="@dimen/length_20dp"
                 android:background="@android:color/transparent"/>
 
+            <RelativeLayout
+                android:id="@+id/memo_title_speech_to_text_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/length_5dp"
+                android:layout_marginEnd="@dimen/length_5dp"
+                android:layout_gravity="top">
 
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_mic2"/>
+            </RelativeLayout>
         </LinearLayout>
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -120,7 +129,9 @@
             android:layout_marginRight="@dimen/length_10dp"
             android:layout_marginTop="@dimen/length_20dp"
             android:gravity="center_vertical">
+
             <EditText
+                android:layout_weight="1"
                 android:id="@+id/create_memo_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -131,7 +142,21 @@
                 android:layout_marginLeft="@dimen/length_20dp"
                 android:layout_marginRight="@dimen/length_20dp"
                 android:background="@android:color/transparent" />
-        </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/memo_content_speech_to_text_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/length_5dp"
+                android:layout_marginEnd="@dimen/length_5dp"
+                android:layout_gravity="top">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_mic2"/>
+            </RelativeLayout>
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/upload_memo_item_tag_list"

@@ -1,7 +1,9 @@
 package com.lnb.imemo.Presentation.Home;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -19,16 +21,22 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.speech.RecognizerIntent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -90,6 +98,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private TextView allMyMemo, allMemoSharedWithMe;
     private LinearLayout filterArea;
     private NestedScrollView homeNestedScrollView;
+    private FrameLayout homeFrame;
 
 
     // var
@@ -100,8 +109,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private final int GET_TAGS = 2;
     private final int GET_PREVIEW_LINK = 3;
     private final int UPLOAD_MEMO_CODE = 4;
+    private final int SPEECH_TO_TEXT = 5;
     private final PublishSubject<Pair<String, Object>> centerObserver;
-    private final PublishSubject<Pair<String, String>>  filterTimeObservable = PublishSubject.create();
+    private final PublishSubject<Pair<String, String>> filterTimeObservable = PublishSubject.create();
     private final PublishSubject<Pair<String, String>> filterTagObservable = PublishSubject.create();
     private final PublishSubject<Pair<String, String>> filterHighLightObservable = PublishSubject.create();
 
@@ -133,10 +143,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     }
 
     // start init
-    @SuppressLint("CheckResult")
+    @SuppressLint({"CheckResult", "ClickableViewAccessibility"})
     private void init(View view) {
         subscribeCenterObservable();
-
         RecyclerView homeRecyclerView = view.findViewById(R.id.home_recyclerView);
         homeSwipeRefreshLayout = view.findViewById(R.id.home_refresh_layout);
         CircleImageView userAvatar = view.findViewById(R.id.home_user_avatar);
@@ -175,15 +184,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     searchKey = searchText.getText().toString();
                     filterDiary();
                     searchText.setText("");
-                    searchText.setCursorVisible(false);
                 }
+                hideSoftKeyboard(view);
+                searchText.setCursorVisible(false);
             }
-            return false;
+            return true;
         });
-
-
-
         shimerContainer.startShimmer();
+
+        searchText.setOnClickListener(view1 -> searchText.setCursorVisible(true));
+
 
         Log.d(TAG, "init: " + viewModel.listDiary.size());
         if (viewModel.listDiary.size() == 0) {
@@ -265,7 +275,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     private void homeViewModeListener() {
         allMyMemo.setOnClickListener(view -> {
             if (homeViewMode.equals("allMemoSharedWithMe")) {
-                homeNestedScrollView.scrollTo(0,0);
+                homeNestedScrollView.scrollTo(0, 0);
                 homeViewMode = "allMyMemo";
                 allMemoSharedWithMe.setTextColor(Color.parseColor("#999999"));
                 allMyMemo.setTextColor(Color.parseColor("#333333"));
@@ -278,7 +288,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         allMemoSharedWithMe.setOnClickListener(view -> {
             if (homeViewMode.equals("allMyMemo")) {
-                homeNestedScrollView.scrollTo(0,0);
+                homeNestedScrollView.scrollTo(0, 0);
                 homeViewMode = "allMemoSharedWithMe";
                 allMemoSharedWithMe.setTextColor(Color.parseColor("#333333"));
                 allMyMemo.setTextColor(Color.parseColor("#999999"));
@@ -315,6 +325,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 startPickTags();
             } else if (key.equals(Constant.GET_LINKS_CODE)) {
                 startAddLink();
+            } else if (key.equals(Constant.SPEECH_TO_TEXT_CODE)) {
+                startSpeechToText();
             } else if (key.equals("share_action")) {
                 viewModel.getSharedEmails();
                 viewModel.getSharedUser(adapterAction.second);
@@ -327,10 +339,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 intent.putExtra("diary_edit", diary);
                 if (homeViewMode.equals("allMemoSharedWithMe")) {
                     PersonProfile user = (PersonProfile) diary.getUser();
-                    intent.putExtra("user",user);
+                    intent.putExtra("user", user);
                 } else {
                     String user = (String) diary.getUser();
-                    intent.putExtra("user",user);
+                    intent.putExtra("user", user);
                 }
                 intent.putExtra("is_shared_memo", homeViewMode.equals("allMemoSharedWithMe"));
                 startActivityForResult(intent, UPLOAD_MEMO_CODE);
@@ -431,6 +443,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             public void onComplete() {
             }
         });
+    }
+
+    private void startSpeechToText() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speech to text");
+        startActivityForResult(intent, SPEECH_TO_TEXT);
     }
 
     private void showDeleteAlert(int position) {
@@ -701,12 +720,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                             count++;
                         }
                     }
-                   if (count >= 5) {
-                       sharedUserAvatarBlackLayout.setVisibility(View.VISIBLE);
-                       sharedUserAvatarMoreTextView.setVisibility(View.VISIBLE);
-                       sharedUserAvatarMoreTextView.setText("+" + (listSharedUsers.size() - 3));
-                   }
-                   sharedUserAvatarArea.setOnClickListener(v -> showDetailSharedUsers(listSharedUsers));
+                    if (count >= 5) {
+                        sharedUserAvatarBlackLayout.setVisibility(View.VISIBLE);
+                        sharedUserAvatarMoreTextView.setVisibility(View.VISIBLE);
+                        sharedUserAvatarMoreTextView.setText("+" + (listSharedUsers.size() - 3));
+                    }
+                    sharedUserAvatarArea.setOnClickListener(v -> showDetailSharedUsers(listSharedUsers));
                 }
             }
 
@@ -781,7 +800,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     }
 
 
-
     private void startUploadFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
@@ -850,6 +868,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     adapter.updateMemoAt(currentChoosedDiaryPosition, diary);
                     viewModel.listDiary.set(currentChoosedDiaryPosition, diary);
                 }
+            }
+        } else if (requestCode == SPEECH_TO_TEXT) {
+            if (resultCode == RESULT_OK) {
+                ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                Intent uploadIntent = new Intent(getActivity(), UploadActivity.class);
+                uploadIntent.putExtra("content_memo", matches.get(0));
+                startActivityForResult(uploadIntent, UPLOAD_MEMO_CODE);
             }
         }
     }
@@ -1094,8 +1119,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                     searchKey = searchText.getText().toString();
                     filterDiary();
                     searchText.setText("");
-                    searchText.setCursorVisible(false);
                 }
+                hideSoftKeyboard(getView());
+                searchText.setCursorVisible(false);
                 break;
         }
     }
@@ -1215,6 +1241,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             filerMemoByFilter.setText(String.valueOf(viewModel.getTotalFilterMemo()));
             filterMemoTotal.setText(String.valueOf(viewModel.getTotalMemo()));
         }
+    }
+
+    public void hideSoftKeyboard(View view) {
+        Log.d(TAG, "hideSoftKeyboard: ");
+        InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
