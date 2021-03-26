@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
+import com.lnb.imemo.Utils.UrlHandler;
 import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
@@ -70,10 +71,7 @@ public class PreviewImageActivity extends AppCompatActivity {
     }
 
     private void startDownloadFile() {
-        String url = listResource.get(0).getUrl();
-        if (!url.contains("https")) {
-            url = Utils.storeUrl + url;
-        }
+        String url = UrlHandler.convertUrl(listResource.get(0).getUrl());
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
         request.setTitle(listResource.get(0).getName());

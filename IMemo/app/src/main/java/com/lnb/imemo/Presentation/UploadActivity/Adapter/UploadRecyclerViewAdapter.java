@@ -17,6 +17,7 @@ import com.lnb.imemo.Model.Link;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
+import com.lnb.imemo.Utils.UrlHandler;
 import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
@@ -58,10 +59,7 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
                 Log.d(TAG, "onBindViewHolder: " + resource.getUploading());
                 if (resource.getUploading() == null) {
                     imageAndVideoViewHolder.progressIndicator.setVisibility(View.GONE);
-                    String url = resource.getUrl();
-                    if (!url.contains("https")) {
-                        url = Utils.storeUrl + url;
-                    }
+                    String url = UrlHandler.convertUrl(resource.getUrl());
                     Glide.with(mContext).load(url).into(imageAndVideoViewHolder.imageResource);
                     imageAndVideoViewHolder.deleteResource.setOnClickListener(v -> {
                         listUploadResource.remove(position);
@@ -81,10 +79,7 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
                 Log.d(TAG, "onBindViewHolder: " + resource.getUploading());
                 if (resource.getUploading() == null) {
                     imageAndVideoViewHolder.progressIndicator.setVisibility(View.GONE);
-                    String url = resource.getUrl();
-                    if (!url.contains("https")) {
-                        url = Utils.storeUrl + url;
-                    }
+                    String url = UrlHandler.convertUrl(resource.getUrl());
                     Glide.with(mContext).load(url).into(imageAndVideoViewHolder.imageResource);
                     imageAndVideoViewHolder.deleteResource.setOnClickListener(v -> {
                         listUploadResource.remove(position);

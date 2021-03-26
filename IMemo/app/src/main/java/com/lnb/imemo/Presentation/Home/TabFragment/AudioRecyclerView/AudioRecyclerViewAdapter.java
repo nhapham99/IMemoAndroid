@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
+import com.lnb.imemo.Utils.UrlHandler;
 import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
@@ -159,10 +160,7 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
 
     private Boolean prepareMediaPlayer(int position) {
         try {
-            String url = listAudio.get(position).getUrl();
-            if (!url.contains("https")) {
-                url = Utils.storeUrl + url;
-            }
+            String url = UrlHandler.convertUrl(listAudio.get(position).getUrl());
             mediaPlayers.get(position).setDataSource(url);
             mediaPlayers.get(position).prepare();
             return true;

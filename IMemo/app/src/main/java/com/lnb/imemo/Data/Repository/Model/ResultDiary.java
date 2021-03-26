@@ -6,8 +6,7 @@ import com.lnb.imemo.Model.PersonProfile;
 public class ResultDiary {
     private Diary<PersonProfile> diary;
 
-    public ResultDiary() {
-    }
+    public ResultDiary() {}
 
     public ResultDiary(Diary<PersonProfile> diary) {
         this.diary = diary;

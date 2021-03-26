@@ -29,9 +29,12 @@
 
         <ImageView
             android:id="@+id/pop_down_menu"
-            android:layout_width="15dp"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/length_30dp"
+            android:layout_height="@dimen/length_30dp"
             android:layout_gravity="end"
+            android:paddingEnd="@dimen/length_5dp"
+            android:paddingTop="@dimen/length_5dp"
+            android:paddingBottom="@dimen/length_5dp"
             android:layout_marginEnd="@dimen/length_10dp"
             android:src="@drawable/ic_three_dot" />
 

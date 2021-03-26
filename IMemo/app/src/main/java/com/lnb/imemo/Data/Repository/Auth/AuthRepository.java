@@ -347,37 +347,32 @@ public class AuthRepository {
     public void getAllSharedEmails(String token) {
         LiveData<Root<ResultSharedEmails>> source = LiveDataReactiveStreams
                 .fromPublisher(authAPI.getAllSharedEmails(token)
-                        .onErrorReturn(new Function<Throwable, Root<ResultSharedEmails>>() {
-                            @Override
-                            public Root<ResultSharedEmails> apply(@NonNull Throwable throwable) throws Exception {
-                                throwable.printStackTrace();
-                                String message = throwable.getMessage();
-                                Root<ResultSharedEmails> root = new Root<>();
-                                if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
-                                    root.setStatusCode(409);
-                                } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
-                                    root.setStatusCode(-1);
-                                } else {
-                                    root.setStatusCode(-2);
-                                }
-                                return root;
+                        .onErrorReturn(throwable -> {
+                            throwable.printStackTrace();
+                            String message = throwable.getMessage();
+                            Root<ResultSharedEmails> root = new Root<>();
+                            if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                root.setStatusCode(409);
+                            } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                root.setStatusCode(-1);
+                            } else {
+                                root.setStatusCode(-2);
                             }
+                            return root;
                         })
                         .subscribeOn(Schedulers.io())
                 );
-        authRepoLiveData.addSource(source, new Observer<Root<ResultSharedEmails>>() {
-            @Override
-            public void onChanged(Root<ResultSharedEmails> root) {
-                ResponseRepo<ArrayList<String>> responseRepo = new ResponseRepo<>();
-                if (root.getStatusCode() == 0) {
-                    responseRepo.setKey(Constant.GET_SHARED_EMAILS);
-                    responseRepo.setData((ArrayList<String>) root.getResult().getEmails());
-                    authRepoLiveData.setValue(responseRepo);
-                } else {
-                    Log.d(TAG, "onChanged: " + root.getError());
-                }
-                authRepoLiveData.removeSource(source);
+        authRepoLiveData.addSource(source, root -> {
+            ResponseRepo<ArrayList<String>> responseRepo = new ResponseRepo<>();
+            if (root.getStatusCode() == 0) {
+                Log.d(TAG, "getAllSharedEmails: " + root.getResult().toString());
+                responseRepo.setKey(Constant.GET_SHARED_EMAILS);
+                responseRepo.setData((ArrayList<String>) root.getResult().getEmails());
+                authRepoLiveData.setValue(responseRepo);
+            } else {
+                Log.d(TAG, "onChanged: " + root.getError());
             }
+            authRepoLiveData.removeSource(source);
         });
     }
 

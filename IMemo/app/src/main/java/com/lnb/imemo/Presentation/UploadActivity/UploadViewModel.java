@@ -1,9 +1,8 @@
 package com.lnb.imemo.Presentation.UploadActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Pair;
 
@@ -21,26 +20,23 @@ import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.User;
 import com.lnb.imemo.Utils.Constant;
 import com.lnb.imemo.Utils.FileMetaData;
-import com.lnb.imemo.Utils.FileUtils;
 import com.lnb.imemo.Utils.Utils;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
 
 public class UploadViewModel extends ViewModel {
     private static final String TAG = "UploadViewModel";
-    private Context context;
-    private UploadFileRepository uploadFileRepository;
-    private DiaryRepository diaryRepository;
+    @SuppressLint("StaticFieldLeak")
+    private final Context context;
+    private final UploadFileRepository uploadFileRepository;
+    private final DiaryRepository diaryRepository;
     private Observer<ResponseRepo> uploadObservable;
     private Observer<ResponseRepo> diaryObserver;
-    private MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
-    private Diary uploadDiary;
-    private User mUser;
+    private final MediatorLiveData<ResponseRepo> viewModelLiveData = new MediatorLiveData<>();
+    private final Diary uploadDiary;
+    private final User mUser;
 
     public UploadViewModel(Context context) {
         this.context = context;
@@ -67,24 +63,23 @@ public class UploadViewModel extends ViewModel {
         diaryRepository.updateDiary(mUser.getToken(), getUploadDiary());
     }
 
-    private void subscribeDiaryObservable() {
-        diaryObserver = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key == Constant.UPDATE_DIARY_KEY) {
-                    Pair<Utils.State,JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
-                    ResponseRepo<Utils.State> response = new ResponseRepo<>();
-                    response.setKey(Constant.UPDATE_DIARY_KEY);
-                    response.setData(pair.first);
-                    viewModelLiveData.setValue(response);
-                }
-            }
-        };
-
-        diaryRepository.observableDiaryRepo().observeForever(diaryObserver);
+    public void updateDiaryForSharedMemo() {
+        diaryRepository.updateDiaryShared(mUser.getToken(), getUploadDiary());
     }
 
+    private void subscribeDiaryObservable() {
+        diaryObserver = responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.UPDATE_DIARY_KEY)) {
+                Pair<Utils.State,JsonObject> pair = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                ResponseRepo<Utils.State> response = new ResponseRepo<>();
+                response.setKey(Constant.UPDATE_DIARY_KEY);
+                response.setData(pair.first);
+                viewModelLiveData.setValue(response);
+            }
+        };
+        diaryRepository.observableDiaryRepo().observeForever(diaryObserver);
+    }
 
 
     private void subscribeUploadObservable() {

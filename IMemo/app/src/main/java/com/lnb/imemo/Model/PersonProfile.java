@@ -1,6 +1,9 @@
 package com.lnb.imemo.Model;
 
-public class PersonProfile {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class PersonProfile implements Parcelable {
     private String id;
     private String sub;
     private String username;
@@ -16,6 +19,50 @@ public class PersonProfile {
 
     private PersonProfile() {
     }
+
+    protected PersonProfile(Parcel in) {
+        id = in.readString();
+        sub = in.readString();
+        username = in.readString();
+        email = in.readString();
+        name = in.readString();
+        givenName = in.readString();
+        familyName = in.readString();
+        picture = in.readString();
+        gender = in.readString();
+        birthday = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(sub);
+        dest.writeString(username);
+        dest.writeString(email);
+        dest.writeString(name);
+        dest.writeString(givenName);
+        dest.writeString(familyName);
+        dest.writeString(picture);
+        dest.writeString(gender);
+        dest.writeString(birthday);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<PersonProfile> CREATOR = new Creator<PersonProfile>() {
+        @Override
+        public PersonProfile createFromParcel(Parcel in) {
+            return new PersonProfile(in);
+        }
+
+        @Override
+        public PersonProfile[] newArray(int size) {
+            return new PersonProfile[size];
+        }
+    };
 
     public static PersonProfile getInstance() {
         if (mInstance == null) {

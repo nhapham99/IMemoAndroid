@@ -33,6 +33,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +44,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.lnb.imemo.Data.Repository.Model.SharedUser;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
+import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.Tags;
 import com.lnb.imemo.Presentation.Home.RecyclerView.DetailSharedUserRecyclerViewAdapter;
@@ -315,12 +317,23 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
             } else if (key.equals(Constant.GET_LINKS_CODE)) {
                 startAddLink();
             } else if (key.equals("share_action")) {
+                viewModel.getSharedEmails();
+                viewModel.getSharedUser(adapterAction.second);
                 showShareDialog(adapterAction.second);
             } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
                 currentChoosedDiaryPosition = adapterAction.second;
                 Log.d(TAG, "onChanged: " + currentChoosedDiaryPosition);
                 Intent intent = new Intent(getActivity(), UploadActivity.class);
-                intent.putExtra("diary_edit", viewModel.listDiary.get(adapterAction.second));
+                Diary diary = viewModel.listDiary.get(adapterAction.second);
+                intent.putExtra("diary_edit", diary);
+                if (homeViewMode.equals("allMemoSharedWithMe")) {
+                    PersonProfile user = (PersonProfile) diary.getUser();
+                    intent.putExtra("user",user);
+                } else {
+                    String user = (String) diary.getUser();
+                    intent.putExtra("user",user);
+                }
+                intent.putExtra("is_shared_memo", homeViewMode.equals("allMemoSharedWithMe"));
                 startActivityForResult(intent, UPLOAD_MEMO_CODE);
             } else if (key.equals("to_preview_memo")) {
                 Intent intent = new Intent(getActivity(), MemoPreviewActivity.class);
@@ -430,9 +443,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         TextView cancelDeleteBtn = view.findViewById(R.id.cancel_delete);
         deleteBtn.setOnClickListener(v -> {
             currentChoosedDiaryPosition = position;
-            viewModel.deleteDiary(position);
-            viewModel.setTotalMemo(viewModel.getTotalMemo() - 1);
-            viewModel.setTotalFilterMemo(viewModel.getTotalFilterMemo() - 1);
+            if (homeViewMode.equals("allMemoSharedWithMe")) {
+                viewModel.deleteSharedDiary(position);
+            } else {
+                viewModel.deleteDiary(position);
+            }
             dialog.dismiss();
         });
         cancelDeleteBtn.setOnClickListener(v -> {
@@ -613,15 +628,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     }
 
     private void showShareDialog(int position) {
-        viewModel.getSharedEmails();
-        viewModel.getSharedUser(position);
         final ArrayList[] listSharedEmails = new ArrayList[]{new ArrayList<>()};
 
         Diary diary = viewModel.listDiary.get(position);
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
         View view = getLayoutInflater().inflate(R.layout.share_memo_layout, null);
         dialogBuilder.setView(view);
-
 
         TextView previewMemo = view.findViewById(R.id.preview_memo);
         AutoCompleteTextView email_input = view.findViewById(R.id.input_email);
@@ -646,6 +658,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
             @Override
             public void onNext(@io.reactivex.annotations.NonNull ArrayList<String> strings) {
+                Log.d(TAG, "onNext: " + strings);
                 listSharedEmails[0] = strings;
                 String[] listEmailArray = new String[listSharedEmails[0].size()];
                 for (int i = 0; i < listSharedEmails[0].size(); i++) {
@@ -710,28 +723,27 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
 
         Button shareButton = view.findViewById(R.id.share_memo);
         ImageButton dialogEscape = view.findViewById(R.id.share_memo_escape);
-        SwitchMaterial switchShare = view.findViewById(R.id.switch_share);
         ProgressBar shareProgressBar = view.findViewById(R.id.share_progressBar);
         shareProgressBar.setVisibility(View.INVISIBLE);
+        RadioButton viewOnlyPermission = view.findViewById(R.id.viewOnlyPermission_radioButton);
+        RadioButton editPermission = view.findViewById(R.id.editPermission_radioButton);
 
-        if (diary.getStatus().equals("private")) {
-            switchShare.setChecked(false);
-            previewMemo.setVisibility(View.GONE);
-            email_input.setVisibility(View.GONE);
-            shareButton.setVisibility(View.GONE);
-        } else if (diary.getStatus().equals("public")) {
-            switchShare.setChecked(true);
-        }
+        final String[] permission = {"view"};
 
-        switchShare.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                viewModel.publicDiary(diary);
-            } else {
-                viewModel.privateDiary(diary);
+        viewOnlyPermission.setOnClickListener(view1 -> {
+            if (editPermission.isChecked()) {
+                editPermission.setChecked(false);
+                permission[0] = "view";
             }
-            shareProgressBar.setVisibility(View.VISIBLE);
         });
 
+
+        editPermission.setOnClickListener(view12 -> {
+            if (viewOnlyPermission.isChecked()) {
+                viewOnlyPermission.setChecked(false);
+                permission[0] = "edit";
+            }
+        });
 
         previewMemo.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), MemoPreviewActivity.class);
@@ -745,55 +757,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
         AlertDialog alertDialog = dialogBuilder.create();
 
         shareButton.setOnClickListener(v -> {
-            viewModel.shareDiary(diary.getId(), email_input.getText().toString());
+            viewModel.shareDiary(diary.getId(), email_input.getText().toString(), permission[0]);
             alertDialog.dismiss();
         });
 
         dialogEscape.setOnClickListener(v -> alertDialog.dismiss());
-
         alertDialog.show();
-
-        viewModel.getViewModelLiveData().observe(this, responseRepo -> {
-            String key = responseRepo.getKey();
-            if (key.equals("public_diary")) {
-                Utils.State state = (Utils.State) responseRepo.getData();
-                switch (state) {
-                    case SUCCESS:
-                        shareProgressBar.setVisibility(View.INVISIBLE);
-                        previewMemo.setVisibility(View.VISIBLE);
-                        email_input.setVisibility(View.VISIBLE);
-                        shareButton.setVisibility(View.VISIBLE);
-                        break;
-                    case FAILURE:
-                        shareProgressBar.setVisibility(View.INVISIBLE);
-                        Toast.makeText(getContext(), "Chia sẻ memo không thành công!", Toast.LENGTH_SHORT).show();
-                        break;
-                    case NO_INTERNET:
-                        shareProgressBar.setVisibility(View.INVISIBLE);
-                        Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối của bạn!", Toast.LENGTH_SHORT).show();
-                        break;
-                }
-
-            } else if (key.equals("private_diary")) {
-                Utils.State state = (Utils.State) responseRepo.getData();
-                switch (state) {
-                    case SUCCESS:
-                        shareProgressBar.setVisibility(View.INVISIBLE);
-                        previewMemo.setVisibility(View.GONE);
-                        email_input.setVisibility(View.GONE);
-                        shareButton.setVisibility(View.GONE);
-                        break;
-                    case FAILURE:
-                        shareProgressBar.setVisibility(View.INVISIBLE);
-                        Toast.makeText(getContext(), "Khóa memo không thành công!", Toast.LENGTH_SHORT).show();
-                        break;
-                    case NO_INTERNET:
-                        shareProgressBar.setVisibility(View.INVISIBLE);
-                        Toast.makeText(getContext(), "Vui lòng kiểm tra lại kết nối của bạn!", Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        });
     }
 
     private void showDetailSharedUsers(List<SharedUser> listSharedUsers) {
@@ -872,6 +841,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 if (data.getParcelableExtra("update_memo") != null) {
                     Log.d(TAG, "onActivityResult: " + currentChoosedDiaryPosition);
                     Diary diary = data.getParcelableExtra("update_memo");
+                    if (homeViewMode.equals("allMemoSharedWithMe")) {
+                        PersonProfile personProfile = data.getParcelableExtra("user");
+                        diary.setUser(personProfile);
+                    } else {
+                        String user = data.getParcelableExtra("user");
+                        diary.setUser(user);
+                    }
                     adapter.updateMemoAt(currentChoosedDiaryPosition, diary);
                     viewModel.listDiary.set(currentChoosedDiaryPosition, diary);
                 }
@@ -906,22 +882,21 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
     }
 
     private void subscribeDeleteMemoObservable() {
-        viewModel.observableDeleteDiary().observe(this, new Observer<Utils.State>() {
-            @Override
-            public void onChanged(Utils.State state) {
-                switch (state) {
-                    case SUCCESS:
-                        Log.d(TAG, "onChanged: removed " + currentChoosedDiaryPosition);
-                        viewModel.listDiary.remove(currentChoosedDiaryPosition);
-                        adapter.removeAtPosition(currentChoosedDiaryPosition);
-                        break;
-                    case FAILURE:
-                        Toast.makeText(getContext(), "Lỗi xóa memo. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
-                        break;
-                    case NO_INTERNET:
-                        Toast.makeText(getContext(), "Xin kiểm tra lại kết nối của bạn", Toast.LENGTH_SHORT).show();
-                        break;
-                }
+        viewModel.observableDeleteDiary().observe(this, state -> {
+            switch (state) {
+                case SUCCESS:
+                    Log.d(TAG, "onChanged: removed " + currentChoosedDiaryPosition);
+                    viewModel.listDiary.remove(currentChoosedDiaryPosition);
+                    adapter.removeAtPosition(currentChoosedDiaryPosition);
+                    viewModel.setTotalMemo(viewModel.getTotalMemo() - 1);
+                    viewModel.setTotalFilterMemo(viewModel.getTotalFilterMemo() - 1);
+                    break;
+                case FAILURE:
+                    Toast.makeText(getContext(), "Lỗi xóa memo. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                    break;
+                case NO_INTERNET:
+                    Toast.makeText(getContext(), "Xin kiểm tra lại kết nối của bạn", Toast.LENGTH_SHORT).show();
+                    break;
             }
         });
     }
@@ -965,7 +940,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                 Utils.State state = (Utils.State) responseRepo.getData();
                 switch (state) {
                     case SUCCESS:
-
                         Toast.makeText(getContext(), "Chia sẻ thành công", Toast.LENGTH_SHORT).show();
                         break;
                     case FAILURE:

@@ -19,12 +19,18 @@ import java.util.ArrayList;
 import io.reactivex.subjects.PublishSubject;
 
 public class TagRecyclerViewAdapter extends RecyclerView.Adapter<TagRecyclerViewAdapter.TagRecyclerViewHolder> {
-    private ArrayList<Tags> listTags = new ArrayList<>();
-    private PublishSubject<Integer> removeTagObservable = PublishSubject.create();
+    private final ArrayList<Tags> listTags;
+    private final PublishSubject<Integer> removeTagObservable = PublishSubject.create();
+    private Boolean isShareMemo;
+
     public TagRecyclerViewAdapter(ArrayList<Tags> listTags) {
         this.listTags = listTags;
     }
-    public TagRecyclerViewAdapter() {}
+
+    public void setShareMemo(Boolean shareMemo) {
+        if (shareMemo == null) shareMemo = false;
+        isShareMemo = shareMemo;
+    }
 
     @NonNull
     @Override
@@ -37,15 +43,16 @@ public class TagRecyclerViewAdapter extends RecyclerView.Adapter<TagRecyclerView
     public void onBindViewHolder(@NonNull TagRecyclerViewHolder holder, int position) {
         holder.tagName.setText(listTags.get(position).getName());
         holder.itemView.getBackground().setColorFilter(Color.parseColor(listTags.get(position).getColor()), PorterDuff.Mode.SRC_ATOP);
-        holder.removeTag.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        if (isShareMemo) {
+            holder.removeTag.setVisibility(View.GONE);
+        } else {
+            holder.removeTag.setOnClickListener(v -> {
                 listTags.remove(position);
                 notifyItemRemoved(position);
                 notifyItemRangeChanged(position, listTags.size());
                 removeTagObservable.onNext(position);
-            }
-        });
+            });
+        }
     }
 
     public ArrayList<Tags> getListTags() {
@@ -67,7 +74,7 @@ public class TagRecyclerViewAdapter extends RecyclerView.Adapter<TagRecyclerView
         return listTags.size();
     }
 
-    class TagRecyclerViewHolder extends RecyclerView.ViewHolder {
+    static class TagRecyclerViewHolder extends RecyclerView.ViewHolder {
         TextView tagName;
         ImageView removeTag;
         public TagRecyclerViewHolder(@NonNull View itemView) {
