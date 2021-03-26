@@ -25,6 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
+import com.lnb.imemo.Utils.UrlHandler;
 import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
@@ -59,10 +60,7 @@ public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapte
     public void onBindViewHolder(@NonNull PreviewImageViewHolder holder, int position) {
         Resource resource = listResource.get(position);
         if (resource.getType().contains(Constant.imageType)) {
-            String imageUrl = resource.getUrl();
-            if (!imageUrl.contains("https")) {
-                imageUrl = Utils.storeUrl + imageUrl;
-            }
+            String imageUrl = UrlHandler.convertUrl(resource.getUrl());
             Glide.with(mContext).load(imageUrl).into(holder.imageView);
             holder.imageView.setOnLongClickListener(v -> {
                 BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(mContext);
@@ -77,11 +75,7 @@ public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapte
                 return false;
             });
         } else if (resource.getType().contains(Constant.videoType)){
-            String videoUrl = resource.getUrl();
-            if (!videoUrl.contains("https")) {
-                videoUrl = Utils.storeUrl + videoUrl;
-            }
-
+            String videoUrl = UrlHandler.convertUrl(resource.getUrl());
             player = new SimpleExoPlayer.Builder(mContext).build();
             MediaItem mediaItem = MediaItem.fromUri(videoUrl);
             player.setMediaItem(mediaItem);
@@ -104,10 +98,7 @@ public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapte
     }
 
     private void startDownloadFile(int position) {
-        String url = listResource.get(position).getUrl();
-        if (!url.contains("https")) {
-            url = Utils.storeUrl + url;
-        }
+        String url = UrlHandler.convertUrl(listResource.get(position).getUrl());
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
         request.setTitle(listResource.get(position).getName());

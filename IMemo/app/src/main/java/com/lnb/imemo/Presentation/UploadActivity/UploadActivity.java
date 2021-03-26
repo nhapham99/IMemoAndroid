@@ -28,8 +28,10 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Link;
+import com.lnb.imemo.Model.PersonProfile;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Model.Tags;
@@ -72,6 +74,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     private final int GET_PREVIEW_LINK = 3;
     private UploadViewModel viewModel;
     private UploadRecyclerViewAdapter resourceAdapter;
+    private Boolean isSharedMemo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,9 +161,21 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             viewModel.getUploadDiary().getLinks().add(link);
             resourceAdapter.addItem(link);
         } else if (getIntent().getParcelableExtra("diary_edit") != null) {
-            Diary diary = getIntent().getParcelableExtra("diary_edit");
-            assert diary != null;
-            setupViewForEdit(diary);
+            isSharedMemo = getIntent().getBooleanExtra("is_shared_memo", false);
+            if (isSharedMemo) {
+                Diary<PersonProfile> diary = getIntent().getParcelableExtra("diary_edit");
+                PersonProfile user = getIntent().getParcelableExtra("user");
+                diary.setUser(user);
+                assert diary != null;
+                setupViewForEditSharedMemo(diary);
+            } else {
+                Diary<String> diary = getIntent().getParcelableExtra("diary_edit");
+                String user = getIntent().getParcelableExtra("user");
+                diary.setUser(user);
+                assert diary != null;
+                setupViewForEdit(diary);
+            }
+
         }
         subscribeUploadRecyclerViewObservable();
     }
@@ -185,6 +200,7 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
             createMemoTagsRecyclerView.setVisibility(View.GONE);
         } else {
             tagsAdapter = new TagRecyclerViewAdapter(diary.getTags());
+            tagsAdapter.setShareMemo(isSharedMemo);
             createMemoTagsRecyclerView.setVisibility(View.VISIBLE);
             createMemoTagsRecyclerView.setAdapter(tagsAdapter);
             createMemoTagsRecyclerView.setLayoutManager(new LinearLayoutManager(UploadActivity.this, LinearLayoutManager.HORIZONTAL, false));
@@ -196,7 +212,44 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         diary.setTagIds(tagIds);
         viewModel.getUploadDiary().setDiary(diary);
         createMemoButton.setText("Cập nhật");
+
     }
+
+    private void setupViewForEditSharedMemo(Diary<PersonProfile> diary) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        try {
+            diaryTime.setTime(simpleDateFormat.parse(diary.getTime()));
+            SimpleDateFormat currentDateFormat = new SimpleDateFormat("EEEE', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
+            Log.d(TAG, "setupViewForEdit: " + diaryTime.getTime().toString());
+            String[] splitDate = currentDateFormat.format(diaryTime.getTime()).split(",");
+            createMemoDate.setText(DateHelper.convertDate(splitDate[0]) + "," + splitDate[1]);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        createMemoTitle.setText(diary.getTitle());
+        createMemoContent.setText(diary.getContent());
+        listObject.addAll(diary.getResources());
+        listObject.addAll(diary.getLinks());
+        resourceAdapter.setData(listObject);
+        if (diary.getTags().size() == 0) {
+            createMemoTagsRecyclerView.setVisibility(View.GONE);
+        } else {
+            tagsAdapter = new TagRecyclerViewAdapter(diary.getTags());
+            tagsAdapter.setShareMemo(isSharedMemo);
+            createMemoTagsRecyclerView.setVisibility(View.VISIBLE);
+            createMemoTagsRecyclerView.setAdapter(tagsAdapter);
+            createMemoTagsRecyclerView.setLayoutManager(new LinearLayoutManager(UploadActivity.this, LinearLayoutManager.HORIZONTAL, false));
+        }
+        ArrayList<String> tagIds = new ArrayList<>();
+        for (Tags tags : diary.getTags()) {
+            tagIds.add(tags.getId());
+        }
+
+        diary.setTagIds(tagIds);
+        viewModel.getUploadDiary().setDiary(diary);
+        createMemoButton.setText("Cập nhật");
+    }
+
 
     private void subscribeUploadRecyclerViewObservable() {
         resourceAdapter.getUploadRecyclerViewObservable().subscribe(new io.reactivex.Observer<Integer>() {
@@ -251,7 +304,6 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                }
            } else if (key.equals(Constant.CREATE_DIARY_KEY)) {
                Log.d(TAG, "onChanged: " + responseRepo.getData().toString());
-
            } else if (key.equals(Constant.UPDATE_DIARY_KEY)) {
                Utils.State state = (Utils.State) responseRepo.getData();
                switch (state) {
@@ -259,6 +311,14 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                        Toast.makeText(UploadActivity.this, "Cập nhật memo thành công", Toast.LENGTH_SHORT).show();
                        Intent intent = new Intent();
                        intent.putExtra("update_memo", viewModel.getUploadDiary());
+                       if (isSharedMemo) {
+                           PersonProfile personProfile = (PersonProfile) viewModel.getUploadDiary().getUser();
+                           intent.putExtra("user", personProfile);
+                       } else {
+                           String user = (String) viewModel.getUploadDiary().getUser();
+                           intent.putExtra("user", user);
+                       }
+                       Log.d(TAG, "subscribeViewModelObservable: " + viewModel.getUploadDiary());
                        setResult(Activity.RESULT_OK, intent);
                        finish();
                        break;
@@ -359,29 +419,26 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void showDatePicker() {
-        DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                diaryTime.set(Calendar.YEAR, year);
-                diaryTime.set(Calendar.MONTH, month);
-                diaryTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, dayOfMonth) -> {
+            diaryTime.set(Calendar.YEAR, year);
+            diaryTime.set(Calendar.MONTH, month);
+            diaryTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        diaryTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        diaryTime.set(Calendar.MINUTE, minute);
+            TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                    diaryTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    diaryTime.set(Calendar.MINUTE, minute);
 
-                        SimpleDateFormat simpledateformat = new SimpleDateFormat("EEEE");
-                        Date date = new Date(year, month, dayOfMonth);
-                        String dayOfWeek = simpledateformat.format(date);
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
-                        createMemoDate.setText(DateHelper.convertDate(dayOfWeek) + simpleDateFormat.format(diaryTime.getTime()));
+                    SimpleDateFormat simpledateformat = new SimpleDateFormat("EEEE");
+                    Date date = new Date(year, month, dayOfMonth);
+                    String dayOfWeek = simpledateformat.format(date);
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("', 'dd' Thg 'MM' 'yyyy', 'HH:mm");
+                    createMemoDate.setText(DateHelper.convertDate(dayOfWeek) + simpleDateFormat.format(diaryTime.getTime()));
 
-                    }
-                };
-                new android.app.TimePickerDialog(UploadActivity.this, timeSetListener, diaryTime.get(Calendar.HOUR_OF_DAY), diaryTime.get(Calendar.MINUTE), true).show();
-            }
+                }
+            };
+            new TimePickerDialog(UploadActivity.this, timeSetListener, diaryTime.get(Calendar.HOUR_OF_DAY), diaryTime.get(Calendar.MINUTE), true).show();
         };
         new DatePickerDialog(UploadActivity.this, dateSetListener, diaryTime.get(Calendar.YEAR), diaryTime.get(Calendar.MONTH), diaryTime.get(Calendar.DAY_OF_MONTH)).show();
     }
@@ -414,7 +471,11 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         }
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         viewModel.getUploadDiary().setTime(simpleDateFormat.format(diaryTime.getTime()));
-        viewModel.updateDiary();
+        if (isSharedMemo) {
+            viewModel.updateDiaryForSharedMemo();
+        } else {
+            viewModel.updateDiary();
+        }
     }
 
 

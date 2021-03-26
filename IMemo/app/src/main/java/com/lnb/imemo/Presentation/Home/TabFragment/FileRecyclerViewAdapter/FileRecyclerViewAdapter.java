@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
+import com.lnb.imemo.Utils.UrlHandler;
 import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
@@ -41,10 +42,7 @@ public class FileRecyclerViewAdapter extends RecyclerView.Adapter<FileRecyclerVi
     }
 
     private void startDownloadFile(int position) {
-        String url = listFile.get(position).getUrl();
-        if (!url.contains("https")) {
-            url = Utils.storeUrl + url;
-        }
+        String url = UrlHandler.convertUrl(listFile.get(position).getUrl());
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
         request.setTitle(listFile.get(position).getName());

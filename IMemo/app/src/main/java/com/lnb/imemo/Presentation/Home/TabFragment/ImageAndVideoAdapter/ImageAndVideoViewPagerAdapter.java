@@ -19,6 +19,7 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.Constant;
+import com.lnb.imemo.Utils.UrlHandler;
 import com.lnb.imemo.Utils.Utils;
 import com.makeramen.roundedimageview.RoundedImageView;
 import java.util.ArrayList;
@@ -70,20 +71,14 @@ public class ImageAndVideoViewPagerAdapter extends RecyclerView.Adapter<ImageAnd
         try {
             if (listImage.get(position).getType().contains(Constant.imageType)) {
                 holder.videoPlayer.setVisibility(View.GONE);
-                String urlImage = listImage.get(position).getUrl();
-                if (!urlImage.contains("https")) {
-                    urlImage = Utils.storeUrl + urlImage;
-                }
+                String urlImage = UrlHandler.convertUrl(listImage.get(position).getUrl());
                 Glide.with(mContext).load(urlImage).into(holder.imageView);
                 holder.imageView.setOnClickListener(view -> {
                     imageAndVideoViewPagerObservable.onNext(new Pair<>("image_clicked", position));
                     Log.d(TAG, "onBindViewHolder: click image");
                 });
             } else {
-                String urlVideo = listImage.get(position).getUrl();
-                if (!urlVideo.contains("https")) {
-                    urlVideo = Utils.storeUrl + urlVideo;
-                }
+                String urlVideo = UrlHandler.convertUrl(listImage.get(position).getUrl());
                 holder.imageView.setVisibility(View.GONE);
                 SimpleExoPlayer player = new SimpleExoPlayer.Builder(mContext).build();
                 listPlayers.add(player);

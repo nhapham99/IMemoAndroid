@@ -2,15 +2,14 @@ package com.lnb.imemo.Data.Repository.Model;
 
 import com.lnb.imemo.Model.Diary;
 import com.lnb.imemo.Model.Pagination;
-import com.lnb.imemo.Model.PersonProfile;
 
 import java.util.List;
 
 public class ResultSharedDiaries {
-    public List<Diary<PersonProfile>> diaries;
+    public List<ResultShareDiary> diaries;
     public Pagination pagination;
 
-    public ResultSharedDiaries(List<Diary<PersonProfile>> diaries, Pagination pagination) {
+    public ResultSharedDiaries(List<ResultShareDiary> diaries, Pagination pagination) {
         this.diaries = diaries;
         this.pagination = pagination;
     }
@@ -18,11 +17,11 @@ public class ResultSharedDiaries {
     public ResultSharedDiaries() {
     }
 
-    public List<Diary<PersonProfile>> getDiaries() {
+    public List<ResultShareDiary> getDiaries() {
         return diaries;
     }
 
-    public void setDiaries(List<Diary<PersonProfile>> diaries) {
+    public void setDiaries(List<ResultShareDiary> diaries) {
         this.diaries = diaries;
     }
 

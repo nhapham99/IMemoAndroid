@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.lnb.imemo.Data.Repository.Auth.AuthRepository;
 import com.lnb.imemo.Data.Repository.Diary.DiaryRepository;
 import com.lnb.imemo.Data.Repository.Model.ResultDiaries;
+import com.lnb.imemo.Data.Repository.Model.ResultShareDiary;
 import com.lnb.imemo.Data.Repository.Model.ResultSharedDiaries;
 import com.lnb.imemo.Data.Repository.Model.ResultSharedUser;
 import com.lnb.imemo.Data.Repository.Model.SharedUser;
@@ -103,10 +104,10 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.getSharedUser(mUser.getToken(), listDiary.get(position).getId());
     }
 
-    protected void shareDiary(String diaryId, String email) {
+    protected void shareDiary(String diaryId, String email, String permission) {
         ArrayList<String> emails = new ArrayList<>();
         emails.add(email);
-        diaryRepository.shareDiary(mUser.getToken(), diaryId, emails);
+        diaryRepository.shareDiary(mUser.getToken(), diaryId, emails, permission);
     }
 
     protected void getDiaries(@Nullable String query,
@@ -156,17 +157,10 @@ public class HomeViewModel extends ViewModel {
         diaryRepository.deleteDiary(mUser.getToken(), listDiary.get(diaryPosition).getId());
     }
 
-    public void publicDiary(Diary<String> diary) {
-        isUpdateForPublic = true;
-        diary.setStatus("public");
-        diaryRepository.updateDiary(mUser.getToken(), diary);
+    public void deleteSharedDiary(int diaryPosition) {
+        diaryRepository.deleteSharedDiary(mUser.getToken(), listDiary.get(diaryPosition).getId());
     }
 
-    public void privateDiary(Diary<String> diary) {
-        isUpdateForPublic = false;
-        diary.setStatus("private");
-        diaryRepository.updateDiary(mUser.getToken(), diary);
-    }
 
     public void pinDiary(int position) {
         isUpdateForPinMemo = true;
@@ -305,7 +299,6 @@ public class HomeViewModel extends ViewModel {
                 response.setData(pair.first);
                 viewModelLiveData.setValue(response);
             } else if (key.equals(Constant.GET_DIARIES_SHARED_WITH_ME)) {
-                Log.d(TAG, "onChanged: get toatal memo " + getTotalMemoInStart);
                 ResponseRepo<Pair<Utils.State, ArrayList<Diary<PersonProfile>>>> response = new ResponseRepo<>();
                 Pair<Utils.State, ResultSharedDiaries> pair = (Pair<Utils.State, ResultSharedDiaries>) responseRepo.getData();
                 Pagination pagination = pair.second.getPagination();
@@ -314,7 +307,28 @@ public class HomeViewModel extends ViewModel {
                     totalMemo = pagination.getTotalItems();
                     getTotalMemoInStart = false;
                 }
-                response.setData(new Pair<>(pair.first, (ArrayList<Diary<PersonProfile>>) pair.second.getDiaries()));
+                ArrayList<Diary<PersonProfile>> listDiary = new ArrayList<>();
+                List<ResultShareDiary> listResultShareDiary = pair.second.getDiaries();
+                for (ResultShareDiary resultShareDiary : listResultShareDiary) {
+                    Diary<String> diaryFromShare = resultShareDiary.getRecord();
+                    Diary<PersonProfile> diary = new Diary<>();
+                    diary.setId(diaryFromShare.getId());
+                    diary.setTagIds((ArrayList<String>) diaryFromShare.getTagIds());
+                    diary.setStatus(diaryFromShare.getStatus());
+                    diary.setTags(diaryFromShare.getTags());
+                    diary.setUploading(diaryFromShare.getUploading());
+                    diary.setTime(diaryFromShare.getTime());
+                    diary.setContent(diaryFromShare.getContent());
+                    diary.setTitle(diaryFromShare.getTitle());
+                    diary.setCreatedAt(diaryFromShare.getCreatedAt());
+                    diary.setLinks(diaryFromShare.getLinks());
+                    diary.setResources(diaryFromShare.getResources());
+                    diary.setUpdatedAt(diaryFromShare.getUpdatedAt());
+                    diary.setUser(resultShareDiary.getSender());
+                    diary.setAction(resultShareDiary.getAction());
+                    listDiary.add(diary);
+                }
+                response.setData(new Pair<>(pair.first, listDiary));
                 response.setKey(Constant.GET_DIARIES_SHARED_WITH_ME);
                 viewModelLiveData.setValue(response);
             } else if (key.equals(Constant.GET_SHARED_USERS)) {

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -54,7 +53,7 @@
             android:layout_height="@dimen/length_1dp"
             android:background="#E3E3E3" />
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/length_10dp">
@@ -64,6 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:layout_marginLeft="@dimen/length_10dp"
                 android:layout_marginRight="@dimen/length_10dp"
                 android:drawableLeft="@drawable/ic_eye"
@@ -72,109 +72,132 @@
                 android:text=" Xem trước"
                 android:textColor="@color/black"
                 android:textSize="14sp"
-                android:layout_centerVertical="true" />
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/length_10dp"/>
 
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/switch_share"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/length_10dp"
-                android:text="Chia sẻ: "/>
+            <LinearLayout
+                android:id="@+id/sharedUserAvatarArea"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginStart="@dimen/length_10dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
-        </RelativeLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/length_10dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:text="Đã chia sẻ: "
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/sharedUserAvatar1"
+                    android:layout_width="@dimen/length_30dp"
+                    android:layout_height="@dimen/length_30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/length_5dp"
+                    android:src="@mipmap/ic_launcher"
+                    android:visibility="gone" />
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/sharedUserAvatar2"
+                    android:layout_width="@dimen/length_30dp"
+                    android:layout_height="@dimen/length_30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/length_5dp"
+                    android:src="@mipmap/ic_launcher"
+                    android:visibility="gone" />
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/sharedUserAvatar3"
+                    android:layout_width="@dimen/length_30dp"
+                    android:layout_height="@dimen/length_30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/length_5dp"
+                    android:src="@mipmap/ic_launcher"
+                    android:visibility="gone" />
+
+                <RelativeLayout
+                    android:layout_width="@dimen/length_30dp"
+                    android:layout_height="@dimen/length_30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/length_5dp"
+                    android:gravity="center">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/sharedUserAvatarMore"
+                        android:layout_width="@dimen/length_30dp"
+                        android:layout_height="@dimen/length_30dp"
+                        android:src="@mipmap/ic_launcher"
+                        android:visibility="gone" />
+
+                    <View
+                        android:id="@+id/sharedUserAvatarBlackLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:alpha="0.6"
+                        android:background="@drawable/circle_indicator_selected"
+                        android:backgroundTint="@color/black"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/sharedUserAvatarMoreTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fontFamily="@font/roboto_regular"
+                        android:gravity="center"
+                        android:text="+1"
+                        android:textColor="@color/white"
+                        android:visibility="gone" />
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
 
 
         <AutoCompleteTextView
             android:id="@+id/input_email"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginStart="@dimen/length_10dp"
             android:layout_marginTop="@dimen/length_5dp"
             android:layout_marginEnd="@dimen/length_10dp"
+            android:layout_weight="1"
             android:fontFamily="@font/roboto_regular"
-            android:hint="Nhập email"/>
+            android:hint="Nhập email" />
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:orientation="horizontal"
-            android:id="@+id/sharedUserAvatarArea"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioGroup
+                android:id="@+id/sharedPermissionRadioGroup"
+                android:checkedButton="@+id/radio_button_1"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Đã chia sẻ: "
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/length_10dp"
-                android:textColor="@color/black"
-                android:fontFamily="@font/roboto_regular"
-                android:textSize="14sp"/>
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/sharedUserAvatar1"
-                android:layout_width="@dimen/length_30dp"
-                android:layout_height="@dimen/length_30dp"
-                android:src="@mipmap/ic_launcher"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/length_5dp"
-                android:visibility="gone"/>
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/sharedUserAvatar2"
-                android:layout_width="@dimen/length_30dp"
-                android:layout_height="@dimen/length_30dp"
-                android:src="@mipmap/ic_launcher"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/length_5dp"
-                android:visibility="gone"/>
-
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/sharedUserAvatar3"
-                android:layout_width="@dimen/length_30dp"
-                android:layout_height="@dimen/length_30dp"
-                android:src="@mipmap/ic_launcher"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/length_5dp"
-                android:visibility="gone"/>
-
-            <RelativeLayout
-                android:layout_width="@dimen/length_30dp"
-                android:layout_height="@dimen/length_30dp"
-                android:layout_gravity="center_vertical"
-                android:gravity="center"
-                android:layout_marginStart="@dimen/length_5dp">
-
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/sharedUserAvatarMore"
-                    android:layout_width="@dimen/length_30dp"
-                    android:layout_height="@dimen/length_30dp"
-                    android:src="@mipmap/ic_launcher"
-                    android:visibility="gone"/>
-                <View
-                    android:id="@+id/sharedUserAvatarBlackLayout"
+                android:orientation="horizontal"
+                android:layout_marginStart="@dimen/length_10dp">
+                <RadioButton
+                    android:id="@+id/viewOnlyPermission_radioButton"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/circle_indicator_selected"
-                    android:backgroundTint="@color/black"
-                    android:alpha="0.6"
-                    android:visibility="gone"/>
-
-                <TextView
-                    android:id="@+id/sharedUserAvatarMoreTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="+1"
-                    android:textColor="@color/white"
+                    android:text="Người xem"
                     android:fontFamily="@font/roboto_regular"
-                    android:gravity="center"
-                    android:visibility="gone"/>
+                    android:checked="true"/>
 
+                <RadioButton
+                    android:id="@+id/editPermission_radioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Người chỉnh sửa"
+                    android:fontFamily="@font/roboto_regular"
+                    android:layout_marginStart="@dimen/length_20dp"/>
 
-            </RelativeLayout>
-
-
-
+            </RadioGroup>
         </LinearLayout>
+
 
         <Button
             android:id="@+id/share_memo"
@@ -194,7 +217,7 @@
         android:id="@+id/share_progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
 
 </RelativeLayout>
 

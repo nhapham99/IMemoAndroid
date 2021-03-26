@@ -233,6 +233,31 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         holder.sharedByTextView.setText(Html.fromHtml(sourceString));
 
         holder.sharedByTextView.setVisibility(View.VISIBLE);
+
+        if (diary.getAction() == null || diary.getAction().equals("view")) {
+            holder.popDownMenu.setVisibility(View.INVISIBLE);
+        } else if (diary.getAction().equals("edit")) {
+            // start setup pop down menu
+            holder.popDownMenu.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+                popupMenu.inflate(R.menu.pop_down_menu_shared_memo);
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    switch (item.getItemId()) {
+                        case R.id.pop_down_edit:
+                            actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                            break;
+                        case R.id.pop_down_pin:
+                            break;
+                        case R.id.pop_down_delete:
+                            actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                            break;
+                    }
+                    return false;
+                });
+                popupMenu.show();
+            });
+            // end setup pop down menu
+        }
     }
 
     private void initViewForSharedNoTagItem(SharedWithMeNoTagsHolder holder, int position) {
@@ -345,8 +370,34 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         String sourceString = "Chia sẻ bởi " + "<b>" + ((PersonProfile) diary.getUser()).getName() + "</b> ";
         holder.sharedByTextView.setText(Html.fromHtml(sourceString));
 
+        if (diary.getAction() == null || diary.getAction().equals("view")) {
+            holder.popDownMenu.setVisibility(View.INVISIBLE);
+        } else if (diary.getAction().equals("edit")) {
+            // start setup pop down menu
+            holder.popDownMenu.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+                popupMenu.inflate(R.menu.pop_down_menu_shared_memo);
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    switch (item.getItemId()) {
+                        case R.id.pop_down_edit:
+                            actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                            break;
+                        case R.id.pop_down_pin:
+                            break;
+                        case R.id.pop_down_delete:
+                            actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                            break;
+                    }
+                    return false;
+                });
+                popupMenu.show();
+            });
+            // end setup pop down menu
+        }
+
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void initViewForSharedNoTabAndTagItem(SharedWithMeNoTabAndTagViewHolder holder, int position) {
         Diary diary = listMemo.get(position);
 
@@ -367,6 +418,33 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         String sourceString = "Chia sẻ bởi " + "<b>" + ((PersonProfile) diary.getUser()).getName() + "</b> ";
         holder.sharedByTextView.setText(Html.fromHtml(sourceString));
+        Log.d(TAG, "initViewForSharedNoTabAndTagItem: " + diary.getAction());
+        if (diary.getAction() == null || diary.getAction().equals("view")) {
+            holder.popDownMenu.setVisibility(View.INVISIBLE);
+        }
+        if (diary.getAction() != null && diary.getAction().equals("edit")) {
+            holder.popDownMenu.setVisibility(View.VISIBLE);
+            // start setup pop down menu
+            holder.popDownMenu.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+                popupMenu.inflate(R.menu.pop_down_menu_shared_memo);
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    switch (item.getItemId()) {
+                        case R.id.pop_down_edit:
+                            actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                            break;
+                        case R.id.pop_down_pin:
+                            break;
+                        case R.id.pop_down_delete:
+                            actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                            break;
+                    }
+                    return false;
+                });
+                popupMenu.show();
+            });
+            // end setup pop down menu
+        }
     }
 
     private void initViewForSharedItem(SharedWithMeViewHolder holder, int position) {
@@ -476,6 +554,31 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         String sourceString = "Chia sẻ bởi " + "<b>" + ((PersonProfile) diary.getUser()).getName() + "</b> ";
         holder.sharedByTextView.setText(Html.fromHtml(sourceString));
+
+        if (diary.getAction() == null || diary.getAction().equals("view")) {
+            holder.popDownMenu.setVisibility(View.INVISIBLE);
+        } else if (diary.getAction().equals("edit")) {
+            // start setup pop down menu
+            holder.popDownMenu.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
+                popupMenu.inflate(R.menu.pop_down_menu_shared_memo);
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    switch (item.getItemId()) {
+                        case R.id.pop_down_edit:
+                            actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
+                            break;
+                        case R.id.pop_down_pin:
+                            break;
+                        case R.id.pop_down_delete:
+                            actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
+                            break;
+                    }
+                    return false;
+                });
+                popupMenu.show();
+            });
+            // end setup pop down menu
+        }
     }
 
     private void initViewForHomeFilter(HomeFilterViewHolder holder) {
@@ -957,10 +1060,12 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     public void removeAtPosition(int position) {
         int size = 0;
-        if (isFilter) {
-            size = size + 2;
-        } else {
-            size = size + 1;
+        if (!isSharedMode) {
+            if (isFilter) {
+                size = size + 2;
+            } else {
+                size = size + 1;
+            }
         }
         this.listMemo.remove(position);
         notifyItemRemoved(position + size);
@@ -1320,6 +1425,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         TextView seeMore;
         MediatorLiveData<Pair<String, Integer>> adapterAction;
         TextView sharedByTextView;
+        ImageView popDownMenu;
 
         public SharedWithMeViewHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction, Boolean isSharedMode) {
             super(itemView);
@@ -1334,7 +1440,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
             sharedByTextView = itemView.findViewById(R.id.shared_by_textView);
-
+            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
         }
 
         private void Ellipsize(boolean activate, TextView textView) {
@@ -1389,6 +1495,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         TextView seeMore;
         MediatorLiveData<Pair<String, Integer>> adapterAction;
         TextView sharedByTextView;
+        ImageView popDownMenu;
 
         public SharedWithMeNoTabAndTagViewHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction, Boolean isSharedMode) {
             super(itemView);
@@ -1398,6 +1505,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
             sharedByTextView = itemView.findViewById(R.id.shared_by_textView);
+            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
         }
 
         private void Ellipsize(boolean activate, TextView textView) {
@@ -1453,6 +1561,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         TextView seeMore;
         MediatorLiveData<Pair<String, Integer>> adapterAction;
         TextView sharedByTextView;
+        ImageView popDownMenu;
 
         public SharedWithMeNoTabViewHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction, Boolean isSharedMode) {
             super(itemView);
@@ -1463,6 +1572,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
             sharedByTextView = itemView.findViewById(R.id.shared_by_textView);
+            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
         }
 
         private void Ellipsize(boolean activate, TextView textView) {
@@ -1519,6 +1629,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         Boolean isExpanded = true;
         MediatorLiveData<Pair<String, Integer>> adapterAction;
         TextView sharedByTextView;
+        ImageView popDownMenu;
 
         public SharedWithMeNoTagsHolder(@NonNull View itemView, MediatorLiveData<Pair<String, Integer>> adapterAction) {
             super(itemView);
@@ -1532,6 +1643,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             content = itemView.findViewById(R.id.memo_item_content);
             this.adapterAction = adapterAction;
             sharedByTextView = itemView.findViewById(R.id.shared_by_textView);
+            popDownMenu = itemView.findViewById(R.id.pop_down_menu);
         }
 
         private void Ellipsize(boolean activate, TextView textView) {

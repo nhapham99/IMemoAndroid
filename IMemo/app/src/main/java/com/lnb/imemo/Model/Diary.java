@@ -22,6 +22,7 @@ public class Diary<T> implements Parcelable {
     private Boolean isUploading;
     private Boolean pinned;
     private T user;
+    private String action;
 
     public Diary() {
     }
@@ -40,7 +41,8 @@ public class Diary<T> implements Parcelable {
                  List<String> tagIds,
                  Boolean isUploading,
                  Boolean pinned,
-                 T user) {
+                 T user,
+                 String action) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -56,8 +58,8 @@ public class Diary<T> implements Parcelable {
         this.isUploading = isUploading;
         this.pinned = pinned;
         this.user = user;
+        this.action = action;
     }
-
 
     protected Diary(Parcel in) {
         id = in.readString();
@@ -75,6 +77,7 @@ public class Diary<T> implements Parcelable {
         isUploading = tmpIsUploading == 0 ? null : tmpIsUploading == 1;
         byte tmpPinned = in.readByte();
         pinned = tmpPinned == 0 ? null : tmpPinned == 1;
+        action = in.readString();
     }
 
     @Override
@@ -92,6 +95,7 @@ public class Diary<T> implements Parcelable {
         dest.writeStringList(tagIds);
         dest.writeByte((byte) (isUploading == null ? 0 : isUploading ? 1 : 2));
         dest.writeByte((byte) (pinned == null ? 0 : pinned ? 1 : 2));
+        dest.writeString(action);
     }
 
     @Override
@@ -110,6 +114,14 @@ public class Diary<T> implements Parcelable {
             return new Diary[size];
         }
     };
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
 
     public void createListLinks() {
         links = new ArrayList<>();
@@ -248,6 +260,7 @@ public class Diary<T> implements Parcelable {
         setLinks(diary.getLinks());
         setResources(diary.getResources());
         setUpdatedAt(diary.getUpdatedAt());
+        setUser((T) diary.getUser());
     }
 
     @Override

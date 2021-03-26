@@ -22,4 +22,9 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>
     </style>
+
+    <style name="CustomDropDownMenuStyle" parent="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu">
+        <item name="backgroundColor">@color/white</item>
+        <item name="background">@color/white</item>
+    </style>
 </resources>
