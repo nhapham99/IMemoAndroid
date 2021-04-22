@@ -21,7 +21,7 @@ import io.reactivex.subjects.PublishSubject;
 public class TagRecyclerViewAdapter extends RecyclerView.Adapter<TagRecyclerViewAdapter.TagRecyclerViewHolder> {
     private final ArrayList<Tags> listTags;
     private final PublishSubject<Integer> removeTagObservable = PublishSubject.create();
-    private Boolean isShareMemo;
+    private Boolean isShareMemo = false;
 
     public TagRecyclerViewAdapter(ArrayList<Tags> listTags) {
         this.listTags = listTags;
@@ -43,7 +43,7 @@ public class TagRecyclerViewAdapter extends RecyclerView.Adapter<TagRecyclerView
     public void onBindViewHolder(@NonNull TagRecyclerViewHolder holder, int position) {
         holder.tagName.setText(listTags.get(position).getName());
         holder.itemView.getBackground().setColorFilter(Color.parseColor(listTags.get(position).getColor()), PorterDuff.Mode.SRC_ATOP);
-        if (isShareMemo) {
+        if (isShareMemo != null && isShareMemo) {
             holder.removeTag.setVisibility(View.GONE);
         } else {
             holder.removeTag.setOnClickListener(v -> {

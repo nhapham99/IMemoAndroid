@@ -44,21 +44,18 @@ public class RegisterViewModel {
     }
 
     protected void subscribeAuthRepo() {
-        authObserver = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo response) {
-                String key = response.getKey();
-                if (key.equals(Constant.LOGIN_GOOGLE_KEY)) {
-                    Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
-                    mUser.setToken(pair.second);
-                    loginLiveData.setValue(pair.first);
-                } else if (key.equals(Constant.LOGIN_KEY)) {
-                    Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
-                    mUser.setToken(pair.second);
-                    loginLiveData.setValue(pair.first);
-                } else if (key.equals(Constant.REGISTER_KEY)) {
-                    registerLiveData.setValue((Utils.RegisterState) response.getData());
-                }
+        authObserver = response -> {
+            String key = response.getKey();
+            if (key.equals(Constant.LOGIN_GOOGLE_KEY)) {
+                Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
+                mUser.setToken(pair.second);
+                loginLiveData.setValue(pair.first);
+            } else if (key.equals(Constant.LOGIN_KEY)) {
+                Pair<Utils.State, String> pair = (Pair<Utils.State, String>) response.getData();
+                mUser.setToken(pair.second);
+                loginLiveData.setValue(pair.first);
+            } else if (key.equals(Constant.REGISTER_KEY)) {
+                registerLiveData.setValue((Utils.RegisterState) response.getData());
             }
         };
         authRepository.observableAuthRepo().observeForever(authObserver);

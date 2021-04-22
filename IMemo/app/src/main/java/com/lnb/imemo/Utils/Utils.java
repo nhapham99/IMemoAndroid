@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class Utils {
     public static String GOOGLE_CLIENT_ID = "335058615265-gcce2lv24jgadcjv20oblhlav3s0caik.apps.googleusercontent.com";
-    public static String baseUrls = "https://api.imemo.vn/";
+    public static String baseUrls = "http://128.199.169.112:3000/";
     public static String baseUploadUrls = "https://file.imemo.vn/";
     public static String storeUrl = "https://memospace.fra1.cdn.digitaloceanspaces.com/";
     public enum State {
@@ -28,7 +28,7 @@ public class Utils {
     public enum HTTP_ERROR {
         HTTP_409("HTTP 409 Conflict"),
         HTTP_404("HTTP_404"),
-        HTTP_NO_INTERNET("Failed to connect to /134.122.11.145:3000");
+        HTTP_NO_INTERNET("Failed to connect to");
 
         private final String value;
         HTTP_ERROR(String value) {

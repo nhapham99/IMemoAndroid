@@ -31,6 +31,7 @@ public class APIClient {
         }
         return mInstance;
     }
+
     private static OkHttpClient getUnsafeOkHttpClient() {
         try {
             // Create a trust manager that does not validate certificate chains

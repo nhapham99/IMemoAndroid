@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveDataReactiveStreams;
 import androidx.lifecycle.MediatorLiveData;
 
 import com.google.gson.JsonObject;
+import com.lnb.imemo.Data.APIClient;
 import com.lnb.imemo.Data.APIUploadClient;
 import com.lnb.imemo.Model.ResponseRepo;
 import com.lnb.imemo.Utils.Constant;
@@ -22,7 +23,7 @@ public class UploadFileRepository {
     private final MediatorLiveData<ResponseRepo> uploadFileLiveData;
 
     public UploadFileRepository() {
-        Retrofit retrofit = APIUploadClient.getInstance();
+        Retrofit retrofit = APIClient.getInstance();
         uploadFileAPI = retrofit.create(UploadFileAPI.class);
         uploadFileLiveData = new MediatorLiveData<>();
     }

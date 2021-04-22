@@ -123,33 +123,30 @@ class PersonalSettingViewModel extends ViewModel {
     }
 
     private void subscribeUploadObservable() {
-        uploadObservable = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                ResponseRepo<Pair<Utils.State, String>> response = new ResponseRepo<>();
-                // upload file
-                if (key.equals(Constant.UPLOAD_FILE_KEY)) {
-                    Pair<Utils.State, JsonObject> responseRepoObject = (Pair<Utils.State, JsonObject>) responseRepo.getData();
-                    Utils.State state = responseRepoObject.first;
-                    switch (state) {
-                        case SUCCESS:
-                            isUpdateImage = true;
-                            newPersonProfile.setPicture(responseRepoObject.second.getAsJsonObject(Constant.RESULT).get("url").getAsString());
-                            updatePersonProfile();
-                            break;
-                        case FAILURE:
-                            response.setData(new Pair<>(Utils.State.FAILURE, null));
-                            uploadLiveData.setValue(response);
-                            break;
-                        case NO_INTERNET:
-                            response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
-                            uploadLiveData.setValue(response);
-                            break;
-                    }
-                    response.setKey(Constant.UPLOAD_FILE_KEY);
-
+        uploadObservable = responseRepo -> {
+            String key = responseRepo.getKey();
+            ResponseRepo<Pair<Utils.State, String>> response = new ResponseRepo<>();
+            // upload file
+            if (key.equals(Constant.UPLOAD_FILE_KEY)) {
+                Pair<Utils.State, JsonObject> responseRepoObject = (Pair<Utils.State, JsonObject>) responseRepo.getData();
+                Utils.State state = responseRepoObject.first;
+                switch (state) {
+                    case SUCCESS:
+                        isUpdateImage = true;
+                        newPersonProfile.setPicture(responseRepoObject.second.getAsJsonObject(Constant.RESULT).get("url").getAsString());
+                        updatePersonProfile();
+                        break;
+                    case FAILURE:
+                        response.setData(new Pair<>(Utils.State.FAILURE, null));
+                        uploadLiveData.setValue(response);
+                        break;
+                    case NO_INTERNET:
+                        response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                        uploadLiveData.setValue(response);
+                        break;
                 }
+                response.setKey(Constant.UPLOAD_FILE_KEY);
+
             }
         };
         uploadFileRepository.observableUploadFile().observeForever(uploadObservable);

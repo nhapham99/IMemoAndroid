@@ -205,6 +205,7 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
+    @SuppressLint("NonConstantResourceId")
     private void initViewForSharedNoTabItem(SharedWithMeNoTabViewHolder holder, int position) {
         Diary diary = listMemo.get(position);
         //start setup diary title
@@ -247,6 +248,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                             actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                             break;
                         case R.id.pop_down_pin:
+                            if (diary.getPinned()) {
+                                actionObservable.setValue(new Pair<>("unpin_diary", position));
+                            } else {
+                                actionObservable.setValue(new Pair<>("pin_diary", position));
+                            }
                             break;
                         case R.id.pop_down_delete:
                             actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -383,6 +389,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                             actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                             break;
                         case R.id.pop_down_pin:
+                            if (diary.getPinned()) {
+                                actionObservable.setValue(new Pair<>("unpin_diary", position));
+                            } else {
+                                actionObservable.setValue(new Pair<>("pin_diary", position));
+                            }
                             break;
                         case R.id.pop_down_delete:
                             actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -434,6 +445,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                             actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                             break;
                         case R.id.pop_down_pin:
+                            if (diary.getPinned()) {
+                                actionObservable.setValue(new Pair<>("unpin_diary", position));
+                            } else {
+                                actionObservable.setValue(new Pair<>("pin_diary", position));
+                            }
                             break;
                         case R.id.pop_down_delete:
                             actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -568,6 +584,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                             actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                             break;
                         case R.id.pop_down_pin:
+                            if (diary.getPinned()) {
+                                actionObservable.setValue(new Pair<>("unpin_diary", position));
+                            } else {
+                                actionObservable.setValue(new Pair<>("pin_diary", position));
+                            }
                             break;
                         case R.id.pop_down_delete:
                             actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -812,6 +833,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                         actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                         break;
                     case R.id.pop_down_pin:
+                        if (diary.getPinned()) {
+                            actionObservable.setValue(new Pair<>("unpin_diary", position));
+                        } else {
+                            actionObservable.setValue(new Pair<>("pin_diary", position));
+                        }
                         break;
                     case R.id.pop_down_delete:
                         actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -865,6 +891,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                         actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                         break;
                     case R.id.pop_down_pin:
+                        if (diary.getPinned()) {
+                            actionObservable.setValue(new Pair<>("unpin_diary", position));
+                        } else {
+                            actionObservable.setValue(new Pair<>("pin_diary", position));
+                        }
                         break;
                     case R.id.pop_down_delete:
                         actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));
@@ -998,6 +1029,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                         actionObservable.setValue(new Pair<>(Constant.UPDATE_DIARY_KEY, position));
                         break;
                     case R.id.pop_down_pin:
+                        if (diary.getPinned()) {
+                            actionObservable.setValue(new Pair<>("unpin_diary", position));
+                        } else {
+                            actionObservable.setValue(new Pair<>("pin_diary", position));
+                        }
                         break;
                     case R.id.pop_down_delete:
                         actionObservable.setValue(new Pair<>(Constant.DELETE_DIARY_KEY, position));

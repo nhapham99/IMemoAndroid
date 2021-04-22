@@ -74,7 +74,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
             @Override
             public void onChanged(ResponseRepo responseRepo) {
                 String key = responseRepo.getKey();
-                if (key == Constant.FORGOT_PASSWORD_KEY) {
+                if (key.equals(Constant.FORGOT_PASSWORD_KEY)) {
                     Utils.State state = (Utils.State) responseRepo.getData();
                     switch (state) {
                         case SUCCESS:

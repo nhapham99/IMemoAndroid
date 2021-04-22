@@ -66,7 +66,7 @@ public class HomeViewModel extends ViewModel {
     protected User mUser;
     protected PersonProfile personProfile;
     protected ArrayList<Diary> listDiary = new ArrayList<>();
-    private Boolean isUpdateForPublic = null;
+    private final Boolean isUpdateForPublic = null;
     public ArrayList<String> listSharedEmail = new ArrayList<>();
     public PublishSubject<ArrayList<String>> sharedEmailPublishSubject;
     {
