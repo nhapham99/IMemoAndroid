@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
@@ -65,6 +66,8 @@ public class MemoPreviewActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.view_pager);
         viewPager.setUserInputEnabled(false);
         popDownMenu = findViewById(R.id.pop_down_menu);
+        RelativeLayout notFoundPage = findViewById(R.id.not_found);
+        Button backFromNotFound = findViewById(R.id.back);
         TextView seeMore = findViewById(R.id.see_more_textView);
         seeMore.setVisibility(View.GONE);
         TextView memoAuthor = findViewById(R.id.memo_author);
@@ -72,14 +75,21 @@ public class MemoPreviewActivity extends AppCompatActivity {
         LinearLayout share = findViewById(R.id.memo_share);
         share.setVisibility(View.GONE);
 
+
         diary = getIntent().getParcelableExtra("preview_diary");
         String authorName = getIntent().getStringExtra("preview_author_name");
         String from = getIntent().getStringExtra("from");
         if (from.equals("notification")) {
             backButton.setText("Quay lại thông báo");
         }
-        setupDiary();
-        memoAuthor.setText("Bản ghi của " + authorName);
+
+        if (diary != null) {
+            notFoundPage.setVisibility(View.GONE);
+            setupDiary();
+            memoAuthor.setText("Bản ghi của " + authorName);
+        } else {
+            backFromNotFound.setOnClickListener(view -> finish());
+        }
         backButton.setOnClickListener(v -> finish());
     }
 

@@ -1,60 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    android:layout_width="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
-    android:overScrollMode="never"
-    android:scrollbars="vertical"
-    android:fadeScrollbars="false"
-    android:scrollbarSize="@dimen/length_5dp">
 
-    <LinearLayout
-        xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".Presentation.MemoPreview.MemoPreviewActivity"
-        android:orientation="vertical"
-        android:background="#F0F2F5">
+        android:overScrollMode="never"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false"
+        android:scrollbarSize="@dimen/length_5dp">
+
+        <LinearLayout
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".Presentation.MemoPreview.MemoPreviewActivity"
+            android:orientation="vertical"
+            android:background="#F0F2F5">
+
+            <ImageView
+                android:layout_width="154dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/preview_imemo_icon"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/length_20dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/length_1dp"
+                android:background="#E4E6EB"
+                android:layout_marginLeft="@dimen/length_30dp"
+                android:layout_marginRight="@dimen/length_30dp"
+                android:layout_marginTop="@dimen/length_10dp"/>
+
+            <TextView
+                android:id="@+id/memo_author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="20sp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/length_10dp"
+                android:textColor="@color/black"
+                android:layout_marginBottom="@dimen/length_20dp"/>
+
+            <include layout="@layout/home_recycler_view_item" />
+
+            <Button
+                android:id="@+id/back_button"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Về Imemo"
+                android:fontFamily="@font/roboto_medium"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="17sp"
+                android:layout_marginLeft="@dimen/length_10dp"
+                android:layout_marginRight="@dimen/length_10dp"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:id="@+id/not_found">
 
         <ImageView
-            android:layout_width="154dp"
-            android:layout_height="wrap_content"
-            android:src="@drawable/preview_imemo_icon"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/length_20dp"/>
-
-        <View
             android:layout_width="match_parent"
-            android:layout_height="@dimen/length_1dp"
-            android:background="#E4E6EB"
-            android:layout_marginLeft="@dimen/length_30dp"
-            android:layout_marginRight="@dimen/length_30dp"
-            android:layout_marginTop="@dimen/length_10dp"/>
-
-        <TextView
-            android:id="@+id/memo_author"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/roboto_medium"
-            android:textSize="20sp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/length_10dp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="@dimen/length_20dp"/>
-
-        <include layout="@layout/home_recycler_view_item" />
+            android:layout_height="match_parent"
+            android:src="@drawable/not_found"
+            android:layout_centerInParent="true"/>
 
         <Button
-            android:id="@+id/back_button"
+            android:id="@+id/back"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:text="Về Imemo"
+            android:text="Về thông báo"
             android:fontFamily="@font/roboto_medium"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="17sp"
             android:layout_marginLeft="@dimen/length_10dp"
-            android:layout_marginRight="@dimen/length_10dp"/>
+            android:layout_marginRight="@dimen/length_10dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/length_50dp"/>
 
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -3,7 +3,6 @@ package com.lnb.imemo.Presentation.UploadActivity;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.reactivex.Observer;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -252,26 +252,52 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
 
 
     private void subscribeUploadRecyclerViewObservable() {
-        resourceAdapter.getUploadRecyclerViewObservable().subscribe(new io.reactivex.Observer<Integer>() {
+//        resourceAdapter.getUploadRecyclerViewObservable().subscribe(new io.reactivex.Observer<Integer>() {
+//            @Override
+//            public void onSubscribe(@NonNull Disposable d) {
+//                disposable.add(d);
+//            }
+//
+//            @Override
+//            public void onNext(@NonNull Integer position) {
+//                Log.d(TAG, "accept: " + position);
+//                Log.d(TAG, "accept: remove" + viewModel.getUploadDiary());
+//                Resource resource = (Resource) viewModel.getUploadDiary().getResources().get(position);
+//                viewModel.getUploadDiary().getResources().remove(resource);
+//                resourceAdapter.notifyDataSetChanged();
+//            }
+//
+//            @Override
+//            public void onError(@NonNull Throwable e) {}
+//
+//            @Override
+//            public void onComplete() {}
+//        });
+        resourceAdapter.getUploadRecyclerViewObservable().subscribe(new Observer<Object>() {
+
             @Override
             public void onSubscribe(@NonNull Disposable d) {
                 disposable.add(d);
             }
 
             @Override
-            public void onNext(@NonNull Integer position) {
-                Log.d(TAG, "accept: " + position);
-                Log.d(TAG, "accept: remove" + viewModel.getUploadDiary().getResources().toString());
-                Resource resource = (Resource) viewModel.getUploadDiary().getResources().get(position);
-                viewModel.getUploadDiary().getResources().remove(resource);
-                resourceAdapter.notifyDataSetChanged();
+            public void onNext(@NonNull Object o) {
+                if (o instanceof Link) {
+                    viewModel.getUploadDiary().getLinks().remove(o);
+                } else if (o instanceof Resource) {
+                    viewModel.getUploadDiary().getResources().remove(o);
+                }
             }
 
             @Override
-            public void onError(@NonNull Throwable e) {}
+            public void onError(@NonNull Throwable e) {
+                e.printStackTrace();
+            }
 
             @Override
-            public void onComplete() {}
+            public void onComplete() {
+
+            }
         });
     }
 

@@ -31,7 +31,7 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
     private static final int TYPE_IMAGE_AND_VIDEO = 2;
     private static final int TYPE_LINK = 3;
     private Context mContext;
-    private final PublishSubject<Integer> uploadRecyclerViewObservable = PublishSubject.create();
+    private final PublishSubject<Object> uploadRecyclerViewObservable = PublishSubject.create();
 
     @NonNull
     @Override
@@ -62,9 +62,9 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
                     String url = UrlHandler.convertUrl(resource.getUrl());
                     Glide.with(mContext).load(url).into(imageAndVideoViewHolder.imageResource);
                     imageAndVideoViewHolder.deleteResource.setOnClickListener(v -> {
+                        uploadRecyclerViewObservable.onNext(listUploadResource.get(position));
                         listUploadResource.remove(position);
                         notifyItemRemoved(position);
-                        uploadRecyclerViewObservable.onNext(position);
                     });
                 } else {
                     imageAndVideoViewHolder.deleteResource.setVisibility(View.GONE);
@@ -82,9 +82,9 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
                     String url = UrlHandler.convertUrl(resource.getUrl());
                     Glide.with(mContext).load(url).into(imageAndVideoViewHolder.imageResource);
                     imageAndVideoViewHolder.deleteResource.setOnClickListener(v -> {
+                        uploadRecyclerViewObservable.onNext(listUploadResource.get(position));
                         listUploadResource.remove(position);
                         notifyItemRemoved(position);
-                        uploadRecyclerViewObservable.onNext(position);
                     });
                 } else {
                     imageAndVideoViewHolder.deleteResource.setVisibility(View.GONE);
@@ -95,9 +95,9 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
                 fileViewHolder.imageResource.setImageResource(R.drawable.ic_file_audio);
                 fileViewHolder.resourceName.setText(resource.getName());
                 fileViewHolder.deleteResource.setOnClickListener(v -> {
+                    uploadRecyclerViewObservable.onNext(listUploadResource.get(position));
                     listUploadResource.remove(position);
                     notifyItemRemoved(position);
-                    uploadRecyclerViewObservable.onNext(position);
                 });
             } else {
                 FileViewHolder fileViewHolder = (FileViewHolder) holder;
@@ -105,9 +105,9 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
                 if (resource.getUploading() == null) {
                     fileViewHolder.imageResource.setImageResource(R.drawable.ic_file);
                     fileViewHolder.deleteResource.setOnClickListener(v -> {
+                        uploadRecyclerViewObservable.onNext(listUploadResource.get(position));
                         listUploadResource.remove(position);
                         notifyItemRemoved(position);
-                        uploadRecyclerViewObservable.onNext(position);
                     });
                     fileViewHolder.progressIndicator.setVisibility(View.GONE);
                 } else {
@@ -135,14 +135,14 @@ public class UploadRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
             }
 
             linkRecyclerViewHolder.deleteLink.setOnClickListener(v -> {
+                uploadRecyclerViewObservable.onNext(listUploadResource.get(position));
                 listUploadResource.remove(position);
                 notifyItemRemoved(position);
-                uploadRecyclerViewObservable.onNext(position);
             });
         }
     }
 
-    public PublishSubject<Integer> getUploadRecyclerViewObservable() {
+    public PublishSubject<Object> getUploadRecyclerViewObservable() {
         return uploadRecyclerViewObservable;
     }
 

@@ -984,12 +984,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Draw
                         if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
                             loadMoreProgressBar.setVisibility(View.GONE);
                         }
+                        homeSwipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(getContext(), "Lỗi. Xin vui lòng thử lại", Toast.LENGTH_SHORT).show();
                         break;
                     case NO_INTERNET:
                         if (loadMoreProgressBar.getVisibility() == View.VISIBLE) {
                             loadMoreProgressBar.setVisibility(View.GONE);
                         }
+                        homeSwipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(getContext(), "Vui lòng kiểm tra kết nối internet", Toast.LENGTH_SHORT).show();
                         break;
                 }

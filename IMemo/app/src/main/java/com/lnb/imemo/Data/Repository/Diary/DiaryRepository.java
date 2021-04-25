@@ -127,6 +127,7 @@ public class DiaryRepository {
     }
 
     public void getDiaryById(@NonNull String token, @NonNull String id) {
+        Log.d(TAG, "getDiaryById: " + id);
         LiveData<Root<ResultDiary>> source = LiveDataReactiveStreams.fromPublisher(
                 diaryAPI.getDiaryById(token, id)
                         .onErrorReturn(throwable -> {
@@ -439,6 +440,40 @@ public class DiaryRepository {
                 response.setData(new Pair<>(Utils.State.FAILURE, null));
             }
             response.setKey(Constant.GET_DIARIES_SHARED_WITH_ME);
+            diaryRepoLiveData.setValue(response);
+            diaryRepoLiveData.removeSource(source);
+        });
+    }
+    public void getDiarySharedById(@NonNull String token, @NonNull String id) {
+        Log.d(TAG, "getDiaryById: " + id);
+        LiveData<Root<ResultDiary>> source = LiveDataReactiveStreams.fromPublisher(
+                diaryAPI.getDiarySharedById(token, id)
+                        .onErrorReturn(throwable -> {
+                            String message = throwable.getMessage();
+                            Root<ResultDiary> diaryRoot = new Root<>();
+                            if (message.contains(Utils.HTTP_ERROR.HTTP_409.getValue())) {
+                                diaryRoot.setStatusCode(409);
+                            } else if (message.contains(Utils.HTTP_ERROR.HTTP_NO_INTERNET.getValue())) {
+                                diaryRoot.setStatusCode(-1);
+                            } else {
+                                diaryRoot.setStatusCode(-2);
+                            }
+                            return diaryRoot;
+                        })
+                        .subscribeOn(Schedulers.io())
+        );
+
+        diaryRepoLiveData.addSource(source, root -> {
+            ResponseRepo<Pair<Utils.State, Diary<PersonProfile>>> response = new ResponseRepo<>();
+            if (root.getStatusCode() == 0) {
+                Diary<PersonProfile> diary = root.getResult().getDiary();
+                response.setData(new Pair<>(Utils.State.SUCCESS, diary));
+            } else if (root.getStatusCode() == -1) {
+                response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+            } else {
+                response.setData(new Pair<>(Utils.State.FAILURE, null));
+            }
+            response.setKey(Constant.GET_DIARY_SHARED_BY_ID_KEY);
             diaryRepoLiveData.setValue(response);
             diaryRepoLiveData.removeSource(source);
         });

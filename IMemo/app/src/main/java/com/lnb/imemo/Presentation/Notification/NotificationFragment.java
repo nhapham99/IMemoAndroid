@@ -49,6 +49,7 @@ public class NotificationFragment extends Fragment {
     private final CompositeDisposable disposable = new CompositeDisposable();
     private int page;
     private PublishSubject<Pair<String, Object>> centerObserver;
+    private Pair<Diary, String> currentDiaryPair = null;
 
 
     public NotificationFragment( PublishSubject<Pair<String, Notification>> notificationObservable,
@@ -122,11 +123,8 @@ public class NotificationFragment extends Fragment {
             @Override
             public void onNext(@io.reactivex.annotations.NonNull Pair<Diary, String> diaryStringPair) {
                 Log.d(TAG, "onNext: show notification");
-                Intent intent = new Intent(getActivity(), MemoPreviewActivity.class);
-                intent.putExtra("preview_diary", diaryStringPair.first);
-                intent.putExtra("preview_author_name", diaryStringPair.second);
-                intent.putExtra("from", "notification");
-                startActivity(intent);
+                currentDiaryPair = diaryStringPair;
+                viewModel.getDiarySharedById(diaryStringPair.first.getId());
             }
 
             @Override
@@ -243,6 +241,28 @@ public class NotificationFragment extends Fragment {
                         notificationRecyclerViewAdapter.updateItem(currentReadNotificationPosition);
                         break;
                     case FAILURE:
+                        break;
+                }
+
+            } else if (key.equals("check_diary_in_notification")) {
+                Utils.State state = (Utils.State) responseRepo.getData();
+                switch (state) {
+                    case SUCCESS:
+                        Intent intent = new Intent(getActivity(), MemoPreviewActivity.class);
+                        intent.putExtra("preview_diary", currentDiaryPair.first);
+                        intent.putExtra("preview_author_name", currentDiaryPair.second);
+                        intent.putExtra("from", "notification");
+                        startActivity(intent);
+                        break;
+                    case FAILURE:
+                        Intent intent1 = new Intent(getActivity(), MemoPreviewActivity.class);
+                        intent1.putExtra("preview_author_name", currentDiaryPair.second);
+                        intent1.putExtra("from", "notification");
+                        startActivity(intent1);
+
+                        break;
+                    case NO_INTERNET:
+                        Toast.makeText(getActivity(), "Lỗi. Vui lòng kiểm tra kết nối của bạn", Toast.LENGTH_SHORT).show();
                         break;
                 }
 

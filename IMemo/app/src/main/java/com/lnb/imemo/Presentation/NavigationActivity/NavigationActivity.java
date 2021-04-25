@@ -53,6 +53,7 @@ public class NavigationActivity extends AppCompatActivity {
     private final NavigationViewModel viewModel = new NavigationViewModel();
     private int totalNotSeen = 0;
     private Fragment currentFragment;
+    private PersonProfile personProfile;
     private PublishSubject<Pair<String, Notification>> notificationObservable;
     {
         if (notificationObservable == null) {
@@ -91,6 +92,7 @@ public class NavigationActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_navigation);
         subscribeViewModelObservable();
+        personProfile = PersonProfile.getInstance();
         init();
         Log.d(TAG, "onCreate: " + User.getUser().getToken());
         subscribeNotificationObservable();
@@ -241,14 +243,16 @@ public class NavigationActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 String objectStr = args[0].toString();
                 Notification<String> notification = gsonBuilder.fromJson(objectStr, Notification.class);
-                Log.d(TAG, "call: " + notification);
-                notificationObservable.onNext(new Pair<>("push_notification", notification));
-                BadgeDrawable badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.notification);
-                badgeDrawable.setVisible(true);
-                badgeDrawable.setBackgroundColor(Color.parseColor("#E22A49"));
-                badgeDrawable.setMaxCharacterCount(2);
-                totalNotSeen++;
-                badgeDrawable.setNumber(totalNotSeen);
+                if (notification.getUser().equals(personProfile.getId())) {
+                    Log.d(TAG, "call: " + notification);
+                    notificationObservable.onNext(new Pair<>("push_notification", notification));
+                    BadgeDrawable badgeDrawable = bottomNavigationView.getOrCreateBadge(R.id.notification);
+                    badgeDrawable.setVisible(true);
+                    badgeDrawable.setBackgroundColor(Color.parseColor("#E22A49"));
+                    badgeDrawable.setMaxCharacterCount(2);
+                    totalNotSeen++;
+                    badgeDrawable.setNumber(totalNotSeen);
+                }
             });
         }
     };
@@ -262,5 +266,12 @@ public class NavigationActivity extends AppCompatActivity {
             return 3;
         }
         return 0;
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy: ");
+        disposable.clear();
+        super.onDestroy();
     }
 }

@@ -36,17 +36,14 @@ public class NavigationViewModel extends ViewModel {
     }
 
     private void subscribeNotificationObserver() {
-        notificationObserver = new Observer<ResponseRepo>() {
-            @Override
-            public void onChanged(ResponseRepo responseRepo) {
-                String key = responseRepo.getKey();
-                if (key.equals(Constant.GET_ALL_NOTIFICATION_FOR_COUNT)) {
-                    ResponseRepo<Pair<Utils.State, Integer>> response = new ResponseRepo<>();
-                    ResultNotification resultNotification = (ResultNotification) responseRepo.getData();
-                    response.setData(new Pair<>(Utils.State.SUCCESS, resultNotification.getTotalHNotSeen()));
-                    response.setKey(Constant.GET_ALL_NOTIFICATION_FOR_COUNT);
-                    viewModelLiveDate.setValue(response);
-                }
+        notificationObserver = responseRepo -> {
+            String key = responseRepo.getKey();
+            if (key.equals(Constant.GET_ALL_NOTIFICATION_FOR_COUNT)) {
+                ResponseRepo<Pair<Utils.State, Integer>> response = new ResponseRepo<>();
+                ResultNotification resultNotification = (ResultNotification) responseRepo.getData();
+                response.setData(new Pair<>(Utils.State.SUCCESS, resultNotification.getTotalHNotSeen()));
+                response.setKey(Constant.GET_ALL_NOTIFICATION_FOR_COUNT);
+                viewModelLiveDate.setValue(response);
             }
         };
         notificationRepository.getNotificationLiveData().observeForever(notificationObserver);

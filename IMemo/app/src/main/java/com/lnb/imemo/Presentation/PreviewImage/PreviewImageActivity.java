@@ -2,11 +2,15 @@ package com.lnb.imemo.Presentation.PreviewImage;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,11 +24,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.lnb.imemo.Model.Resource;
 import com.lnb.imemo.R;
 import com.lnb.imemo.Utils.UrlHandler;
-import com.lnb.imemo.Utils.Utils;
 
 import java.util.ArrayList;
 public class PreviewImageActivity extends AppCompatActivity {
     private static final String TAG = "PreviewImageActivity";
+    private static final int REQUEST_CODE = 0;
     private ArrayList<Resource> listResource;
     private PreviewImageAdapter adapter;
 
@@ -33,22 +37,9 @@ public class PreviewImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_preview_image);
-        //hideSystemUI();
         listResource = getIntent().getParcelableArrayListExtra("data");
         initView();
     }
-
-    private void hideSystemUI() {
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_IMMERSIVE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
-    }
-
 
     private void initView() {
         ViewPager2 viewPager = findViewById(R.id.preview_image_viewPager);
@@ -62,12 +53,31 @@ public class PreviewImageActivity extends AppCompatActivity {
             @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.preview_image_bottom_dialog, null);
             TextView saveImageToDevice = view.findViewById(R.id.save_to_device);
             saveImageToDevice.setOnClickListener(v1 -> {
-                startDownloadFile();
-                bottomSheetDialog.dismiss();
+
+                if (checkPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    Log.v(TAG,"Permission is granted");
+                    startDownloadFile();
+                    bottomSheetDialog.dismiss();
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+                }
             });
             bottomSheetDialog.setContentView(view);
             bottomSheetDialog.show();
         });
+    }
+    private int checkPermission(String permission) {
+        return ContextCompat.checkSelfPermission(this, permission);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            Log.v(TAG,"Permission: "+permissions[0]+ "was "+grantResults[0]);
+            //resume tasks needing this permission
+            startDownloadFile();
+        }
     }
 
     private void startDownloadFile() {

@@ -79,7 +79,7 @@ public interface DiaryAPI {
                                            @Body JsonObject body);
 
     @GET("diaries/share-with-me/{id}")
-    Flowable<Root<Diary<PersonProfile>>> getDiarySharedById(@Header("Authorization") String token, @Path("id") String id);
+    Flowable<Root<ResultDiary>> getDiarySharedById(@Header("Authorization") String token, @Path("id") String id);
 
 
 }

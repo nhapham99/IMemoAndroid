@@ -64,10 +64,12 @@ public class SplashActivity extends AppCompatActivity implements View.OnClickLis
                     progressBar.setVisibility(View.GONE);
                     autoLoginAgainButton.setVisibility(View.VISIBLE);
                     goToLoginButton.setVisibility(View.VISIBLE);
-                    viewModel.getPersonProfile(restoreToken());
                     Toast.makeText(this, "Đăng nhập lỗi vui lòng thử lại sau", Toast.LENGTH_SHORT).show();
                     break;
                 case NO_INTERNET:
+                    progressBar.setVisibility(View.GONE);
+                    autoLoginAgainButton.setVisibility(View.VISIBLE);
+                    goToLoginButton.setVisibility(View.VISIBLE);
                     Toast.makeText(this, "Vui lòng kiểm tra kết nối internet của bạn", Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -99,6 +101,7 @@ public class SplashActivity extends AppCompatActivity implements View.OnClickLis
                 progressBar.setVisibility(View.VISIBLE);
                 autoLoginAgainButton.setVisibility(View.GONE);
                 goToLoginButton.setVisibility(View.GONE);
+                viewModel.getPersonProfile(restoreToken());
                 break;
             case R.id.goToLogin_button:
                 Intent intent = new Intent(getApplicationContext(), IntroduceActivity.class);

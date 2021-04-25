@@ -230,13 +230,23 @@ public class HomeViewModel extends ViewModel {
             if (key.equals(Constant.GET_DIARIES_KEY)) {
                 ResponseRepo<Pair<Utils.State, ArrayList<Diary<String>>>> response = new ResponseRepo<>();
                 Pair<Utils.State, ResultDiaries> pair = (Pair<Utils.State, ResultDiaries>) responseRepo.getData();
-                Pagination pagination = pair.second.getPagination();
-                totalFilterMemo = pagination.getTotalItems();
-                if (getTotalMemoInStart) {
-                    totalMemo = pagination.getTotalItems();
-                    getTotalMemoInStart = false;
+                switch (pair.first) {
+                    case SUCCESS:
+                        Pagination pagination = pair.second.getPagination();
+                        totalFilterMemo = pagination.getTotalItems();
+                        if (getTotalMemoInStart) {
+                            totalMemo = pagination.getTotalItems();
+                            getTotalMemoInStart = false;
+                        }
+                        response.setData(new Pair<>(pair.first, (ArrayList<Diary<String>>) pair.second.getDiaries()));
+                        break;
+                    case FAILURE:
+                        response.setData(new Pair<>(Utils.State.FAILURE, null));
+                        break;
+                    case NO_INTERNET:
+                        response.setData(new Pair<>(Utils.State.NO_INTERNET, null));
+                        break;
                 }
-                response.setData(new Pair<>(pair.first, (ArrayList<Diary<String>>) pair.second.getDiaries()));
                 response.setKey(Constant.GET_DIARIES_KEY);
                 viewModelLiveData.setValue(response);
             } else if (key.equals(Constant.DELETE_DIARY_KEY)) {
