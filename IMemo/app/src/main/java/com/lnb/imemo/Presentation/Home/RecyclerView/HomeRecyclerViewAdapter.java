@@ -826,7 +826,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu_pin);
+            if (diary.getPinned() != null && diary.getPinned()) {
+                popupMenu.inflate(R.menu.pop_down_menu_unpin);
+            } else {
+                popupMenu.inflate(R.menu.pop_down_menu_pin);
+            }
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
@@ -884,7 +888,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu_pin);
+            if (diary.getPinned() != null && diary.getPinned()) {
+                popupMenu.inflate(R.menu.pop_down_menu_unpin);
+            } else {
+                popupMenu.inflate(R.menu.pop_down_menu_pin);
+            }
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
@@ -1022,7 +1030,11 @@ public class HomeRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         // start setup pop down menu
         holder.popDownMenu.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.popDownMenu);
-            popupMenu.inflate(R.menu.pop_down_menu_pin);
+            if (diary.getPinned() != null && diary.getPinned()) {
+                popupMenu.inflate(R.menu.pop_down_menu_unpin);
+            } else {
+                popupMenu.inflate(R.menu.pop_down_menu_pin);
+            }
             popupMenu.setOnMenuItemClickListener(item -> {
                 switch (item.getItemId()) {
                     case R.id.pop_down_edit:
