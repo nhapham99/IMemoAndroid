@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId "com.lnb.imemo"
-        minSdkVersion 22
+        minSdkVersion 25
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -81,7 +81,7 @@ dependencies {
     // color picker
     implementation "com.github.skydoves:colorpickerview:2.2.2"
     // video player
-    implementation 'com.google.android.exoplayer:exoplayer:2.13.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.13.3'
 
     implementation 'com.github.nkzawa:socket.io-client:0.6.0'
 

@@ -38,6 +38,7 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
     private final ArrayList<MediaPlayer> mediaPlayers;
     private final ArrayList<Handler> handlers;
     private final ArrayList<Runnable> runnables;
+    private final ArrayList<Boolean> mediaPreparedArray = new ArrayList<>();
     private final CompositeDisposable disposable = new CompositeDisposable();
     private Context mContext;
 
@@ -48,8 +49,10 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
         for (int i = 0; i < this.listAudio.size(); i++) {
             mediaPlayers.add(new MediaPlayer());
             handlers.add(new Handler());
+            mediaPreparedArray.add(false);
         }
         runnables = new ArrayList<>(this.listAudio.size());
+
     }
 
     public void clearMedia() {
@@ -85,14 +88,6 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
     public void onBindViewHolder(@NonNull AudioRecyclerViewHolder holder, int position) {
         holder.name.setText(listAudio.get(position).getName());
 
-        Runnable runnable = () -> {
-            if (handlers.size() != 0 && runnables.size() != 0 && mediaPlayers.size() != 0) {
-                updateSeekBar(holder, position);
-                long currentDuration = mediaPlayers.get(position).getCurrentPosition();
-                holder.currentTime.setText(milliSecondsToTimer(currentDuration));
-            }
-        };
-        runnables.add(position, runnable);
 
         holder.playerSeekBar.setOnTouchListener((view, event) -> {
             SeekBar seekBar = (SeekBar) view;
@@ -109,7 +104,7 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
                 mediaPlayers.get(position).pause();
                 holder.playPause.setImageResource(R.drawable.ic_play);
             } else {
-                if (mediaPlayers.get(position).getDuration() > 0) {
+                if (mediaPreparedArray.get(position)) {
                     mediaPlayers.get(position).start();
                     holder.playPause.setImageResource(R.drawable.ic_pause);
                     updateSeekBar(holder, position);
@@ -145,6 +140,7 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
 
                         @Override
                         public void onError(@io.reactivex.annotations.NonNull Throwable e) {
+
                         }
 
                         @Override
@@ -155,6 +151,15 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
 
             }
         });
+
+        Runnable runnable = () -> {
+            if (handlers.size() != 0 && runnables.size() != 0 && mediaPlayers.size() != 0) {
+                updateSeekBar(holder, position);
+                long currentDuration = mediaPlayers.get(position).getCurrentPosition();
+                holder.currentTime.setText(milliSecondsToTimer(currentDuration));
+            }
+        };
+        runnables.add(position, runnable);
     }
 
 
@@ -163,6 +168,7 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
             String url = UrlHandler.convertUrl(listAudio.get(position).getUrl());
             mediaPlayers.get(position).setDataSource(url);
             mediaPlayers.get(position).prepare();
+            mediaPreparedArray.set(position, true);
             return true;
         } catch (Exception exception) {
             Log.d(TAG, "prepareMediaPlayer: " + exception.getMessage());
@@ -177,7 +183,7 @@ public class AudioRecyclerViewAdapter extends RecyclerView.Adapter<AudioRecycler
                 handlers.get(position).postDelayed(runnables.get(position), 1000);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "updateSeekBar: " + e.getMessage());
         }
 
     }
